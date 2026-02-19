@@ -28,6 +28,12 @@ namespace DungeonGame.Core
         private void Awake()
         {
             EnsureNetworkManager();
+
+            // If the NetworkManager exists in the scene, ensure it persists.
+            if (NetworkManager.Singleton != null)
+            {
+                DontDestroyOnLoad(NetworkManager.Singleton.gameObject);
+            }
         }
 
         private void Start()
@@ -50,19 +56,9 @@ namespace DungeonGame.Core
         {
             if (NetworkManager.Singleton != null) return;
 
-            var go = new GameObject("NetworkManager");
-            DontDestroyOnLoad(go);
-
-            var nm = go.AddComponent<NetworkManager>();
-            var transport = go.AddComponent<UnityTransport>();
-            nm.NetworkConfig = new NetworkConfig
-            {
-                EnableSceneManagement = true,
-                // You can add player prefab later in the inspector.
-            };
-            nm.NetworkConfig.NetworkTransport = transport;
-
-            // Basic tickrate defaults are fine for now.
+            Debug.LogError("[Net] No NetworkManager found in scene. " +
+                           "Create a GameObject named 'NetworkManager' in the Town scene with: " +
+                           "NetworkManager + UnityTransport, then assign the Player Prefab in the inspector.");
         }
 
         private void ApplyTransport()
