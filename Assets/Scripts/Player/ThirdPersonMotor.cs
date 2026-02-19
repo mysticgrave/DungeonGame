@@ -23,8 +23,13 @@ namespace DungeonGame.Player
         [SerializeField] private float jumpHeight = 1.2f;
 
         [Header("Rotation")]
+        [Tooltip("If true, player yaw follows the local camera yaw even while standing still.")]
+        [SerializeField] private bool faceCameraYaw = true;
+
         [SerializeField] private Transform lookYawRoot; // rotates player yaw
-        [SerializeField] private float yawDegreesPerSecond = 360f;
+        [SerializeField] private float yawDegreesPerSecond = 720f;
+
+        [SerializeField] private LocalPlayerCameraRig cameraRig;
 
         private CharacterController cc;
         private float verticalVel;
@@ -33,6 +38,7 @@ namespace DungeonGame.Player
         {
             cc = GetComponent<CharacterController>();
             if (lookYawRoot == null) lookYawRoot = transform;
+            if (cameraRig == null) cameraRig = GetComponent<LocalPlayerCameraRig>();
         }
 
         public override void OnNetworkSpawn()
@@ -75,8 +81,18 @@ namespace DungeonGame.Player
             Vector3 planar = (forward * move.y + right * move.x);
             if (planar.sqrMagnitude > 1f) planar.Normalize();
 
-            // Face movement direction if moving
-            if (planar.sqrMagnitude > 0.0001f)
+            // Rotation feel:
+            // - Default: face camera yaw (New World-ish) even while idle.
+            // - When moving, still uses movement direction, but that direction is camera-relative.
+            if (faceCameraYaw && cameraRig != null)
+            {
+                var targetRot = Quaternion.Euler(0f, cameraRig.Yaw, 0f);
+                lookYawRoot.rotation = Quaternion.RotateTowards(
+                    lookYawRoot.rotation,
+                    targetRot,
+                    yawDegreesPerSecond * Time.deltaTime);
+            }
+            else if (planar.sqrMagnitude > 0.0001f)
             {
                 var targetRot = Quaternion.LookRotation(planar, Vector3.up);
                 lookYawRoot.rotation = Quaternion.RotateTowards(

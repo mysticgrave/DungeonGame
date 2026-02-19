@@ -29,6 +29,8 @@ namespace DungeonGame.Player
         private float yaw;
         private float pitch;
 
+        public float Yaw => yaw;
+
         public override void OnNetworkSpawn()
         {
             base.OnNetworkSpawn();
