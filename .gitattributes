@@ -1,0 +1,30 @@
+# Unity projects: avoid text/binary confusion and keep diffs readable
+
+# Default to text with LF normalization
+* text=auto eol=lf
+
+# Unity YAML-ish assets (diffable)
+*.cs text eol=lf
+*.shader text eol=lf
+*.cginc text eol=lf
+*.hlsl text eol=lf
+*.compute text eol=lf
+*.json text eol=lf
+*.asmdef text eol=lf
+*.asmref text eol=lf
+*.asset text eol=lf
+*.prefab text eol=lf
+*.unity text eol=lf
+*.meta text eol=lf
+
+# Binary assets
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.tga binary
+*.psd binary
+*.exr binary
+*.fbx binary
+*.wav binary
+*.mp3 binary
+*.ogg binary
