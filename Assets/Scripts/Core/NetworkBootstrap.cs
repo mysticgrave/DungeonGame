@@ -1,6 +1,7 @@
 using Unity.Netcode;
 using Unity.Netcode.Transports.UTP;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 namespace DungeonGame.Core
 {
@@ -46,10 +47,12 @@ namespace DungeonGame.Core
 
         private void Update()
         {
-            // Quick iteration hotkeys
-            if (Input.GetKeyDown(KeyCode.F1)) StartHost();
-            if (Input.GetKeyDown(KeyCode.F2)) StartClient();
-            if (Input.GetKeyDown(KeyCode.F3)) Shutdown();
+            // Quick iteration hotkeys (Input System)
+            if (Keyboard.current == null) return;
+
+            if (Keyboard.current.f1Key.wasPressedThisFrame) StartHost();
+            if (Keyboard.current.f2Key.wasPressedThisFrame) StartClient();
+            if (Keyboard.current.f3Key.wasPressedThisFrame) Shutdown();
         }
 
         private static void EnsureNetworkManager()
