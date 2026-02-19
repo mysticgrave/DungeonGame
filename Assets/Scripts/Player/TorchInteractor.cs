@@ -43,7 +43,7 @@ namespace DungeonGame.Player
             var torch = hit.collider.GetComponentInParent<WallTorch>();
             if (torch == null) return;
 
-            torch.LightServerRpc();
+            torch.LightRpc();
         }
     }
 }

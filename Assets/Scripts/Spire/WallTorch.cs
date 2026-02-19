@@ -84,8 +84,10 @@ namespace DungeonGame.Spire
             }
         }
 
-        [ServerRpc(RequireOwnership = false)]
-        public void LightServerRpc(ServerRpcParams rpcParams = default)
+        // NOTE: NGO 2.2+ deprecates ServerRpc(RequireOwnership=false).
+        // Use the unified Rpc attribute instead.
+        [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
+        public void LightRpc()
         {
             if (!Lit.Value)
             {
