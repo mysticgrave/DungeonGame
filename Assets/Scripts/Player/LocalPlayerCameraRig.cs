@@ -30,6 +30,7 @@ namespace DungeonGame.Player
         private float pitch;
 
         public float Yaw => yaw;
+        public Transform CameraTransform => cam != null ? cam.transform : null;
 
         public override void OnNetworkSpawn()
         {
@@ -49,6 +50,7 @@ namespace DungeonGame.Player
 
             cam = go.AddComponent<Camera>();
             cam.fieldOfView = fov;
+            cam.tag = "MainCamera";
 
             // Only the local camera gets an audio listener.
             go.AddComponent<AudioListener>();

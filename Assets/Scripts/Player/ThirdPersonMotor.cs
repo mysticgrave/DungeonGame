@@ -63,15 +63,19 @@ namespace DungeonGame.Player
 
             float speed = sprint ? sprintSpeed : moveSpeed;
 
-            // Convert input into world-space relative to camera (if exists)
-            var cam = Camera.main;
+            // Convert input into world-space relative to the *local* camera.
+            // Do not rely on Camera.main in multiplayer; only the owner's camera should drive movement.
+            Transform camT = null;
+            if (cameraRig != null) camT = cameraRig.CameraTransform;
+            if (camT == null && Camera.main != null) camT = Camera.main.transform;
+
             Vector3 forward = Vector3.forward;
             Vector3 right = Vector3.right;
 
-            if (cam != null)
+            if (camT != null)
             {
-                forward = cam.transform.forward;
-                right = cam.transform.right;
+                forward = camT.forward;
+                right = camT.right;
                 forward.y = 0;
                 right.y = 0;
                 forward.Normalize();
