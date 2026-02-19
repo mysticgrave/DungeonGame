@@ -15,6 +15,12 @@ if ([string]::IsNullOrWhiteSpace($ResultsDir)) {
 New-Item -ItemType Directory -Force -Path $ResultsDir | Out-Null
 
 $logPath = Join-Path $ResultsDir "unity.log"
+$summaryPath = Join-Path $ResultsDir "summary.txt"
+
+"Unity:   $UnityExe" | Out-File -FilePath $summaryPath -Encoding utf8
+"Project: $ProjectPath" | Out-File -FilePath $summaryPath -Encoding utf8 -Append
+"Results: $ResultsDir" | Out-File -FilePath $summaryPath -Encoding utf8 -Append
+"" | Out-File -FilePath $summaryPath -Encoding utf8 -Append
 
 Write-Host "Unity: $UnityExe"
 Write-Host "Project: $ProjectPath"
@@ -45,7 +51,9 @@ function Invoke-Unity {
   $p = New-Object System.Diagnostics.Process
   $p.StartInfo = $psi
 
-  Write-Host "Running: $UnityExe $($psi.Arguments)"
+  $invocation = "Running: $UnityExe $($psi.Arguments)"
+  Write-Host $invocation
+  $invocation | Out-File -FilePath (Join-Path $ResultsDir 'invocation.txt') -Encoding utf8
 
   $null = $p.Start()
   $stdout = $p.StandardOutput.ReadToEnd()
@@ -56,6 +64,8 @@ function Invoke-Unity {
   if ($stderr) { $stderr | Out-File -FilePath (Join-Path $ResultsDir 'stderr.txt') -Encoding utf8 }
 
   Write-Host "ExitCode: $($p.ExitCode)"
+  "ExitCode: $($p.ExitCode)" | Out-File -FilePath $summaryPath -Encoding utf8 -Append
+
   return $p.ExitCode
 }
 
@@ -85,6 +95,11 @@ if ($RunPlayMode) {
 if ($exitCodes | Where-Object { $_ -ne 0 }) {
   Write-Error "Unity tests failed. See: $ResultsDir"
   exit 1
+}
+
+if (!(Test-Path $logPath)) {
+  "WARNING: unity.log was not created at expected path: $logPath" | Out-File -FilePath $summaryPath -Encoding utf8 -Append
+  Write-Warning "unity.log was not created at expected path: $logPath"
 }
 
 Write-Host "Unity tests completed successfully. Logs in: $ResultsDir"
