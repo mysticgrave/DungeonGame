@@ -8,7 +8,7 @@
 /[Bb]uilds/
 /[Ll]ogs/
 # Keep automation logs out of git
-!/Logs/.gitkeep
+!/Logs/**/.gitkeep
 /[Uu]ser[Ss]ettings/
 /[Mm]emoryCaptures/
 
