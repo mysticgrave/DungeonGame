@@ -26,15 +26,25 @@ namespace DungeonGame.Core
         [Tooltip("Port for host/server to listen on and clients to connect to.")]
         [SerializeField] private ushort port = 7777;
 
+        private NetworkManager nm;
+
         private void Awake()
         {
-            EnsureNetworkManager();
-
-            // If the NetworkManager exists in the scene, ensure it persists.
-            if (NetworkManager.Singleton != null)
+            // NetworkManager.Singleton may not be initialized yet depending on script execution order,
+            // so we also search the scene.
+            nm = NetworkManager.Singleton;
+            if (nm == null)
             {
-                DontDestroyOnLoad(NetworkManager.Singleton.gameObject);
+                nm = FindFirstObjectByType<NetworkManager>();
             }
+
+            if (nm == null)
+            {
+                EnsureNetworkManager();
+                return;
+            }
+
+            DontDestroyOnLoad(nm.gameObject);
         }
 
         private void Start()
@@ -66,7 +76,6 @@ namespace DungeonGame.Core
 
         private void ApplyTransport()
         {
-            var nm = NetworkManager.Singleton;
             if (nm == null) return;
 
             var utp = nm.NetworkConfig.NetworkTransport as UnityTransport;
@@ -77,30 +86,30 @@ namespace DungeonGame.Core
 
         public void StartHost()
         {
-            if (NetworkManager.Singleton == null) return;
-            if (NetworkManager.Singleton.IsListening) return;
+            if (nm == null) return;
+            if (nm.IsListening) return;
 
             ApplyTransport();
-            NetworkManager.Singleton.StartHost();
+            nm.StartHost();
             Debug.Log("[Net] Started Host");
         }
 
         public void StartClient()
         {
-            if (NetworkManager.Singleton == null) return;
-            if (NetworkManager.Singleton.IsListening) return;
+            if (nm == null) return;
+            if (nm.IsListening) return;
 
             ApplyTransport();
-            NetworkManager.Singleton.StartClient();
+            nm.StartClient();
             Debug.Log("[Net] Started Client");
         }
 
         public void Shutdown()
         {
-            if (NetworkManager.Singleton == null) return;
-            if (!NetworkManager.Singleton.IsListening) return;
+            if (nm == null) return;
+            if (!nm.IsListening) return;
 
-            NetworkManager.Singleton.Shutdown();
+            nm.Shutdown();
             Debug.Log("[Net] Shutdown");
         }
     }
