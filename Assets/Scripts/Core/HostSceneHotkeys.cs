@@ -15,7 +15,7 @@ namespace DungeonGame.Core
     public class HostSceneHotkeys : MonoBehaviour
     {
         [SerializeField] private string townSceneName = "Town";
-        [SerializeField] private string spireSceneName = "Spire_Layer";
+        [SerializeField] private string spireSceneName = "Spire_Slice";
 
         private void Update()
         {

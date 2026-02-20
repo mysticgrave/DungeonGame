@@ -27,7 +27,7 @@ Add this in both Town and Spire scenes (any GameObject is fine, e.g. Bootstrap):
 - `DungeonGame.Core.HostSceneHotkeys`
 
 Hotkeys:
-- F5 = load `Spire_Layer`
+- F5 = load `Spire_Slice`
 - F6 = load `Town`
 
 ## 5) Test
@@ -35,4 +35,4 @@ Hotkeys:
 - F1 to Host
 - Start second instance (or build) and F2 to connect
 - Verify both players spawn at PlayerSpawn points
-- Press F5 on host: both should load `Spire_Layer`
+- Press F5 on host: both should load `Spire_Slice`
