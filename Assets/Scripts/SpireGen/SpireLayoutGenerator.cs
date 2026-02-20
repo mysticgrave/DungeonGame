@@ -210,10 +210,20 @@ namespace DungeonGame.SpireGen
                 if (openSockets.Count == 0) return false;
             }
 
+            PruneOpenSockets();
+            if (openSockets.Count == 0) return false;
+
             // Choose a target open socket.
             OpenSocket target = preferRandomSocket
                 ? openSockets[rng.Next(0, openSockets.Count)]
                 : openSockets[openSockets.Count - 1];
+
+            if (target.socket == null || target.roomRoot == null)
+            {
+                // Should not happen after pruning, but be defensive.
+                openSockets.RemoveAll(s => s.socket == null || s.roomRoot == null);
+                return false;
+            }
 
             // Try place a room connected to it.
             for (int attempt = 0; attempt < maxAttemptsPerPlacement; attempt++)
@@ -274,8 +284,16 @@ namespace DungeonGame.SpireGen
             openSockets.Clear();
             foreach (var pr in placed)
             {
+                if (pr == null || pr.root == null || pr.prefab == null) continue;
                 AddOpenSocketsForRoom(pr.root, pr.prefab);
             }
+            PruneOpenSockets();
+        }
+
+        private void PruneOpenSockets()
+        {
+            // Remove any stale/destroyed sockets (can happen during edit-time changes or scene reloads).
+            openSockets.RemoveAll(s => s.socket == null || s.roomRoot == null);
         }
 
         private void AddOpenSocketsForRoom(Transform roomRoot, RoomPrefab prefabInstance)
@@ -326,6 +344,11 @@ namespace DungeonGame.SpireGen
 
         private (Vector3 pos, Quaternion rot) ComputeSnapTransform(OpenSocket target, RoomSocket sourceSocketAsset, Quaternion initialRoomRot)
         {
+            if (target.socket == null || sourceSocketAsset == null)
+            {
+                return (Vector3.zero, initialRoomRot);
+            }
+
             // We want: sourceSocket forward points opposite target socket forward.
             // We'll brute force the yaw rotations (0/90/180/270) around initialRoomRot.
 
