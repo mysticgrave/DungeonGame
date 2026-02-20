@@ -8,16 +8,19 @@ namespace DungeonGame.SpireGen
 {
     /// <summary>
     /// Server-side socket-snap generator for Spire_Slice.
-    /// MVP: generates a main path + branches by snapping room prefabs via RoomSockets (90-degree rotations only).
+    /// MVP+: generates a main path + branches + loop connectors by snapping room prefabs via RoomSockets.
     /// 
-    /// This generator is designed so that later you can switch from "spawn as NetworkObjects" to "send recipe" by
-    /// using the returned SpireLayoutData.
+    /// Design goals:
+    /// - Deterministic from SpireSeed
+    /// - 90° yaw rotations only (for stability)
+    /// - Spawn rooms as NetworkObjects for MVP (easy sync)
+    /// - Generator produces a pure layout recipe (SpireLayoutData) so we can later switch to local instantiation.
     /// </summary>
     [RequireComponent(typeof(SpireSeed))]
     public class SpireLayoutGenerator : NetworkBehaviour
     {
         [Header("Prefabs")]
-        [Tooltip("Room prefabs to use. These should have RoomPrefab + NetworkObject on the root.")]
+        [Tooltip("Room prefabs to use. Each should have RoomPrefab + NetworkObject on the root.")]
         [SerializeField] private List<RoomPrefab> roomPrefabs = new();
 
         [Header("Shape")]
@@ -25,6 +28,17 @@ namespace DungeonGame.SpireGen
         [SerializeField, Range(0, 10)] private int branches = 4;
         [SerializeField, Min(1)] private int branchLengthMin = 2;
         [SerializeField, Min(1)] private int branchLengthMax = 6;
+
+        [Header("Loops")]
+        [Tooltip("How many loop connections to attempt after building the tree.")]
+        [SerializeField, Range(0, 10)] private int loopAttempts = 2;
+
+        [Tooltip("How close sockets must be to connect via a connector room.")]
+        [SerializeField, Range(0.1f, 5f)] private float loopSocketSnapTolerance = 0.6f;
+
+        [Header("Landmarks")]
+        [Tooltip("Place a landmark about every N placements along the main path. 0 disables.")]
+        [SerializeField, Range(0, 20)] private int landmarkEvery = 8;
 
         [Header("Sockets")]
         [SerializeField] private SocketType socketType = SocketType.DoorSmall;
@@ -45,19 +59,22 @@ namespace DungeonGame.SpireGen
         private readonly List<PlacedRoom> placed = new();
         private readonly List<OpenSocket> openSockets = new();
 
+        private readonly HashSet<string> usedUniqueRoomIds = new();
+        private readonly List<string> recentRoomIds = new();
+
         private System.Random rng;
 
         private struct PlacedRoom
         {
-            public RoomPrefab prefab;
+            public RoomPrefab prefab; // instance component
             public Transform root;
             public Bounds worldBounds;
-            public HashSet<RoomSocket> usedSockets;
+            public HashSet<RoomSocket> usedSockets; // instance socket refs
         }
 
         private struct OpenSocket
         {
-            public RoomSocket socket;
+            public RoomSocket socket; // instance socket ref
             public Transform roomRoot;
         }
 
@@ -121,6 +138,8 @@ namespace DungeonGame.SpireGen
 
             placed.Clear();
             openSockets.Clear();
+            usedUniqueRoomIds.Clear();
+            recentRoomIds.Clear();
         }
 
         public SpireLayoutData GenerateLayout(int seed)
@@ -134,7 +153,7 @@ namespace DungeonGame.SpireGen
             var data = new SpireLayoutData { seed = seed };
 
             // Place start room at origin.
-            var start = startRoom != null ? startRoom : PickRoomPrefab(null);
+            var start = startRoom != null ? startRoom : PickRoomPrefab(null, forceLandmark: false, forceConnector: false);
             var startRot = Rotation90(rng.Next(0, 4));
             var startPlacement = PlaceRoom(start, Vector3.zero, startRot);
             if (startPlacement.root == null)
@@ -143,14 +162,23 @@ namespace DungeonGame.SpireGen
                 return data;
             }
 
-            data.rooms.Add(new RoomPlacement { roomId = start.roomId, position = startPlacement.root.position, rotationY = (int)startRot.eulerAngles.y });
+            data.rooms.Add(new RoomPlacement
+            {
+                roomId = start.roomId,
+                position = startPlacement.root.position,
+                rotationY = (int)startRot.eulerAngles.y
+            });
+
+            NotePlaced(start.roomId, start);
 
             // Main path: always extend from the newest room's available sockets.
             for (int i = 0; i < mainPathRooms - 1; i++)
             {
-                if (!TryExtendOnce(data))
+                bool placeLandmark = landmarkEvery > 0 && i > 0 && (i % landmarkEvery == 0);
+
+                if (!TryExtendOnce(data, preferRandomSocket: false, forceLandmark: placeLandmark))
                 {
-                    Debug.LogWarning($"[SpireGen] Main path extension failed at i={i}." );
+                    Debug.LogWarning($"[SpireGen] Main path extension failed at i={i}.");
                     break;
                 }
             }
@@ -161,14 +189,20 @@ namespace DungeonGame.SpireGen
                 int len = rng.Next(branchLengthMin, branchLengthMax + 1);
                 for (int i = 0; i < len; i++)
                 {
-                    if (!TryExtendOnce(data, preferRandomSocket: true)) break;
+                    if (!TryExtendOnce(data, preferRandomSocket: true, forceLandmark: false)) break;
                 }
+            }
+
+            // Loops: attempt to connect two existing open sockets using a connector room.
+            for (int l = 0; l < loopAttempts; l++)
+            {
+                TryCreateLoop(data);
             }
 
             return data;
         }
 
-        private bool TryExtendOnce(SpireLayoutData data, bool preferRandomSocket = false)
+        private bool TryExtendOnce(SpireLayoutData data, bool preferRandomSocket, bool forceLandmark)
         {
             if (openSockets.Count == 0)
             {
@@ -177,58 +211,60 @@ namespace DungeonGame.SpireGen
             }
 
             // Choose a target open socket.
-            OpenSocket target;
-            if (preferRandomSocket)
-            {
-                target = openSockets[rng.Next(0, openSockets.Count)];
-            }
-            else
-            {
-                // Prefer latest-added socket (more path-like)
-                target = openSockets[openSockets.Count - 1];
-            }
+            OpenSocket target = preferRandomSocket
+                ? openSockets[rng.Next(0, openSockets.Count)]
+                : openSockets[openSockets.Count - 1];
 
             // Try place a room connected to it.
             for (int attempt = 0; attempt < maxAttemptsPerPlacement; attempt++)
             {
-                var prefab = PickRoomPrefab(target.socket);
-                if (prefab == null) continue;
+                var prefabAsset = PickRoomPrefab(target.socket, forceLandmark: forceLandmark, forceConnector: false);
+                if (prefabAsset == null) continue;
 
-                if (!TryGetCompatibleSocket(prefab, out var sourceSocket)) continue;
+                if (!TryGetCompatibleSocket(prefabAsset, out var sourceSocketAsset)) continue;
+
+                string sourceSocketPath = GetRelativePath(prefabAsset.transform, sourceSocketAsset.transform);
 
                 // Determine rotation and position so that sourceSocket faces opposite of target.socket.
-                // We allow 90-degree rotations only.
-                int rotSteps = rng.Next(0, 4);
-                var rot = Rotation90(rotSteps);
+                var initialRot = Rotation90(rng.Next(0, 4));
+                var aligned = ComputeSnapTransform(target, sourceSocketAsset, initialRot);
 
-                // Compute transform that would align sockets.
-                // Start by rotating the prefab socket.
-                var aligned = ComputeSnapTransform(target, prefab, sourceSocket, rot);
-
-                var placedRoom = PlaceRoom(prefab, aligned.pos, aligned.rot);
+                var placedRoom = PlaceRoom(prefabAsset, aligned.pos, aligned.rot);
                 if (placedRoom.root == null) continue;
 
-                // Mark sockets used and update open sockets cache.
+                // Resolve socket instance on placed room.
+                var sourceSocketInstance = FindSocketInstance(placedRoom.root, sourceSocketPath);
+                if (sourceSocketInstance == null)
+                {
+                    Debug.LogWarning($"[SpireGen] Could not resolve socket instance path '{sourceSocketPath}' on '{placedRoom.root.name}'.");
+                }
+
+                // Mark sockets used.
                 MarkSocketUsed(target.roomRoot, target.socket);
-                MarkSocketUsed(placedRoom.root, sourceSocket);
+                if (sourceSocketInstance != null)
+                {
+                    MarkSocketUsed(placedRoom.root, sourceSocketInstance);
+                }
 
                 // Remove used target socket from open list.
                 openSockets.RemoveAll(s => s.socket == target.socket && s.roomRoot == target.roomRoot);
 
                 data.rooms.Add(new RoomPlacement
                 {
-                    roomId = prefab.roomId,
+                    roomId = prefabAsset.roomId,
                     position = placedRoom.root.position,
                     rotationY = (int)placedRoom.root.rotation.eulerAngles.y
                 });
 
-                // Add new room sockets to open list
-                AddOpenSocketsForRoom(placedRoom.root, prefab);
+                NotePlaced(prefabAsset.roomId, prefabAsset);
+
+                // Add new room sockets to open list.
+                AddOpenSocketsForRoom(placedRoom.root, placedRoom.prefab);
 
                 return true;
             }
 
-            // If we failed to extend from this socket, drop it and try later.
+            // If we failed to extend from this socket, drop it.
             openSockets.RemoveAll(s => s.socket == target.socket && s.roomRoot == target.roomRoot);
             return false;
         }
@@ -242,16 +278,16 @@ namespace DungeonGame.SpireGen
             }
         }
 
-        private void AddOpenSocketsForRoom(Transform roomRoot, RoomPrefab prefab)
+        private void AddOpenSocketsForRoom(Transform roomRoot, RoomPrefab prefabInstance)
         {
-            foreach (var sock in prefab.GetSockets(socketType, socketSize))
+            foreach (var sock in prefabInstance.GetSockets(socketType, socketSize))
             {
                 if (sock == null) continue;
                 if (IsSocketUsed(roomRoot, sock)) continue;
                 openSockets.Add(new OpenSocket { socket = sock, roomRoot = roomRoot });
             }
 
-            // Prefer non-lowPriority sockets by sorting once in a while.
+            // Prefer non-lowPriority sockets by sorting.
             openSockets.Sort((a, b) => (a.socket.lowPriority ? 1 : 0).CompareTo(b.socket.lowPriority ? 1 : 0));
         }
 
@@ -270,50 +306,43 @@ namespace DungeonGame.SpireGen
             for (int i = 0; i < placed.Count; i++)
             {
                 if (placed[i].root != roomRoot) continue;
-                if (placed[i].usedSockets == null) placed[i].usedSockets = new HashSet<RoomSocket>();
+                placed[i].usedSockets ??= new HashSet<RoomSocket>();
                 placed[i].usedSockets.Add(socket);
                 return;
             }
         }
 
-        private bool TryGetCompatibleSocket(RoomPrefab prefab, out RoomSocket socket)
+        private bool TryGetCompatibleSocket(RoomPrefab prefabAsset, out RoomSocket socket)
         {
-            foreach (var s in prefab.GetSockets(socketType, socketSize))
+            foreach (var s in prefabAsset.GetSockets(socketType, socketSize))
             {
                 socket = s;
                 return true;
             }
+
             socket = null;
             return false;
         }
 
-        private (Vector3 pos, Quaternion rot) ComputeSnapTransform(OpenSocket target, RoomPrefab prefab, RoomSocket sourceSocket, Quaternion roomRot)
+        private (Vector3 pos, Quaternion rot) ComputeSnapTransform(OpenSocket target, RoomSocket sourceSocketAsset, Quaternion initialRoomRot)
         {
             // We want: sourceSocket forward points opposite target socket forward.
-            // We'll compute where the room root must be so that source socket position matches target socket position.
-            // Because sockets are children, we use their local position/rotation.
+            // We'll brute force the yaw rotations (0/90/180/270) around initialRoomRot.
 
-            // Compute socket world pose if the room root is at origin with roomRot.
-            var sourceLocalPos = sourceSocket.transform.localPosition;
-            var sourceLocalRot = sourceSocket.transform.localRotation;
+            var sourceLocalPos = sourceSocketAsset.transform.localPosition;
+            var sourceLocalRot = sourceSocketAsset.transform.localRotation;
 
-            var sourceWorldRot = roomRot * sourceLocalRot;
-
-            // Align forward vectors: rotate around Y in 90-deg steps already embedded in roomRot.
-            // We'll additionally rotate roomRot so the socket forward matches.
-            // Since we restrict to 90 degree rotations, we can brute force the best match.
-
-            // We'll brute-force 4 yaw rotations to match.
-            Quaternion best = roomRot;
+            Quaternion best = initialRoomRot;
             float bestDot = -999f;
+
+            var tf = target.socket.transform.forward;
+            tf.y = 0; tf.Normalize();
+
             for (int step = 0; step < 4; step++)
             {
-                var r = Rotation90(step) * roomRot;
+                var r = Rotation90(step) * initialRoomRot;
                 var f = (r * sourceLocalRot) * Vector3.forward;
                 f.y = 0; f.Normalize();
-
-                var tf = target.socket.transform.forward;
-                tf.y = 0; tf.Normalize();
 
                 float dot = Vector3.Dot(f, -tf);
                 if (dot > bestDot)
@@ -325,16 +354,104 @@ namespace DungeonGame.SpireGen
 
             var finalRot = best;
             var finalSourceWorldPos = finalRot * sourceLocalPos;
-
             var targetPos = target.socket.transform.position;
             var pos = targetPos - finalSourceWorldPos;
+
             return (pos, finalRot);
         }
 
-        private PlacedRoom PlaceRoom(RoomPrefab prefab, Vector3 pos, Quaternion rot)
+        private bool TryCreateLoop(SpireLayoutData data)
+        {
+            if (openSockets.Count < 2)
+            {
+                CacheOpenSockets();
+                if (openSockets.Count < 2) return false;
+            }
+
+            // Try random pairs.
+            for (int attempt = 0; attempt < 50; attempt++)
+            {
+                var a = openSockets[rng.Next(0, openSockets.Count)];
+                var b = openSockets[rng.Next(0, openSockets.Count)];
+                if (a.roomRoot == b.roomRoot && a.socket == b.socket) continue;
+
+                // Choose a connector room asset.
+                var connector = PickRoomPrefab(a.socket, forceLandmark: false, forceConnector: true);
+                if (connector == null) return false;
+
+                // Connector must have at least 2 compatible sockets.
+                var sockets = new List<RoomSocket>();
+                foreach (var s in connector.GetSockets(socketType, socketSize)) sockets.Add(s);
+                if (sockets.Count < 2) continue;
+
+                // Use first two compatible sockets as endpoints.
+                var s0 = sockets[0];
+                var s1 = sockets[1];
+                string s0Path = GetRelativePath(connector.transform, s0.transform);
+                string s1Path = GetRelativePath(connector.transform, s1.transform);
+
+                // Try 4 rotations.
+                for (int rotStep = 0; rotStep < 4; rotStep++)
+                {
+                    var rot = Rotation90(rotStep);
+                    var align = ComputeSnapTransform(a, s0, rot);
+
+                    // Compute the world pose of socket1 for this placement.
+                    var s1WorldPos = align.rot * s1.transform.localPosition + align.pos;
+
+                    // Check if socket1 lands near socket B.
+                    float dist = Vector3.Distance(s1WorldPos, b.socket.transform.position);
+                    if (dist > loopSocketSnapTolerance) continue;
+
+                    // Check forward alignment.
+                    var s1Forward = (align.rot * s1.transform.localRotation) * Vector3.forward;
+                    s1Forward.y = 0; s1Forward.Normalize();
+
+                    var bForward = b.socket.transform.forward;
+                    bForward.y = 0; bForward.Normalize();
+
+                    if (Vector3.Dot(s1Forward, -bForward) < 0.92f) continue;
+
+                    // Place connector.
+                    var placedConn = PlaceRoom(connector, align.pos, align.rot);
+                    if (placedConn.root == null) continue;
+
+                    var s0Inst = FindSocketInstance(placedConn.root, s0Path);
+                    var s1Inst = FindSocketInstance(placedConn.root, s1Path);
+
+                    // Mark both existing sockets and connector sockets used.
+                    MarkSocketUsed(a.roomRoot, a.socket);
+                    MarkSocketUsed(b.roomRoot, b.socket);
+                    if (s0Inst != null) MarkSocketUsed(placedConn.root, s0Inst);
+                    if (s1Inst != null) MarkSocketUsed(placedConn.root, s1Inst);
+
+                    // Remove used open sockets.
+                    openSockets.RemoveAll(s => (s.roomRoot == a.roomRoot && s.socket == a.socket) || (s.roomRoot == b.roomRoot && s.socket == b.socket));
+
+                    data.rooms.Add(new RoomPlacement
+                    {
+                        roomId = connector.roomId,
+                        position = placedConn.root.position,
+                        rotationY = (int)placedConn.root.rotation.eulerAngles.y
+                    });
+
+                    NotePlaced(connector.roomId, connector);
+
+                    // Add any additional sockets as open (if the connector has more than 2).
+                    AddOpenSocketsForRoom(placedConn.root, placedConn.prefab);
+
+                    Debug.Log("[SpireGen] Created loop connector.");
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private PlacedRoom PlaceRoom(RoomPrefab prefabAsset, Vector3 pos, Quaternion rot)
         {
             // Instantiate under generator for cleanup.
-            var go = Instantiate(prefab.gameObject, pos, rot, transform);
+            var go = Instantiate(prefabAsset.gameObject, pos, rot, transform);
 
             // Overlap check (simple AABB in world space using renderers/colliders).
             var bounds = ComputeWorldBounds(go);
@@ -348,18 +465,18 @@ namespace DungeonGame.SpireGen
                 }
             }
 
-            // Spawn network object
+            // Spawn network object.
             var no = go.GetComponent<NetworkObject>();
             if (no != null && !no.IsSpawned)
             {
                 no.Spawn(true);
             }
 
-            var rp = go.GetComponent<RoomPrefab>();
+            var rpInstance = go.GetComponent<RoomPrefab>();
 
             var pr = new PlacedRoom
             {
-                prefab = rp,
+                prefab = rpInstance,
                 root = go.transform,
                 worldBounds = bounds,
                 usedSockets = new HashSet<RoomSocket>()
@@ -414,19 +531,51 @@ namespace DungeonGame.SpireGen
             return b;
         }
 
-        private RoomPrefab PickRoomPrefab(RoomSocket connectingTo)
+        private RoomPrefab PickRoomPrefab(RoomSocket connectingTo, bool forceLandmark, bool forceConnector)
         {
-            // MVP: uniform random; later add weights/tags/rarity + repeat cooldown.
-            // Filter by having at least one compatible socket.
+            // Weighted selection with repeat cooldown + unique-per-slice + landmark/connector filters.
             var candidates = new List<RoomPrefab>();
+            int totalWeight = 0;
+
             foreach (var p in roomPrefabs)
             {
                 if (p == null) continue;
-                if (HasCompatibleSocket(p)) candidates.Add(p);
+                if (!HasCompatibleSocket(p)) continue;
+
+                if (forceLandmark && !p.landmark) continue;
+                if (forceConnector && !p.connector) continue;
+
+                // Uniques: explicit uniquePerSlice or implicit landmark uniqueness.
+                if ((p.uniquePerSlice || p.landmark) && usedUniqueRoomIds.Contains(p.roomId)) continue;
+
+                // Repeat cooldown.
+                if (p.repeatCooldown > 0 && recentRoomIds.Contains(p.roomId)) continue;
+
+                int w = Mathf.Max(0, p.weight);
+                if (w <= 0) continue;
+
+                candidates.Add(p);
+                totalWeight += w;
             }
 
-            if (candidates.Count == 0) return null;
-            return candidates[rng.Next(0, candidates.Count)];
+            if (candidates.Count == 0)
+            {
+                // If landmark was requested but none available, fall back to normal.
+                if (forceLandmark)
+                {
+                    return PickRoomPrefab(connectingTo, forceLandmark: false, forceConnector: forceConnector);
+                }
+                return null;
+            }
+
+            int roll = rng.Next(0, totalWeight);
+            foreach (var c in candidates)
+            {
+                roll -= Mathf.Max(0, c.weight);
+                if (roll < 0) return c;
+            }
+
+            return candidates[candidates.Count - 1];
         }
 
         private bool HasCompatibleSocket(RoomPrefab prefab)
@@ -438,10 +587,67 @@ namespace DungeonGame.SpireGen
             return false;
         }
 
+        private void NotePlaced(string roomId, RoomPrefab prefab)
+        {
+            if (prefab != null && (prefab.uniquePerSlice || prefab.landmark))
+            {
+                usedUniqueRoomIds.Add(roomId);
+            }
+
+            // Maintain a rolling set of recent room IDs for cooldown.
+            recentRoomIds.Add(roomId);
+
+            // Global cap = worst-case cooldown across prefabs.
+            int maxCooldown = 0;
+            foreach (var p in roomPrefabs)
+            {
+                if (p == null) continue;
+                if (p.repeatCooldown > maxCooldown) maxCooldown = p.repeatCooldown;
+            }
+
+            int keep = Mathf.Clamp(maxCooldown, 0, 100);
+            if (keep == 0)
+            {
+                recentRoomIds.Clear();
+                return;
+            }
+
+            while (recentRoomIds.Count > keep)
+            {
+                recentRoomIds.RemoveAt(0);
+            }
+        }
+
         private static Quaternion Rotation90(int steps)
         {
             int s = ((steps % 4) + 4) % 4;
             return Quaternion.Euler(0f, 90f * s, 0f);
+        }
+
+        private static string GetRelativePath(Transform root, Transform leaf)
+        {
+            if (root == null || leaf == null) return string.Empty;
+            if (leaf == root) return string.Empty;
+
+            var stack = new Stack<string>();
+            var t = leaf;
+            while (t != null && t != root)
+            {
+                stack.Push(t.name);
+                t = t.parent;
+            }
+
+            return string.Join("/", stack);
+        }
+
+        private static RoomSocket FindSocketInstance(Transform roomRoot, string relativePath)
+        {
+            if (roomRoot == null) return null;
+            if (string.IsNullOrWhiteSpace(relativePath)) return null;
+
+            var t = roomRoot.Find(relativePath);
+            if (t == null) return null;
+            return t.GetComponent<RoomSocket>();
         }
 
         private void SpawnLayout(SpireLayoutData layout)

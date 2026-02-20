@@ -14,11 +14,20 @@ namespace DungeonGame.SpireGen
         public string roomId = Guid.NewGuid().ToString("N");
 
         [Header("Generation")]
-        [Tooltip("How often this room is allowed to repeat. 0 = no restriction. Higher means rarer.")]
-        public int repeatWeight = 1;
+        [Tooltip("Selection weight. Higher = more common.")]
+        public int weight = 10;
 
         [Tooltip("If true, only allow this room once per generated layout (per slice).")]
         public bool uniquePerSlice;
+
+        [Tooltip("If true, generator will try to place this room periodically as a landmark.")]
+        public bool landmark;
+
+        [Tooltip("If true, this room can be used as a loop connector (must have exactly 2 compatible sockets).")]
+        public bool connector;
+
+        [Tooltip("Prevents this roomId from appearing again within the last N placements. 0 disables.")]
+        public int repeatCooldown = 6;
 
         [Header("Sockets")]
         public List<RoomSocket> sockets = new();
