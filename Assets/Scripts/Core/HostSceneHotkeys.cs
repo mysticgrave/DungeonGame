@@ -17,6 +17,12 @@ namespace DungeonGame.Core
         [SerializeField] private string townSceneName = "Town";
         [SerializeField] private string spireSceneName = "Spire_Slice";
 
+        private void Awake()
+        {
+            // Auto-migrate older serialized scene names.
+            if (spireSceneName == "Spire_Layer") spireSceneName = "Spire_Slice";
+        }
+
         private void Update()
         {
             if (Keyboard.current == null) return;
