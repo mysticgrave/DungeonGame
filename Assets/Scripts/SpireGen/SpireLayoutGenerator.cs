@@ -64,7 +64,7 @@ namespace DungeonGame.SpireGen
 
         private System.Random rng;
 
-        private struct PlacedRoom
+        private class PlacedRoom
         {
             public RoomPrefab prefab; // instance component
             public Transform root;
