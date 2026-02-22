@@ -309,10 +309,11 @@ namespace DungeonGame.SpireGen
             openSockets.Sort((a, b) => (a.socket.lowPriority ? 1 : 0).CompareTo(b.socket.lowPriority ? 1 : 0));
         }
 
-        private bool IsSocketUsed(Transform roomRoot, RoomSocket socket)
+        public bool IsSocketUsed(Transform roomRoot, RoomSocket socket)
         {
             for (int i = 0; i < placed.Count; i++)
             {
+                if (placed[i] == null) continue;
                 if (placed[i].root != roomRoot) continue;
                 return placed[i].usedSockets != null && placed[i].usedSockets.Contains(socket);
             }
