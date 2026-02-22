@@ -7,14 +7,13 @@ namespace DungeonGame.SpireGen
     /// <summary>
     /// Spawns door connectors for connected sockets and wall caps for unconnected sockets.
     /// 
-    /// Uses the generator's "used socket" concept:
-    /// - If a RoomSocket was used in a connection, it's considered connected -> spawn DoorConnector.
-    /// - Otherwise -> spawn WallCap.
-    /// 
-    /// IMPORTANT: Door/cap prefabs should be NetworkObjects spawned as top-level objects
-    /// (do not nest them under spawned room NetworkObjects).
+    /// IMPORTANT:
+    /// - This is a MonoBehaviour (not a NetworkBehaviour) so it can live on the same Spire object as generation,
+    ///   without requiring that object to be a spawned NetworkObject.
+    /// - It will only act on the server.
+    /// - It spawns door/cap prefabs as top-level NetworkObjects (no nesting under rooms).
     /// </summary>
-    public class DoorCapBuilder : NetworkBehaviour
+    public class DoorCapBuilder : MonoBehaviour
     {
         [Header("Prefabs (NetworkObject)")]
         [SerializeField] private NetworkObject doorConnectorSmall;
@@ -28,29 +27,21 @@ namespace DungeonGame.SpireGen
         // Track spawned objects so we can despawn on rebuild.
         private readonly List<NetworkObject> spawned = new();
 
-        public override void OnNetworkSpawn()
+        private void OnEnable()
         {
-            base.OnNetworkSpawn();
-            if (!IsServer) return;
-
-            if (rebuildOnLayoutGenerated)
-            {
-                SpireLayoutGenerator.OnLayoutGenerated += HandleLayout;
-            }
+            if (!rebuildOnLayoutGenerated) return;
+            SpireLayoutGenerator.OnLayoutGenerated += HandleLayout;
         }
 
-        public override void OnNetworkDespawn()
+        private void OnDisable()
         {
-            if (IsServer)
-            {
-                SpireLayoutGenerator.OnLayoutGenerated -= HandleLayout;
-            }
-            base.OnNetworkDespawn();
+            SpireLayoutGenerator.OnLayoutGenerated -= HandleLayout;
         }
 
         private void HandleLayout(SpireLayoutGenerator gen, SpireLayoutData layout)
         {
-            if (!IsServer) return;
+            var nm = NetworkManager.Singleton;
+            if (nm == null || !nm.IsServer) return;
 
             // Only run in our scene (avoid cross-talk if multiple spires exist later)
             if (gen == null) return;
@@ -62,7 +53,8 @@ namespace DungeonGame.SpireGen
 
         public void Rebuild(SpireLayoutGenerator gen)
         {
-            if (!IsServer) return;
+            var nm = NetworkManager.Singleton;
+            if (nm == null || !nm.IsServer) return;
             if (gen == null) return;
 
             if (doorConnectorSmall == null || wallCapSmall == null || doorConnectorLarge == null || wallCapLarge == null)
