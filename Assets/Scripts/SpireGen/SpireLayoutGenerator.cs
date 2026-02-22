@@ -240,7 +240,7 @@ namespace DungeonGame.SpireGen
                 var aligned = ComputeSnapTransform(target, sourceSocketAsset, initialRot);
 
                 var placedRoom = PlaceRoom(prefabAsset, aligned.pos, aligned.rot);
-                if (placedRoom.root == null) continue;
+                if (placedRoom == null || placedRoom.root == null) continue;
 
                 // Resolve socket instance on placed room.
                 var sourceSocketInstance = FindSocketInstance(placedRoom.root, sourceSocketPath);
@@ -437,7 +437,7 @@ namespace DungeonGame.SpireGen
 
                     // Place connector.
                     var placedConn = PlaceRoom(connector, align.pos, align.rot);
-                    if (placedConn.root == null) continue;
+                    if (placedConn == null || placedConn.root == null) continue;
 
                     var s0Inst = FindSocketInstance(placedConn.root, s0Path);
                     var s1Inst = FindSocketInstance(placedConn.root, s1Path);
@@ -481,10 +481,11 @@ namespace DungeonGame.SpireGen
             bounds.Expand(overlapPadding);
             for (int i = 0; i < placed.Count; i++)
             {
+                if (placed[i] == null) continue;
                 if (bounds.Intersects(placed[i].worldBounds))
                 {
                     Destroy(go);
-                    return default;
+                    return null;
                 }
             }
 
