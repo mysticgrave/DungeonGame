@@ -63,9 +63,9 @@ namespace DungeonGame.Enemies
                 }
 
                 // Snap to NavMesh if available.
-                if (UnityEngine.AI.NavMesh.SamplePosition(candidate, out var hit, 4f, UnityEngine.AI.NavMesh.AllAreas))
+                if (UnityEngine.AI.NavMesh.SamplePosition(candidate, out var navHit, 4f, UnityEngine.AI.NavMesh.AllAreas))
                 {
-                    return hit.position;
+                    return navHit.position;
                 }
 
                 return candidate;
@@ -73,9 +73,9 @@ namespace DungeonGame.Enemies
 
             // Fallback: whatever we get (still try to snap to navmesh).
             var fallback = GetCandidatePos(i, maxPositionAttempts);
-            if (UnityEngine.AI.NavMesh.SamplePosition(fallback, out var hit, 6f, UnityEngine.AI.NavMesh.AllAreas))
+            if (UnityEngine.AI.NavMesh.SamplePosition(fallback, out var navHit2, 6f, UnityEngine.AI.NavMesh.AllAreas))
             {
-                return hit.position;
+                return navHit2.position;
             }
             return fallback;
         }
