@@ -74,8 +74,8 @@ namespace DungeonGame.Enemies
             if (spawned) return;
             spawned = true;
 
-            // If navmesh isn't ready yet, we'll retry after bake event.
-            if (!UnityEngine.AI.NavMesh.SamplePosition(transform.position, out _, 2f, UnityEngine.AI.NavMesh.AllAreas))
+            // If navmesh isn't ready yet, we'll retry after bake event / retry tick.
+            if (!UnityEngine.AI.NavMesh.SamplePosition(transform.position, out _, 50f, UnityEngine.AI.NavMesh.AllAreas))
             {
                 spawned = false;
                 return;
