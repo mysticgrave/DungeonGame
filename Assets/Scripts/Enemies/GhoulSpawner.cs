@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using DungeonGame.SpireGen;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -26,6 +27,32 @@ namespace DungeonGame.Enemies
             base.OnNetworkSpawn();
             if (!IsServer) return;
 
+            // Wait for navmesh to be built (procedural layout) before spawning agents.
+            NavMeshBakeOnLayout.OnNavMeshBuilt += HandleNavMeshBuilt;
+
+            // Fallback: if you don't have a baker in the scene, we'll try immediately.
+            // (Agents may fail to initialize if there's no navmesh.)
+            SpawnIfNeeded();
+        }
+
+        public override void OnNetworkDespawn()
+        {
+            if (IsServer)
+            {
+                NavMeshBakeOnLayout.OnNavMeshBuilt -= HandleNavMeshBuilt;
+            }
+            base.OnNetworkDespawn();
+        }
+
+        private void HandleNavMeshBuilt(NavMeshBakeOnLayout baker)
+        {
+            if (!IsServer) return;
+
+            // Only react if the baker is in the same scene as this spawner.
+            if (baker == null) return;
+            if (baker.gameObject.scene != gameObject.scene) return;
+
+            spawned = false; // allow retry
             SpawnIfNeeded();
         }
 
@@ -34,9 +61,17 @@ namespace DungeonGame.Enemies
             if (spawned) return;
             spawned = true;
 
+            if (!UnityEngine.AI.NavMesh.IsInitialized())
+            {
+                // We'll retry after bake event.
+                spawned = false;
+                return;
+            }
+
             if (ghoulPrefab == null)
             {
                 Debug.LogError("[GhoulSpawner] Missing ghoulPrefab.");
+                spawned = false;
                 return;
             }
 

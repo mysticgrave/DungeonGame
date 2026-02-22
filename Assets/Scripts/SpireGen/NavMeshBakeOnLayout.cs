@@ -1,3 +1,4 @@
+using System;
 using DungeonGame.SpireGen;
 using Unity.Netcode;
 using UnityEngine;
@@ -37,6 +38,8 @@ namespace DungeonGame.SpireGen
             base.OnNetworkDespawn();
         }
 
+        public static event Action<NavMeshBakeOnLayout> OnNavMeshBuilt;
+
         private void HandleLayout(SpireLayoutGenerator gen, SpireLayoutData layout)
         {
             if (!IsServer) return;
@@ -47,6 +50,7 @@ namespace DungeonGame.SpireGen
 
             surface.BuildNavMesh();
             Debug.Log("[NavMesh] Rebuilt navmesh after layout generation");
+            OnNavMeshBuilt?.Invoke(this);
         }
     }
 }
