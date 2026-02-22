@@ -32,11 +32,27 @@ namespace DungeonGame.SpireGen
         [Header("Sockets")]
         public List<RoomSocket> sockets = new();
 
+        private void Awake()
+        {
+            RefreshSockets();
+        }
+
         private void OnValidate()
         {
-            // Auto-populate sockets for convenience.
+            RefreshSockets();
+        }
+
+        public void RefreshSockets()
+        {
+            // Auto-populate sockets for convenience (and to avoid stale/duplicated serialized refs).
+            var found = GetComponentsInChildren<RoomSocket>(true);
             sockets.Clear();
-            sockets.AddRange(GetComponentsInChildren<RoomSocket>(true));
+            var set = new HashSet<RoomSocket>();
+            foreach (var s in found)
+            {
+                if (s == null) continue;
+                if (set.Add(s)) sockets.Add(s);
+            }
         }
 
         public IEnumerable<RoomSocket> GetSockets(SocketType type, int size)

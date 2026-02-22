@@ -69,13 +69,22 @@ namespace DungeonGame.SpireGen
             var rooms = gen.GetComponentsInChildren<RoomPrefab>(true);
 
             int count = 0;
+            var seenSockets = new HashSet<Transform>();
+
             foreach (var room in rooms)
             {
                 if (room == null) continue;
 
+                // Ensure runtime sockets list is fresh/unique
+                room.RefreshSockets();
+
                 foreach (var socket in room.sockets)
                 {
                     if (socket == null) continue;
+                    if (socket.transform == null) continue;
+
+                    // Avoid double-spawning if a socket is duplicated in the list.
+                    if (!seenSockets.Add(socket.transform)) continue;
 
                     bool connected = gen.IsSocketUsed(room.transform, socket);
                     var prefab = PickPrefab(socket.socketType, connected);
