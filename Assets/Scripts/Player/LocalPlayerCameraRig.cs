@@ -1,6 +1,7 @@
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
 
 namespace DungeonGame.Player
 {
@@ -52,14 +53,9 @@ namespace DungeonGame.Player
             cam.fieldOfView = fov;
             cam.tag = "MainCamera";
 
-            // Pure black background (no skybox).
-#if UNITY_6000_0_OR_NEWER
+            // Default: use skybox. We'll override to black per-scene.
+            cam.clearFlags = CameraClearFlags.Skybox;
             cam.backgroundColor = Color.black;
-            cam.clearFlags = CameraClearFlags.SolidColor;
-#else
-            cam.backgroundColor = Color.black;
-            cam.clearFlags = CameraClearFlags.SolidColor;
-#endif
 
             // Only the local camera gets an audio listener.
             go.AddComponent<AudioListener>();
@@ -69,12 +65,17 @@ namespace DungeonGame.Player
             yaw = e.y;
             pitch = 10f;
 
-            // Ensure skybox doesn't reappear via scene lighting defaults.
-            RenderSettings.skybox = null;
-
             // Lock cursor for mouse look
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
+
+            ApplySceneBackground();
+            SceneManager.activeSceneChanged += HandleActiveSceneChanged;
+        }
+
+        private void HandleActiveSceneChanged(Scene oldScene, Scene newScene)
+        {
+            ApplySceneBackground();
         }
 
         private void LateUpdate()
@@ -98,8 +99,28 @@ namespace DungeonGame.Player
             cam.transform.SetPositionAndRotation(camPos, rot);
         }
 
+        private void ApplySceneBackground()
+        {
+            if (!IsOwner) return;
+            if (cam == null) return;
+
+            var sceneName = SceneManager.GetActiveScene().name;
+            bool black = sceneName == "Spire_Slice";
+
+            cam.clearFlags = black ? CameraClearFlags.SolidColor : CameraClearFlags.Skybox;
+            cam.backgroundColor = Color.black;
+
+            // Only nuke the skybox in the spire.
+            if (black)
+            {
+                RenderSettings.skybox = null;
+            }
+        }
+
         public override void OnNetworkDespawn()
         {
+            SceneManager.activeSceneChanged -= HandleActiveSceneChanged;
+
             // If we owned the camera, clean it up.
             if (IsOwner && cam != null)
             {
