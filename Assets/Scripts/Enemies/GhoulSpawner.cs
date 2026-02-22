@@ -30,9 +30,9 @@ namespace DungeonGame.Enemies
             // Wait for navmesh to be built (procedural layout) before spawning agents.
             NavMeshBakeOnLayout.OnNavMeshBuilt += HandleNavMeshBuilt;
 
-            // Fallback: if you don't have a baker in the scene, we'll try immediately.
-            // (Agents may fail to initialize if there's no navmesh.)
-            SpawnIfNeeded();
+            // Also retry for a short window in case the bake event fired before we subscribed
+            // (race during scene load).
+            InvokeRepeating(nameof(TrySpawnTick), 0.25f, 0.5f);
         }
 
         public override void OnNetworkDespawn()
@@ -41,6 +41,8 @@ namespace DungeonGame.Enemies
             {
                 NavMeshBakeOnLayout.OnNavMeshBuilt -= HandleNavMeshBuilt;
             }
+
+            CancelInvoke(nameof(TrySpawnTick));
             base.OnNetworkDespawn();
         }
 
@@ -54,6 +56,17 @@ namespace DungeonGame.Enemies
 
             spawned = false; // allow retry
             SpawnIfNeeded();
+        }
+
+        private void TrySpawnTick()
+        {
+            // Keep trying until we succeed.
+            SpawnIfNeeded();
+
+            if (spawned)
+            {
+                CancelInvoke(nameof(TrySpawnTick));
+            }
         }
 
         private void SpawnIfNeeded()
