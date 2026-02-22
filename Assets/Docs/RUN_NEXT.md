@@ -3,11 +3,21 @@
 ## Goal
 Prototype the 5-floor segment cadence + evac portal logic without needing full procedural floors yet.
 
-## Add to NetworkManager (Town)
-On the persistent `NetworkManager` GameObject in the **Town** scene add:
+## Setup (Town)
+### 1) Create RunState prefab
+Create `Assets/Prefabs/RunState.prefab`:
+- `NetworkObject`
 - `DungeonGame.Run.SpireRunState`
 - `DungeonGame.Run.RunDebugHotkeys`
 - `DungeonGame.Run.RunDebugHUD`
+
+### 2) Add bootstrap in Town scene
+On a non-NetworkManager object in the Town scene (e.g., `Bootstrap`) add:
+- `DungeonGame.Run.RunStateBootstrap`
+
+Assign the `runStatePrefab` field to your `RunState` prefab.
+
+> Note: Netcode disallows NetworkBehaviours under the NetworkManager hierarchy.
 
 ## Hotkeys (Host only)
 - F10: +1 floor
