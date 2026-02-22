@@ -674,11 +674,14 @@ namespace DungeonGame.SpireGen
             return t.GetComponent<RoomSocket>();
         }
 
+        public static event Action<SpireLayoutGenerator, SpireLayoutData> OnLayoutGenerated;
+
         private void SpawnLayout(SpireLayoutData layout)
         {
             // Currently, GenerateLayout already instantiates/spawns.
             // This method exists for the future "recipe" backend.
             Debug.Log($"[SpireGen] Generated layout: rooms={layout.rooms.Count}, seed={layout.seed}");
+            OnLayoutGenerated?.Invoke(this, layout);
         }
     }
 }
