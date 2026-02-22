@@ -52,6 +52,15 @@ namespace DungeonGame.Player
             cam.fieldOfView = fov;
             cam.tag = "MainCamera";
 
+            // Pure black background (no skybox).
+#if UNITY_6000_0_OR_NEWER
+            cam.backgroundColor = Color.black;
+            cam.clearFlags = CameraClearFlags.SolidColor;
+#else
+            cam.backgroundColor = Color.black;
+            cam.clearFlags = CameraClearFlags.SolidColor;
+#endif
+
             // Only the local camera gets an audio listener.
             go.AddComponent<AudioListener>();
 
@@ -59,6 +68,9 @@ namespace DungeonGame.Player
             var e = transform.rotation.eulerAngles;
             yaw = e.y;
             pitch = 10f;
+
+            // Ensure skybox doesn't reappear via scene lighting defaults.
+            RenderSettings.skybox = null;
 
             // Lock cursor for mouse look
             Cursor.lockState = CursorLockMode.Locked;
