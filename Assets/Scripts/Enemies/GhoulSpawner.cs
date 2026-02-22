@@ -15,6 +15,10 @@ namespace DungeonGame.Enemies
         [SerializeField] private float radius = 12f;
         [SerializeField] private List<Transform> spawnPoints = new();
 
+        [Header("Safety")]
+        [SerializeField] private float minDistanceFromPlayers = 10f;
+        [SerializeField] private int maxPositionAttempts = 30;
+
         private bool spawned;
 
         public override void OnNetworkSpawn()
@@ -38,7 +42,7 @@ namespace DungeonGame.Enemies
 
             for (int i = 0; i < count; i++)
             {
-                Vector3 pos = GetSpawnPos(i);
+                Vector3 pos = FindValidSpawnPos(i);
                 var no = Instantiate(ghoulPrefab, pos, Quaternion.identity);
                 no.Spawn(true);
             }
@@ -46,16 +50,58 @@ namespace DungeonGame.Enemies
             Debug.Log($"[GhoulSpawner] Spawned {count} ghouls");
         }
 
-        private Vector3 GetSpawnPos(int i)
+        private Vector3 FindValidSpawnPos(int i)
+        {
+            // Try a few times to keep ghouls away from players and on valid ground.
+            for (int attempt = 0; attempt < maxPositionAttempts; attempt++)
+            {
+                Vector3 candidate = GetCandidatePos(i, attempt);
+
+                if (IsTooCloseToAnyPlayer(candidate))
+                {
+                    continue;
+                }
+
+                // Keep it simple: assume Y=0 floors; if you add multi-height later, sample NavMesh.
+                return candidate;
+            }
+
+            // Fallback: whatever we get.
+            return GetCandidatePos(i, maxPositionAttempts);
+        }
+
+        private Vector3 GetCandidatePos(int i, int attempt)
         {
             if (spawnPoints != null && spawnPoints.Count > 0)
             {
-                return spawnPoints[i % spawnPoints.Count].position;
+                // Offset slightly so multiple spawns don't stack.
+                var basePos = spawnPoints[i % spawnPoints.Count].position;
+                var jitter = Random.insideUnitCircle * 1.5f;
+                return basePos + new Vector3(jitter.x, 0f, jitter.y);
             }
 
             // Random ring around the spawner.
             var r = Random.insideUnitCircle.normalized * Random.Range(2f, radius);
             return transform.position + new Vector3(r.x, 0f, r.y);
+        }
+
+        private bool IsTooCloseToAnyPlayer(Vector3 pos)
+        {
+            var nm = NetworkManager.Singleton;
+            if (nm == null) return false;
+
+            foreach (var kvp in nm.ConnectedClients)
+            {
+                var player = kvp.Value?.PlayerObject;
+                if (player == null) continue;
+
+                if (Vector3.Distance(pos, player.transform.position) < minDistanceFromPlayers)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
     }
 }

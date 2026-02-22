@@ -19,6 +19,8 @@ namespace DungeonGame.Player
         [SerializeField] private Transform followTarget;
         [SerializeField] private float distance = 4.0f;
         [SerializeField] private float height = 1.8f;
+        [Tooltip("Shoulder offset (positive = to the right).")]
+        [SerializeField] private float shoulderOffset = 0.6f;
         [SerializeField] private float lookSensitivity = 0.12f;
         [SerializeField] private float minPitch = -70f;
         [SerializeField] private float maxPitch = 70f;
@@ -94,7 +96,10 @@ namespace DungeonGame.Player
             // Build camera transform
             var rot = Quaternion.Euler(pitch, yaw, 0f);
             var targetPos = followTarget.position + Vector3.up * height;
-            var camPos = targetPos - (rot * Vector3.forward) * distance;
+
+            // Shoulder camera: offset to the right in camera space.
+            var right = rot * Vector3.right;
+            var camPos = targetPos - (rot * Vector3.forward) * distance + right * shoulderOffset;
 
             cam.transform.SetPositionAndRotation(camPos, rot);
         }
