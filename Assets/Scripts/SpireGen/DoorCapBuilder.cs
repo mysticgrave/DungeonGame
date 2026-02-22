@@ -56,6 +56,7 @@ namespace DungeonGame.SpireGen
             if (gen == null) return;
             if (gen.gameObject.scene != gameObject.scene) return;
 
+            Debug.Log($"[DoorCap] Layout generated event received (rooms={layout?.rooms?.Count ?? -1}). Rebuilding...");
             Rebuild(gen);
         }
 
@@ -63,6 +64,12 @@ namespace DungeonGame.SpireGen
         {
             if (!IsServer) return;
             if (gen == null) return;
+
+            if (doorConnectorSmall == null || wallCapSmall == null || doorConnectorLarge == null || wallCapLarge == null)
+            {
+                Debug.LogError("[DoorCap] Missing one or more prefabs. Assign doorConnectorSmall/doorConnectorLarge/wallCapSmall/wallCapLarge in inspector.");
+                return;
+            }
 
             DespawnPrevious();
 
