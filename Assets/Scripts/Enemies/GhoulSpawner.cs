@@ -62,12 +62,22 @@ namespace DungeonGame.Enemies
                     continue;
                 }
 
-                // Keep it simple: assume Y=0 floors; if you add multi-height later, sample NavMesh.
+                // Snap to NavMesh if available.
+                if (UnityEngine.AI.NavMesh.SamplePosition(candidate, out var hit, 4f, UnityEngine.AI.NavMesh.AllAreas))
+                {
+                    return hit.position;
+                }
+
                 return candidate;
             }
 
-            // Fallback: whatever we get.
-            return GetCandidatePos(i, maxPositionAttempts);
+            // Fallback: whatever we get (still try to snap to navmesh).
+            var fallback = GetCandidatePos(i, maxPositionAttempts);
+            if (UnityEngine.AI.NavMesh.SamplePosition(fallback, out var hit, 6f, UnityEngine.AI.NavMesh.AllAreas))
+            {
+                return hit.position;
+            }
+            return fallback;
         }
 
         private Vector3 GetCandidatePos(int i, int attempt)

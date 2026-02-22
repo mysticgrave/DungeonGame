@@ -86,6 +86,11 @@ namespace DungeonGame.Enemies
                 agent.speed = chaseSpeed;
             }
 
+            if (!agent.isOnNavMesh || !agent.enabled)
+            {
+                return;
+            }
+
             agent.SetDestination(target.position);
 
             if (dist <= lungeRange && Time.time >= nextLungeAt)
