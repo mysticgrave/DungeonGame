@@ -42,7 +42,7 @@ namespace DungeonGame.Combat
             if (Mouse.current.rightButton.wasPressedThisFrame) dmg = 2;
             if (dmg <= 0) return;
 
-            var ray = cam.ScreenPointToRay(Mouse.current.position.ReadValue());
+            var ray = cam.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f));
             if (!Physics.Raycast(ray, out var hit, range, hitMask, QueryTriggerInteraction.Ignore)) return;
 
             var health = hit.collider.GetComponentInParent<NetworkHealth>();
