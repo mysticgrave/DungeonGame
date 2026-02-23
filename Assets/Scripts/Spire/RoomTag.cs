@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace DungeonGame.Spire
 {
@@ -17,6 +18,7 @@ namespace DungeonGame.Spire
             Transition = 4,
         }
 
-        public Tag tag = Tag.Combat;
+        [FormerlySerializedAs("tag")]
+        public Tag roomTag = Tag.Combat;
     }
 }
