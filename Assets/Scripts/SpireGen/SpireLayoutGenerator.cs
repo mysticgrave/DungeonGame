@@ -200,6 +200,7 @@ namespace DungeonGame.SpireGen
                 TryCreateLoop(data);
             }
 
+            Debug.Log($"[SpireGen] GenerateLayout done: rooms={data.rooms.Count}, connections={data.connections.Count}");
             return data;
         }
 
@@ -280,7 +281,7 @@ namespace DungeonGame.SpireGen
                     var aNet = target.roomRoot.GetComponentInParent<NetworkObject>();
                     var bNet = placedRoom.root.GetComponentInParent<NetworkObject>();
 
-                    data.connections.Add(new SocketConnection
+                    var conn = new SocketConnection
                     {
                         a = new SocketRef
                         {
@@ -296,7 +297,11 @@ namespace DungeonGame.SpireGen
                             socketType = sourceSocketInstance.socketType,
                             size = sourceSocketInstance.size,
                         }
-                    });
+                    };
+
+                    data.connections.Add(conn);
+
+                    Debug.Log($"[SpireGen] CONNECT a(room={conn.a.roomNetId}, socket={conn.a.socketId[..Mathf.Min(6, conn.a.socketId.Length)]}) @ {target.socket.transform.position} -> b(room={conn.b.roomNetId}, socket={conn.b.socketId[..Mathf.Min(6, conn.b.socketId.Length)]}) @ {sourceSocketInstance.transform.position}");
                 }
 
                 NotePlaced(prefabAsset.roomId, prefabAsset);
