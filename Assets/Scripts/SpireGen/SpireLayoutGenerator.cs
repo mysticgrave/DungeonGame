@@ -507,12 +507,19 @@ namespace DungeonGame.SpireGen
                 no.Spawn(true);
             }
 
-            var rpInstance = go.GetComponent<RoomPrefab>();
+            var rpInstance = go.GetComponentInChildren<RoomPrefab>(true);
+            if (rpInstance == null)
+            {
+                Debug.LogError($"[SpireGen] Spawned room is missing RoomPrefab component: {go.name}");
+                Destroy(go);
+                return null;
+            }
 
+            // Use the RoomPrefab's transform as the logical room root (in case the component isn't on the GO root).
             var pr = new PlacedRoom
             {
                 prefab = rpInstance,
-                root = go.transform,
+                root = rpInstance.transform,
                 worldBounds = bounds,
                 usedSocketPaths = new HashSet<string>()
             };
