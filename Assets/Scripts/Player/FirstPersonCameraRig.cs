@@ -25,6 +25,7 @@ namespace DungeonGame.Player
         private float yaw;
         private float pitch;
         private bool followMode;
+        private float followYaw;
 
         private KnockableCapsule knock;
 
@@ -101,8 +102,10 @@ namespace DungeonGame.Player
             else
             {
                 // Follow behind the knocked capsule.
+                // Important: do NOT use transform.forward here (it can spin due to physics).
                 var target = transform.position + Vector3.up * followHeight;
-                var desired = target - transform.forward * followDistance;
+                var back = Quaternion.Euler(0f, followYaw, 0f) * Vector3.forward;
+                var desired = target - back * followDistance;
                 cam.transform.position = Vector3.Lerp(cam.transform.position, desired, Time.deltaTime * followSmooth);
 
                 var lookRot = Quaternion.LookRotation((target - cam.transform.position).normalized, Vector3.up);
@@ -113,6 +116,7 @@ namespace DungeonGame.Player
         private void EnterFollow()
         {
             followMode = true;
+            followYaw = yaw;
         }
 
         private void ExitFollow()

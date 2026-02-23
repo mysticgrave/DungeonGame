@@ -34,8 +34,17 @@ namespace DungeonGame.Player
         public event Action OnRecovered;
 
         private float knockedUntil;
+        private float pendingDuration;
         private bool knocked;
         private bool groundedDuringKnock;
+
+        private float baseDrag;
+        private float baseAngularDrag;
+
+        [Header("Physics (knocked)")]
+        [SerializeField] private float knockedDrag = 2.0f;
+        [SerializeField] private float knockedAngularDrag = 6.0f;
+        [SerializeField] private float maxAngularVelocity = 14f;
 
         private void Awake()
         {
@@ -47,6 +56,10 @@ namespace DungeonGame.Player
             rb.isKinematic = true;
             rb.interpolation = RigidbodyInterpolation.Interpolate;
             rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
+            rb.maxAngularVelocity = maxAngularVelocity;
+
+            baseDrag = rb.drag;
+            baseAngularDrag = rb.angularDrag;
 
             // Use CapsuleCollider for physics; keep it disabled while controlled.
             col.enabled = false;
@@ -58,17 +71,14 @@ namespace DungeonGame.Player
 
             if (startTimerOnGroundContact && !groundedDuringKnock)
             {
-                if (IsGroundedForKnock())
-                {
-                    groundedDuringKnock = true;
-                    // Start the timer only once we hit ground.
-                    knockedUntil = Time.time + (knockedUntil - Time.time);
-                }
-                else
+                if (!IsGroundedForKnock())
                 {
                     // Don't recover mid-air.
                     return;
                 }
+
+                groundedDuringKnock = true;
+                knockedUntil = Time.time + pendingDuration;
             }
 
             if (Time.time >= knockedUntil)
@@ -87,6 +97,19 @@ namespace DungeonGame.Player
 
             rb.isKinematic = !value;
             rb.useGravity = value;
+
+            if (value)
+            {
+                rb.drag = knockedDrag;
+                rb.angularDrag = knockedAngularDrag;
+                rb.maxAngularVelocity = maxAngularVelocity;
+            }
+            else
+            {
+                rb.drag = baseDrag;
+                rb.angularDrag = baseAngularDrag;
+                rb.maxAngularVelocity = maxAngularVelocity;
+            }
 
             if (disableWhileKnocked != null)
             {
@@ -127,9 +150,11 @@ namespace DungeonGame.Player
         private void KnockClientRpc(Vector3 impulse, float seconds)
         {
             // Start knock locally.
-            groundedDuringKnock = !startTimerOnGroundContact;
             float dur = Mathf.Clamp(seconds, 0.2f, 10f);
-            knockedUntil = Time.time + dur;
+            pendingDuration = dur;
+
+            groundedDuringKnock = !startTimerOnGroundContact;
+            knockedUntil = groundedDuringKnock ? (Time.time + dur) : float.PositiveInfinity;
 
             SetKnocked(true);
 
