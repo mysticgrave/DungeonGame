@@ -69,7 +69,7 @@ namespace DungeonGame.SpireGen
             public RoomPrefab prefab; // instance component
             public Transform root;
             public Bounds worldBounds;
-            public HashSet<RoomSocket> usedSockets; // instance socket refs
+            public HashSet<string> usedSocketPaths; // relative paths from room root
         }
 
         private struct OpenSocket
@@ -311,22 +311,32 @@ namespace DungeonGame.SpireGen
 
         public bool IsSocketUsed(Transform roomRoot, RoomSocket socket)
         {
+            if (roomRoot == null || socket == null) return false;
+
+            string path = GetRelativePath(roomRoot, socket.transform);
+
             for (int i = 0; i < placed.Count; i++)
             {
                 if (placed[i] == null) continue;
                 if (placed[i].root != roomRoot) continue;
-                return placed[i].usedSockets != null && placed[i].usedSockets.Contains(socket);
+                return placed[i].usedSocketPaths != null && placed[i].usedSocketPaths.Contains(path);
             }
             return false;
         }
 
         private void MarkSocketUsed(Transform roomRoot, RoomSocket socket)
         {
+            if (roomRoot == null || socket == null) return;
+
+            string path = GetRelativePath(roomRoot, socket.transform);
+
             for (int i = 0; i < placed.Count; i++)
             {
+                if (placed[i] == null) continue;
                 if (placed[i].root != roomRoot) continue;
-                placed[i].usedSockets ??= new HashSet<RoomSocket>();
-                placed[i].usedSockets.Add(socket);
+
+                placed[i].usedSocketPaths ??= new HashSet<string>();
+                placed[i].usedSocketPaths.Add(path);
                 return;
             }
         }
@@ -504,7 +514,7 @@ namespace DungeonGame.SpireGen
                 prefab = rpInstance,
                 root = go.transform,
                 worldBounds = bounds,
-                usedSockets = new HashSet<RoomSocket>()
+                usedSocketPaths = new HashSet<string>()
             };
 
             placed.Add(pr);
