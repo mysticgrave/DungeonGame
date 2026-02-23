@@ -65,20 +65,37 @@ namespace DungeonGame.SpireGen
 
             DespawnPrevious();
 
-            // Find all RoomPrefab instances the generator spawned (children under its transform).
-            var roomInstances = gen.GetComponentsInChildren<RoomPrefab>(true);
-
-            // Map roomNetId -> RoomPrefab instance
+            // Build roomNetId -> RoomPrefab mapping using NGO SpawnManager (robust; no hierarchy assumptions).
             var roomsByNetId = new Dictionary<ulong, RoomPrefab>();
-            foreach (var r in roomInstances)
+
+            var nm2 = NetworkManager.Singleton;
+            if (nm2 == null) return;
+
+            if (layout != null && layout.connections != null)
             {
-                if (r == null) continue;
-                var no = r.GetComponentInParent<NetworkObject>();
-                if (no == null) continue;
-                roomsByNetId[no.NetworkObjectId] = r;
+                foreach (var c in layout.connections)
+                {
+                    TryAddRoom(c.a.roomNetId);
+                    TryAddRoom(c.b.roomNetId);
+                }
             }
 
-            // Gather all sockets across generated rooms.
+            void TryAddRoom(ulong roomNetId)
+            {
+                if (roomNetId == 0) return;
+                if (roomsByNetId.ContainsKey(roomNetId)) return;
+
+                if (nm2.SpawnManager.SpawnedObjects.TryGetValue(roomNetId, out var no) && no != null)
+                {
+                    var rp = no.GetComponentInChildren<RoomPrefab>(true);
+                    if (rp != null)
+                    {
+                        roomsByNetId[roomNetId] = rp;
+                    }
+                }
+            }
+
+            // Gather all sockets across mapped rooms.
             var allSockets = new List<(ulong roomNetId, RoomPrefab room, RoomSocket socket)>();
             foreach (var kvp in roomsByNetId)
             {
