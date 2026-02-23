@@ -7,6 +7,8 @@ Temporary ragdoll knockdowns (goofy physics) that recover automatically if HP > 
 On `Player.prefab` root add:
 - `DungeonGame.Player.PlayerHealth`
 - `DungeonGame.Player.KnockableCapsule`
+- `DungeonGame.Player.KnockHotkeys` (MVP test)
+- `DungeonGame.Items.BombSpawnerHotkeys` (MVP test)
 
 Player must have:
 - CharacterController
@@ -20,13 +22,17 @@ Player must have:
 
 Assign `disableWhileKnocked` with movement scripts (e.g. ThirdPersonMotor / later FPS motor).
 
-## Item (optional)
-Create a `KnockBomb` prefab with:
+## Bomb prefab
+Create `Assets/Prefabs/KnockBomb.prefab`:
 - NetworkObject
-- Rigidbody (for throwing later)
+- (optional) Rigidbody
 - `DungeonGame.Items.KnockBomb`
 
-Spawn it from server to test knockdowns.
+Assign this prefab into `BombSpawnerHotkeys.knockBombPrefab`.
+
+## Hotkeys
+- K: knock yourself
+- B: spawn a knock bomb at your feet
 
 ## Notes
 Physics is simulated locally on each client for now (good enough for early slop). Later: move to server authoritative ragdoll.
