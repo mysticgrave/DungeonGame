@@ -40,6 +40,7 @@ namespace DungeonGame.Player
 
         private float baseDrag;
         private float baseAngularDrag;
+        private float savedYaw;
 
         [Header("Physics (knocked)")]
         [SerializeField] private float knockedDrag = 2.0f;
@@ -58,8 +59,8 @@ namespace DungeonGame.Player
             rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
             rb.maxAngularVelocity = maxAngularVelocity;
 
-            baseDrag = rb.drag;
-            baseAngularDrag = rb.angularDrag;
+            baseDrag = rb.linearDamping;
+            baseAngularDrag = rb.angularDamping;
 
             // Use CapsuleCollider for physics; keep it disabled while controlled.
             col.enabled = false;
@@ -100,14 +101,14 @@ namespace DungeonGame.Player
 
             if (value)
             {
-                rb.drag = knockedDrag;
-                rb.angularDrag = knockedAngularDrag;
+                rb.linearDamping = knockedDrag;
+                rb.angularDamping = knockedAngularDrag;
                 rb.maxAngularVelocity = maxAngularVelocity;
             }
             else
             {
-                rb.drag = baseDrag;
-                rb.angularDrag = baseAngularDrag;
+                rb.linearDamping = baseDrag;
+                rb.angularDamping = baseAngularDrag;
                 rb.maxAngularVelocity = maxAngularVelocity;
             }
 
@@ -134,7 +135,8 @@ namespace DungeonGame.Player
 
             // Snap transform to rigidbody pose.
             transform.position = rb.position;
-            transform.rotation = Quaternion.Euler(0f, transform.rotation.eulerAngles.y, 0f);
+            // Restore stable yaw (pre-knock) so FPS doesn't inherit spin.
+            transform.rotation = Quaternion.Euler(0f, savedYaw, 0f);
 
             SetKnocked(false);
         }
@@ -155,6 +157,9 @@ namespace DungeonGame.Player
 
             groundedDuringKnock = !startTimerOnGroundContact;
             knockedUntil = groundedDuringKnock ? (Time.time + dur) : float.PositiveInfinity;
+
+            // Save a stable yaw to restore after recovery.
+            savedYaw = transform.rotation.eulerAngles.y;
 
             SetKnocked(true);
 

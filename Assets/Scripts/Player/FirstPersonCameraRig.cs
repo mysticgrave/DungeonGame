@@ -26,6 +26,7 @@ namespace DungeonGame.Player
         private float pitch;
         private bool followMode;
         private float followYaw;
+        private float followPitch;
 
         private KnockableCapsule knock;
 
@@ -76,15 +77,26 @@ namespace DungeonGame.Player
             if (!IsOwner) return;
             if (cam == null) return;
 
-            if (!followMode && Mouse.current != null)
+            if (Mouse.current != null)
             {
                 var delta = Mouse.current.delta.ReadValue();
-                yaw += delta.x * lookSensitivity;
-                pitch -= delta.y * lookSensitivity;
-                pitch = Mathf.Clamp(pitch, minPitch, maxPitch);
 
-                // Yaw rotates the player.
-                transform.rotation = Quaternion.Euler(0f, yaw, 0f);
+                if (!followMode)
+                {
+                    yaw += delta.x * lookSensitivity;
+                    pitch -= delta.y * lookSensitivity;
+                    pitch = Mathf.Clamp(pitch, minPitch, maxPitch);
+
+                    // Yaw rotates the player.
+                    transform.rotation = Quaternion.Euler(0f, yaw, 0f);
+                }
+                else
+                {
+                    // Independent orbit while knocked.
+                    followYaw += delta.x * lookSensitivity;
+                    followPitch -= delta.y * lookSensitivity;
+                    followPitch = Mathf.Clamp(followPitch, -20f, 80f);
+                }
             }
         }
 
@@ -104,8 +116,13 @@ namespace DungeonGame.Player
                 // Follow behind the knocked capsule.
                 // Important: do NOT use transform.forward here (it can spin due to physics).
                 var target = transform.position + Vector3.up * followHeight;
-                var back = Quaternion.Euler(0f, followYaw, 0f) * Vector3.forward;
-                var desired = target - back * followDistance;
+
+                // Orbit camera around the knocked player independently of body spin.
+                var orbitRot = Quaternion.Euler(followPitch, followYaw, 0f);
+                var offset = orbitRot * new Vector3(0f, 0f, -followDistance);
+                offset.y += 0f; // pitch already contributes
+
+                var desired = target + offset;
                 cam.transform.position = Vector3.Lerp(cam.transform.position, desired, Time.deltaTime * followSmooth);
 
                 var lookRot = Quaternion.LookRotation((target - cam.transform.position).normalized, Vector3.up);
@@ -117,11 +134,16 @@ namespace DungeonGame.Player
         {
             followMode = true;
             followYaw = yaw;
+            followPitch = 15f;
         }
 
         private void ExitFollow()
         {
             followMode = false;
+
+            // Re-center FPS view to current player yaw; keep pitch clamped.
+            yaw = transform.rotation.eulerAngles.y;
+            pitch = Mathf.Clamp(pitch, minPitch, maxPitch);
         }
     }
 }
