@@ -10,6 +10,7 @@ Create `Assets/Prefabs/GhoulRunner.prefab`:
 - `NetworkTransform` (server authoritative)
 - `NavMeshAgent`
 - `DungeonGame.Enemies.GhoulRunnerAI`
+- `DungeonGame.Combat.NetworkHealth` (e.g., maxHp=1 or 2)
 
 ## NavMesh (procedural)
 In `Spire_Slice` scene, on your `Spire` generator object:
