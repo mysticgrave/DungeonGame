@@ -48,11 +48,11 @@ namespace DungeonGame.SpireGen
             if (gen.gameObject.scene != gameObject.scene) return;
 
             Debug.Log($"[DoorCap] Layout generated event received (rooms={layout?.rooms?.Count ?? -1}). Rebuilding...");
-            Rebuild(gen);
+            Rebuild(gen, layout);
         }
 
-        public void Rebuild(SpireLayoutGenerator gen)
-        {
+        public void Rebuild(SpireLayoutGenerator gen, SpireLayoutData layout)
+        { 
             var nm = NetworkManager.Singleton;
             if (nm == null || !nm.IsServer) return;
             if (gen == null) return;
@@ -66,7 +66,10 @@ namespace DungeonGame.SpireGen
             DespawnPrevious();
 
             // Find all RoomPrefab instances the generator spawned (children under its transform).
-            var rooms = gen.GetComponentsInChildren<RoomPrefab>(true);
+            var roomInstances = gen.GetComponentsInChildren<RoomPrefab>(true);
+
+            // Build a stable mapping from layout room index -> room instance by matching positions.
+            var rooms = BuildRoomIndexMap(layout, roomInstances);
 
             // Gather all sockets across generated rooms.
             var allSockets = new List<RoomSocket>();
@@ -145,6 +148,48 @@ namespace DungeonGame.SpireGen
             var t = room.transform.Find(sref.socketPath);
             if (t == null) return null;
             return t.GetComponent<RoomSocket>();
+        }
+
+        private static RoomPrefab[] BuildRoomIndexMap(SpireLayoutData layout, RoomPrefab[] instances)
+        {
+            if (layout == null || layout.rooms == null || layout.rooms.Count == 0)
+            {
+                return instances ?? System.Array.Empty<RoomPrefab>();
+            }
+
+            var mapped = new RoomPrefab[layout.rooms.Count];
+
+            if (instances == null || instances.Length == 0)
+            {
+                return mapped;
+            }
+
+            // Greedy match by nearest position.
+            var used = new HashSet<RoomPrefab>();
+            for (int i = 0; i < layout.rooms.Count; i++)
+            {
+                var p = layout.rooms[i].position;
+                RoomPrefab best = null;
+                float bestDist = float.MaxValue;
+
+                foreach (var inst in instances)
+                {
+                    if (inst == null) continue;
+                    if (used.Contains(inst)) continue;
+
+                    float d = (inst.transform.position - p).sqrMagnitude;
+                    if (d < bestDist)
+                    {
+                        bestDist = d;
+                        best = inst;
+                    }
+                }
+
+                mapped[i] = best;
+                if (best != null) used.Add(best);
+            }
+
+            return mapped;
         }
 
         private int GetRoomIndex(SpireLayoutData layout, Vector3 roomPos)
