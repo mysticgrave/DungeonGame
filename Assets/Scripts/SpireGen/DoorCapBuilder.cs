@@ -81,57 +81,81 @@ namespace DungeonGame.SpireGen
                 }
             }
 
-            // Group by (type,size,quantized position) to detect connections even without explicit connection data.
-            var groups = new Dictionary<(SocketType type, int size, Vector3Int qpos), List<RoomSocket>>();
-            foreach (var s in allSockets)
-            {
-                var p = s.transform.position;
-                var q = new Vector3Int(
-                    Mathf.RoundToInt(p.x * 10f),
-                    Mathf.RoundToInt(p.y * 10f),
-                    Mathf.RoundToInt(p.z * 10f));
-
-                var key = (s.socketType, s.size, q);
-                if (!groups.TryGetValue(key, out var list))
-                {
-                    list = new List<RoomSocket>();
-                    groups[key] = list;
-                }
-                list.Add(s);
-            }
+            // Pair sockets by proximity + facing. This supports seams/gaps (socket positions won't be identical).
+            const float FacingDotThreshold = -0.9f; // mostly opposite
+            float connectTolerance = 0.8f; // meters; adjust if needed
 
             int connectors = 0;
             int caps = 0;
 
-            // Handle connected groups (2 sockets at same spot): spawn ONE connector.
-            var handled = new HashSet<RoomSocket>();
-            foreach (var kvp in groups)
-            {
-                var list = kvp.Value;
-                if (list == null || list.Count == 0) continue;
+            var paired = new HashSet<RoomSocket>();
 
-                if (list.Count >= 2)
+            // Deterministic order: sort by position then name.
+            allSockets.Sort((a, b) =>
+            {
+                int c = a.transform.position.x.CompareTo(b.transform.position.x);
+                if (c != 0) return c;
+                c = a.transform.position.z.CompareTo(b.transform.position.z);
+                if (c != 0) return c;
+                return string.CompareOrdinal(a.name, b.name);
+            });
+
+            for (int i = 0; i < allSockets.Count; i++)
+            {
+                var a = allSockets[i];
+                if (a == null) continue;
+                if (paired.Contains(a)) continue;
+
+                RoomSocket best = null;
+                float bestDist = float.MaxValue;
+
+                for (int j = i + 1; j < allSockets.Count; j++)
                 {
-                    // Spawn one connector at the shared position.
-                    var a = list[0];
-                    var prefab = PickPrefab(kvp.Key.type, connected: true);
+                    var b = allSockets[j];
+                    if (b == null) continue;
+                    if (paired.Contains(b)) continue;
+
+                    if (a.socketType != b.socketType) continue;
+                    if (a.size != b.size) continue;
+
+                    float d = Vector3.Distance(a.transform.position, b.transform.position);
+                    if (d > connectTolerance) continue;
+
+                    var af = a.transform.forward; af.y = 0; af.Normalize();
+                    var bf = b.transform.forward; bf.y = 0; bf.Normalize();
+                    if (Vector3.Dot(af, bf) > FacingDotThreshold) continue;
+
+                    if (d < bestDist)
+                    {
+                        bestDist = d;
+                        best = b;
+                    }
+                }
+
+                if (best != null)
+                {
+                    // Connected pair: spawn ONE connector at the midpoint.
+                    var prefab = PickPrefab(a.socketType, connected: true);
                     if (prefab != null)
                     {
-                        var no = Instantiate(prefab, a.transform.position, a.transform.rotation);
+                        var pos = (a.transform.position + best.transform.position) * 0.5f;
+                        var rot = a.transform.rotation;
+                        var no = Instantiate(prefab, pos, rot);
                         no.Spawn(true);
                         spawned.Add(no);
                         connectors++;
                     }
 
-                    foreach (var s in list) handled.Add(s);
+                    paired.Add(a);
+                    paired.Add(best);
                 }
             }
 
-            // Any unhandled socket gets a cap.
+            // Unpaired sockets get caps.
             foreach (var s in allSockets)
             {
                 if (s == null) continue;
-                if (handled.Contains(s)) continue;
+                if (paired.Contains(s)) continue;
 
                 var prefab = PickPrefab(s.socketType, connected: false);
                 if (prefab == null) continue;
@@ -142,7 +166,7 @@ namespace DungeonGame.SpireGen
                 caps++;
             }
 
-            Debug.Log($"[DoorCap] Spawned connectors={connectors}, caps={caps} (sockets={allSockets.Count})");
+            Debug.Log($"[DoorCap] Spawned connectors={connectors}, caps={caps} (sockets={allSockets.Count}, tol={connectTolerance})");
         }
 
         private NetworkObject PickPrefab(SocketType type, bool connected)
