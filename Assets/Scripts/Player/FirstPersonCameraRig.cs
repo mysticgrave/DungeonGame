@@ -29,6 +29,7 @@ namespace DungeonGame.Player
         private float followPitch;
 
         private KnockableCapsule knock;
+        private DungeonGame.UI.CrosshairUI crosshair;
 
         public override void OnNetworkSpawn()
         {
@@ -36,6 +37,8 @@ namespace DungeonGame.Player
             if (!IsOwner) return;
 
             knock = GetComponent<KnockableCapsule>();
+            crosshair = GetComponent<DungeonGame.UI.CrosshairUI>();
+
             if (knock != null)
             {
                 knock.OnKnocked += EnterFollow;
@@ -135,6 +138,7 @@ namespace DungeonGame.Player
             followMode = true;
             followYaw = yaw;
             followPitch = 15f;
+            if (crosshair != null) crosshair.SetVisible(false);
         }
 
         private void ExitFollow()
@@ -144,6 +148,8 @@ namespace DungeonGame.Player
             // Re-center FPS view to current player yaw; keep pitch clamped.
             yaw = transform.rotation.eulerAngles.y;
             pitch = Mathf.Clamp(pitch, minPitch, maxPitch);
+
+            if (crosshair != null) crosshair.SetVisible(true);
         }
     }
 }

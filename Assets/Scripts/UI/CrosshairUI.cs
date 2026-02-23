@@ -13,6 +13,10 @@ namespace DungeonGame.UI
         [SerializeField] private float thickness = 2f;
         [SerializeField] private Color color = new(1f, 1f, 1f, 0.85f);
 
+        private bool visible = true;
+
+        public void SetVisible(bool value) => visible = value;
+
         public override void OnNetworkSpawn()
         {
             base.OnNetworkSpawn();
@@ -24,6 +28,8 @@ namespace DungeonGame.UI
 
         private void OnGUI()
         {
+            if (!visible) return;
+
             var w = Screen.width;
             var h = Screen.height;
             float cx = w * 0.5f;
