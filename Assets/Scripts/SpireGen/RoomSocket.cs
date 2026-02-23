@@ -20,7 +20,17 @@ namespace DungeonGame.SpireGen
         [Tooltip("If true, generator will avoid using this socket except as a fallback.")]
         public bool lowPriority;
 
+        private void Awake()
+        {
+            EnsureId();
+        }
+
         private void OnValidate()
+        {
+            EnsureId();
+        }
+
+        private void EnsureId()
         {
             if (string.IsNullOrWhiteSpace(socketId))
             {

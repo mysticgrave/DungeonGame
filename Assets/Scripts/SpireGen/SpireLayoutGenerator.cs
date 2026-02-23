@@ -243,11 +243,17 @@ namespace DungeonGame.SpireGen
                 var placedRoom = PlaceRoom(prefabAsset, aligned.pos, aligned.rot);
                 if (placedRoom == null || placedRoom.root == null) continue;
 
-                // Resolve socket instance on placed room.
-                var sourceSocketInstance = FindSocketInstance(placedRoom.root, sourceSocketPath);
+                // Resolve socket instance on placed room by stable socketId (preferred).
+                var sourceSocketInstance = FindSocketInstanceById(placedRoom.prefab, sourceSocketAsset.socketId);
                 if (sourceSocketInstance == null)
                 {
-                    Debug.LogWarning($"[SpireGen] Could not resolve socket instance path '{sourceSocketPath}' on '{placedRoom.root.name}'.");
+                    // Fallback to transform path.
+                    sourceSocketInstance = FindSocketInstance(placedRoom.root, sourceSocketPath);
+                }
+
+                if (sourceSocketInstance == null)
+                {
+                    Debug.LogWarning($"[SpireGen] Could not resolve socket instance id/path (id='{sourceSocketAsset.socketId}', path='{sourceSocketPath}') on '{placedRoom.root.name}'.");
                 }
 
                 // Mark sockets used.
@@ -737,6 +743,20 @@ namespace DungeonGame.SpireGen
             var t = roomRoot.Find(relativePath);
             if (t == null) return null;
             return t.GetComponent<RoomSocket>();
+        }
+
+        private static RoomSocket FindSocketInstanceById(RoomPrefab roomInstance, string socketId)
+        {
+            if (roomInstance == null) return null;
+            if (string.IsNullOrWhiteSpace(socketId)) return null;
+
+            roomInstance.RefreshSockets();
+            foreach (var s in roomInstance.sockets)
+            {
+                if (s != null && s.socketId == socketId) return s;
+            }
+
+            return null;
         }
 
         public static event Action<SpireLayoutGenerator, SpireLayoutData> OnLayoutGenerated;
