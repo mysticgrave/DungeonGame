@@ -1,3 +1,4 @@
+using System;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -10,6 +11,7 @@ namespace DungeonGame.Player
     /// - Server triggers the knock, but physics is simulated locally on each client for now.
     ///   (Good enough for slop prototyping; can move to server-authoritative later.)
     /// </summary>
+    [DefaultExecutionOrder(-50)]
     [RequireComponent(typeof(CharacterController))]
     [RequireComponent(typeof(CapsuleCollider))]
     [RequireComponent(typeof(Rigidbody))]
@@ -17,6 +19,9 @@ namespace DungeonGame.Player
     {
         [Header("Tuning")]
         [SerializeField] private float defaultKnockSeconds = 1.6f;
+        [Tooltip("If true, the recovery timer starts only after the capsule first touches ground.")]
+        [SerializeField] private bool startTimerOnGroundContact = true;
+        [SerializeField] private float groundCheckDistance = 0.25f;
 
         [Header("Refs")]
         [SerializeField] private MonoBehaviour[] disableWhileKnocked;
@@ -25,8 +30,12 @@ namespace DungeonGame.Player
         private Rigidbody rb;
         private CapsuleCollider col;
 
+        public event Action OnKnocked;
+        public event Action OnRecovered;
+
         private float knockedUntil;
         private bool knocked;
+        private bool groundedDuringKnock;
 
         private void Awake()
         {
@@ -46,6 +55,21 @@ namespace DungeonGame.Player
         private void Update()
         {
             if (!knocked) return;
+
+            if (startTimerOnGroundContact && !groundedDuringKnock)
+            {
+                if (IsGroundedForKnock())
+                {
+                    groundedDuringKnock = true;
+                    // Start the timer only once we hit ground.
+                    knockedUntil = Time.time + (knockedUntil - Time.time);
+                }
+                else
+                {
+                    // Don't recover mid-air.
+                    return;
+                }
+            }
 
             if (Time.time >= knockedUntil)
             {
@@ -69,9 +93,14 @@ namespace DungeonGame.Player
                 foreach (var b in disableWhileKnocked)
                 {
                     if (b == null) continue;
+                    // Never disable this component, otherwise it can't recover.
+                    if (ReferenceEquals(b, this)) continue;
                     b.enabled = !value;
                 }
             }
+
+            if (value) OnKnocked?.Invoke();
+            else OnRecovered?.Invoke();
         }
 
         private void Recover()
@@ -98,12 +127,22 @@ namespace DungeonGame.Player
         private void KnockClientRpc(Vector3 impulse, float seconds)
         {
             // Start knock locally.
-            knockedUntil = Time.time + Mathf.Clamp(seconds, 0.2f, 10f);
+            groundedDuringKnock = !startTimerOnGroundContact;
+            float dur = Mathf.Clamp(seconds, 0.2f, 10f);
+            knockedUntil = Time.time + dur;
+
             SetKnocked(true);
 
             // Apply impulse.
             rb.AddForce(impulse, ForceMode.Impulse);
             rb.AddTorque(new Vector3(Random.Range(-3f, 3f), Random.Range(-2f, 2f), Random.Range(-3f, 3f)), ForceMode.Impulse);
+        }
+
+        private bool IsGroundedForKnock()
+        {
+            // Raycast down from rigidbody position.
+            var origin = rb.position + Vector3.up * 0.1f;
+            return Physics.Raycast(origin, Vector3.down, out _, groundCheckDistance + 0.1f, ~0, QueryTriggerInteraction.Ignore);
         }
 
         public bool IsKnocked() => knocked;
