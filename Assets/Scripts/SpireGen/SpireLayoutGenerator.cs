@@ -156,12 +156,13 @@ namespace DungeonGame.SpireGen
             var start = startRoom != null ? startRoom : PickRoomPrefab(null, forceLandmark: false, forceConnector: false);
             var startRot = Rotation90(rng.Next(0, 4));
             var startPlacement = PlaceRoom(start, Vector3.zero, startRot);
-            if (startPlacement.root == null)
+            if (startPlacement == null || startPlacement.root == null)
             {
                 Debug.LogError("[SpireGen] Failed to place start room.");
                 return data;
             }
 
+            int startIndex = data.rooms.Count;
             data.rooms.Add(new RoomPlacement
             {
                 roomId = start.roomId,
@@ -259,12 +260,35 @@ namespace DungeonGame.SpireGen
                 // Remove used target socket from open list.
                 openSockets.RemoveAll(s => s.socket == target.socket && s.roomRoot == target.roomRoot);
 
+                int newRoomIndex = data.rooms.Count;
                 data.rooms.Add(new RoomPlacement
                 {
                     roomId = prefabAsset.roomId,
                     position = placedRoom.root.position,
                     rotationY = (int)placedRoom.root.rotation.eulerAngles.y
                 });
+
+                // Record explicit connection (A = target/existing socket, B = new room socket)
+                if (sourceSocketInstance != null)
+                {
+                    data.connections.Add(new SocketConnection
+                    {
+                        a = new SocketRef
+                        {
+                            roomIndex = FindRoomIndexByRoot(data, target.roomRoot),
+                            socketPath = GetRelativePath(target.roomRoot, target.socket.transform),
+                            socketType = target.socket.socketType,
+                            size = target.socket.size,
+                        },
+                        b = new SocketRef
+                        {
+                            roomIndex = newRoomIndex,
+                            socketPath = sourceSocketPath,
+                            socketType = sourceSocketInstance.socketType,
+                            size = sourceSocketInstance.size,
+                        }
+                    });
+                }
 
                 NotePlaced(prefabAsset.roomId, prefabAsset);
 
@@ -664,6 +688,26 @@ namespace DungeonGame.SpireGen
         {
             int s = ((steps % 4) + 4) % 4;
             return Quaternion.Euler(0f, 90f * s, 0f);
+        }
+
+        private int FindRoomIndexByRoot(SpireLayoutData data, Transform roomRoot)
+        {
+            // Rooms list index corresponds to generation order.
+            // We locate by matching position/rotation against stored placements.
+            // This is MVP-safe because we only call it for sockets in existing placed rooms.
+            if (data == null || roomRoot == null) return 0;
+
+            for (int i = 0; i < data.rooms.Count; i++)
+            {
+                var rp = data.rooms[i];
+                // Position match with tolerance.
+                if ((rp.position - roomRoot.position).sqrMagnitude < 0.0001f)
+                {
+                    return i;
+                }
+            }
+
+            return 0;
         }
 
         private static string GetRelativePath(Transform root, Transform leaf)

@@ -13,9 +13,31 @@ namespace DungeonGame.SpireGen
     }
 
     [Serializable]
+    public struct SocketRef
+    {
+        // Room placement index in SpireLayoutData.rooms
+        public int roomIndex;
+
+        // Relative path from that room root to the socket transform.
+        public string socketPath;
+
+        public SocketType socketType;
+        public int size;
+    }
+
+    [Serializable]
+    public struct SocketConnection
+    {
+        // A is the "target" socket (existing layout socket). Doors spawn at A for now.
+        public SocketRef a;
+        public SocketRef b;
+    }
+
+    [Serializable]
     public class SpireLayoutData
     {
         public int seed;
         public List<RoomPlacement> rooms = new();
+        public List<SocketConnection> connections = new();
     }
 }

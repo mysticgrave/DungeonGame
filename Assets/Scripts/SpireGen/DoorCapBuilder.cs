@@ -81,92 +81,96 @@ namespace DungeonGame.SpireGen
                 }
             }
 
-            // Pair sockets by proximity + facing. This supports seams/gaps (socket positions won't be identical).
-            const float FacingDotThreshold = -0.9f; // mostly opposite
-            float connectTolerance = 0.8f; // meters; adjust if needed
+            // Use explicit connection list from layout data.
+            var connectedKeys = new HashSet<(int roomIndex, string socketPath)>();
 
             int connectors = 0;
             int caps = 0;
 
-            var paired = new HashSet<RoomSocket>();
-
-            // Deterministic order: sort by position then name.
-            allSockets.Sort((a, b) =>
+            // Spawn ONE connector per connection at Socket A (target socket).
+            if (layout != null && layout.connections != null)
             {
-                int c = a.transform.position.x.CompareTo(b.transform.position.x);
-                if (c != 0) return c;
-                c = a.transform.position.z.CompareTo(b.transform.position.z);
-                if (c != 0) return c;
-                return string.CompareOrdinal(a.name, b.name);
-            });
-
-            for (int i = 0; i < allSockets.Count; i++)
-            {
-                var a = allSockets[i];
-                if (a == null) continue;
-                if (paired.Contains(a)) continue;
-
-                RoomSocket best = null;
-                float bestDist = float.MaxValue;
-
-                for (int j = i + 1; j < allSockets.Count; j++)
+                foreach (var c in layout.connections)
                 {
-                    var b = allSockets[j];
-                    if (b == null) continue;
-                    if (paired.Contains(b)) continue;
+                    connectedKeys.Add((c.a.roomIndex, c.a.socketPath));
+                    connectedKeys.Add((c.b.roomIndex, c.b.socketPath));
 
-                    if (a.socketType != b.socketType) continue;
-                    if (a.size != b.size) continue;
+                    var aSock = ResolveSocket(rooms, c.a);
+                    if (aSock == null) continue;
 
-                    float d = Vector3.Distance(a.transform.position, b.transform.position);
-                    if (d > connectTolerance) continue;
+                    var prefab = PickPrefab(c.a.socketType, connected: true);
+                    if (prefab == null) continue;
 
-                    var af = a.transform.forward; af.y = 0; af.Normalize();
-                    var bf = b.transform.forward; bf.y = 0; bf.Normalize();
-                    if (Vector3.Dot(af, bf) > FacingDotThreshold) continue;
-
-                    if (d < bestDist)
-                    {
-                        bestDist = d;
-                        best = b;
-                    }
-                }
-
-                if (best != null)
-                {
-                    // Connected pair: spawn ONE connector at the midpoint.
-                    var prefab = PickPrefab(a.socketType, connected: true);
-                    if (prefab != null)
-                    {
-                        var pos = (a.transform.position + best.transform.position) * 0.5f;
-                        var rot = a.transform.rotation;
-                        var no = Instantiate(prefab, pos, rot);
-                        no.Spawn(true);
-                        spawned.Add(no);
-                        connectors++;
-                    }
-
-                    paired.Add(a);
-                    paired.Add(best);
+                    var no = Instantiate(prefab, aSock.transform.position, aSock.transform.rotation);
+                    no.Spawn(true);
+                    spawned.Add(no);
+                    connectors++;
                 }
             }
 
-            // Unpaired sockets get caps.
-            foreach (var s in allSockets)
+            // Caps for any socket not connected.
+            foreach (var room in rooms)
             {
-                if (s == null) continue;
-                if (paired.Contains(s)) continue;
+                if (room == null) continue;
 
-                var prefab = PickPrefab(s.socketType, connected: false);
-                if (prefab == null) continue;
+                int roomIndex = GetRoomIndex(layout, room.transform.position);
 
-                var no = Instantiate(prefab, s.transform.position, s.transform.rotation);
-                no.Spawn(true);
-                spawned.Add(no);
-                caps++;
+                foreach (var s in room.sockets)
+                {
+                    if (s == null) continue;
+
+                    var key = (roomIndex, GetRelativePath(room.transform, s.transform));
+                    if (connectedKeys.Contains(key)) continue;
+
+                    var prefab = PickPrefab(s.socketType, connected: false);
+                    if (prefab == null) continue;
+
+                    var no = Instantiate(prefab, s.transform.position, s.transform.rotation);
+                    no.Spawn(true);
+                    spawned.Add(no);
+                    caps++;
+                }
             }
 
-            Debug.Log($"[DoorCap] Spawned connectors={connectors}, caps={caps} (sockets={allSockets.Count}, tol={connectTolerance})");
+            Debug.Log($"[DoorCap] Spawned connectors={connectors}, caps={caps} (sockets={allSockets.Count}, connections={layout?.connections?.Count ?? 0})");
+        }
+
+        private RoomSocket ResolveSocket(RoomPrefab[] rooms, SocketRef sref)
+        {
+            if (rooms == null) return null;
+            if (sref.roomIndex < 0 || sref.roomIndex >= rooms.Length) return null;
+            var room = rooms[sref.roomIndex];
+            if (room == null) return null;
+
+            var t = room.transform.Find(sref.socketPath);
+            if (t == null) return null;
+            return t.GetComponent<RoomSocket>();
+        }
+
+        private int GetRoomIndex(SpireLayoutData layout, Vector3 roomPos)
+        {
+            if (layout == null) return 0;
+            for (int i = 0; i < layout.rooms.Count; i++)
+            {
+                if ((layout.rooms[i].position - roomPos).sqrMagnitude < 0.0001f) return i;
+            }
+            return 0;
+        }
+
+        private static string GetRelativePath(Transform root, Transform leaf)
+        {
+            if (root == null || leaf == null) return string.Empty;
+            if (leaf == root) return string.Empty;
+
+            var stack = new Stack<string>();
+            var t = leaf;
+            while (t != null && t != root)
+            {
+                stack.Push(t.name);
+                t = t.parent;
+            }
+
+            return string.Join("/", stack);
         }
 
         private NetworkObject PickPrefab(SocketType type, bool connected)
