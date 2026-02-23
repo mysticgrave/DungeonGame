@@ -68,36 +68,81 @@ namespace DungeonGame.SpireGen
             // Find all RoomPrefab instances the generator spawned (children under its transform).
             var rooms = gen.GetComponentsInChildren<RoomPrefab>(true);
 
-            int count = 0;
-            var seenSockets = new HashSet<Transform>();
-
+            // Gather all sockets across generated rooms.
+            var allSockets = new List<RoomSocket>();
             foreach (var room in rooms)
             {
                 if (room == null) continue;
-
-                // Ensure runtime sockets list is fresh/unique
                 room.RefreshSockets();
-
-                foreach (var socket in room.sockets)
+                foreach (var s in room.sockets)
                 {
-                    if (socket == null) continue;
-                    if (socket.transform == null) continue;
-
-                    // Avoid double-spawning if a socket is duplicated in the list.
-                    if (!seenSockets.Add(socket.transform)) continue;
-
-                    bool connected = gen.IsSocketUsed(room.transform, socket);
-                    var prefab = PickPrefab(socket.socketType, connected);
-                    if (prefab == null) continue;
-
-                    var no = Instantiate(prefab, socket.transform.position, socket.transform.rotation);
-                    no.Spawn(true);
-                    spawned.Add(no);
-                    count++;
+                    if (s == null) continue;
+                    allSockets.Add(s);
                 }
             }
 
-            Debug.Log($"[DoorCap] Spawned {count} connectors/caps");
+            // Group by (type,size,quantized position) to detect connections even without explicit connection data.
+            var groups = new Dictionary<(SocketType type, int size, Vector3Int qpos), List<RoomSocket>>();
+            foreach (var s in allSockets)
+            {
+                var p = s.transform.position;
+                var q = new Vector3Int(
+                    Mathf.RoundToInt(p.x * 10f),
+                    Mathf.RoundToInt(p.y * 10f),
+                    Mathf.RoundToInt(p.z * 10f));
+
+                var key = (s.socketType, s.size, q);
+                if (!groups.TryGetValue(key, out var list))
+                {
+                    list = new List<RoomSocket>();
+                    groups[key] = list;
+                }
+                list.Add(s);
+            }
+
+            int connectors = 0;
+            int caps = 0;
+
+            // Handle connected groups (2 sockets at same spot): spawn ONE connector.
+            var handled = new HashSet<RoomSocket>();
+            foreach (var kvp in groups)
+            {
+                var list = kvp.Value;
+                if (list == null || list.Count == 0) continue;
+
+                if (list.Count >= 2)
+                {
+                    // Spawn one connector at the shared position.
+                    var a = list[0];
+                    var prefab = PickPrefab(kvp.Key.type, connected: true);
+                    if (prefab != null)
+                    {
+                        var no = Instantiate(prefab, a.transform.position, a.transform.rotation);
+                        no.Spawn(true);
+                        spawned.Add(no);
+                        connectors++;
+                    }
+
+                    foreach (var s in list) handled.Add(s);
+                }
+            }
+
+            // Any unhandled socket gets a cap.
+            foreach (var s in allSockets)
+            {
+                if (s == null) continue;
+                if (handled.Contains(s)) continue;
+
+                var prefab = PickPrefab(s.socketType, connected: false);
+                if (prefab == null) continue;
+
+                var no = Instantiate(prefab, s.transform.position, s.transform.rotation);
+                no.Spawn(true);
+                spawned.Add(no);
+                caps++;
+            }
+
+            Debug.Log($"[DoorCap] Spawned connectors={connectors}, caps={caps} (sockets={allSockets.Count})");
         }
 
         private NetworkObject PickPrefab(SocketType type, bool connected)
