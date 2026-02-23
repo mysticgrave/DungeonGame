@@ -15,11 +15,11 @@ namespace DungeonGame.SpireGen
     [Serializable]
     public struct SocketRef
     {
-        // Room placement index in SpireLayoutData.rooms
-        public int roomIndex;
+        // Room instance NetworkObjectId (rooms are spawned as NetworkObjects in MVP).
+        public ulong roomNetId;
 
-        // Relative path from that room root to the socket transform.
-        public string socketPath;
+        // Stable socket id (from RoomSocket.socketId)
+        public string socketId;
 
         public SocketType socketType;
         public int size;

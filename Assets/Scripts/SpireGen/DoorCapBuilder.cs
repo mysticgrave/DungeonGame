@@ -68,24 +68,33 @@ namespace DungeonGame.SpireGen
             // Find all RoomPrefab instances the generator spawned (children under its transform).
             var roomInstances = gen.GetComponentsInChildren<RoomPrefab>(true);
 
-            // Build a stable mapping from layout room index -> room instance by matching positions.
-            var rooms = BuildRoomIndexMap(layout, roomInstances);
+            // Map roomNetId -> RoomPrefab instance
+            var roomsByNetId = new Dictionary<ulong, RoomPrefab>();
+            foreach (var r in roomInstances)
+            {
+                if (r == null) continue;
+                var no = r.GetComponentInParent<NetworkObject>();
+                if (no == null) continue;
+                roomsByNetId[no.NetworkObjectId] = r;
+            }
 
             // Gather all sockets across generated rooms.
-            var allSockets = new List<RoomSocket>();
-            foreach (var room in rooms)
+            var allSockets = new List<(ulong roomNetId, RoomPrefab room, RoomSocket socket)>();
+            foreach (var kvp in roomsByNetId)
             {
+                var roomNetId = kvp.Key;
+                var room = kvp.Value;
                 if (room == null) continue;
                 room.RefreshSockets();
                 foreach (var s in room.sockets)
                 {
                     if (s == null) continue;
-                    allSockets.Add(s);
+                    allSockets.Add((roomNetId, room, s));
                 }
             }
 
             // Use explicit connection list from layout data.
-            var connectedKeys = new HashSet<(int roomIndex, string socketPath)>();
+            var connectedKeys = new HashSet<(ulong roomNetId, string socketId)>();
 
             int connectors = 0;
             int caps = 0;
@@ -95,10 +104,17 @@ namespace DungeonGame.SpireGen
             {
                 foreach (var c in layout.connections)
                 {
-                    connectedKeys.Add((c.a.roomIndex, c.a.socketPath));
-                    connectedKeys.Add((c.b.roomIndex, c.b.socketPath));
+                    connectedKeys.Add((c.a.roomNetId, c.a.socketId));
+                    connectedKeys.Add((c.b.roomNetId, c.b.socketId));
 
-                    var aSock = ResolveSocket(rooms, c.a);
+                    if (!roomsByNetId.TryGetValue(c.a.roomNetId, out var roomA) || roomA == null) continue;
+
+                    // Find socket by socketId
+                    RoomSocket aSock = null;
+                    foreach (var s in roomA.sockets)
+                    {
+                        if (s != null && s.socketId == c.a.socketId) { aSock = s; break; }
+                    }
                     if (aSock == null) continue;
 
                     var prefab = PickPrefab(c.a.socketType, connected: true);
@@ -112,111 +128,28 @@ namespace DungeonGame.SpireGen
             }
 
             // Caps for any socket not connected.
-            foreach (var room in rooms)
+            foreach (var item in allSockets)
             {
-                if (room == null) continue;
+                var roomNetId = item.roomNetId;
+                var s = item.socket;
+                if (s == null) continue;
 
-                int roomIndex = GetRoomIndex(layout, room.transform.position);
+                var key = (roomNetId, s.socketId);
+                if (connectedKeys.Contains(key)) continue;
 
-                foreach (var s in room.sockets)
-                {
-                    if (s == null) continue;
+                var prefab = PickPrefab(s.socketType, connected: false);
+                if (prefab == null) continue;
 
-                    var key = (roomIndex, GetRelativePath(room.transform, s.transform));
-                    if (connectedKeys.Contains(key)) continue;
-
-                    var prefab = PickPrefab(s.socketType, connected: false);
-                    if (prefab == null) continue;
-
-                    var no = Instantiate(prefab, s.transform.position, s.transform.rotation);
-                    no.Spawn(true);
-                    spawned.Add(no);
-                    caps++;
-                }
+                var no = Instantiate(prefab, s.transform.position, s.transform.rotation);
+                no.Spawn(true);
+                spawned.Add(no);
+                caps++;
             }
 
             Debug.Log($"[DoorCap] Spawned connectors={connectors}, caps={caps} (sockets={allSockets.Count}, connections={layout?.connections?.Count ?? 0})");
         }
 
-        private RoomSocket ResolveSocket(RoomPrefab[] rooms, SocketRef sref)
-        {
-            if (rooms == null) return null;
-            if (sref.roomIndex < 0 || sref.roomIndex >= rooms.Length) return null;
-            var room = rooms[sref.roomIndex];
-            if (room == null) return null;
-
-            var t = room.transform.Find(sref.socketPath);
-            if (t == null) return null;
-            return t.GetComponent<RoomSocket>();
-        }
-
-        private static RoomPrefab[] BuildRoomIndexMap(SpireLayoutData layout, RoomPrefab[] instances)
-        {
-            if (layout == null || layout.rooms == null || layout.rooms.Count == 0)
-            {
-                return instances ?? System.Array.Empty<RoomPrefab>();
-            }
-
-            var mapped = new RoomPrefab[layout.rooms.Count];
-
-            if (instances == null || instances.Length == 0)
-            {
-                return mapped;
-            }
-
-            // Greedy match by nearest position.
-            var used = new HashSet<RoomPrefab>();
-            for (int i = 0; i < layout.rooms.Count; i++)
-            {
-                var p = layout.rooms[i].position;
-                RoomPrefab best = null;
-                float bestDist = float.MaxValue;
-
-                foreach (var inst in instances)
-                {
-                    if (inst == null) continue;
-                    if (used.Contains(inst)) continue;
-
-                    float d = (inst.transform.position - p).sqrMagnitude;
-                    if (d < bestDist)
-                    {
-                        bestDist = d;
-                        best = inst;
-                    }
-                }
-
-                mapped[i] = best;
-                if (best != null) used.Add(best);
-            }
-
-            return mapped;
-        }
-
-        private int GetRoomIndex(SpireLayoutData layout, Vector3 roomPos)
-        {
-            if (layout == null) return 0;
-            for (int i = 0; i < layout.rooms.Count; i++)
-            {
-                if ((layout.rooms[i].position - roomPos).sqrMagnitude < 0.0001f) return i;
-            }
-            return 0;
-        }
-
-        private static string GetRelativePath(Transform root, Transform leaf)
-        {
-            if (root == null || leaf == null) return string.Empty;
-            if (leaf == root) return string.Empty;
-
-            var stack = new Stack<string>();
-            var t = leaf;
-            while (t != null && t != root)
-            {
-                stack.Push(t.name);
-                t = t.parent;
-            }
-
-            return string.Join("/", stack);
-        }
+        // (old index/path mapping removed; we now key by room NetworkObjectId + socketId)
 
         private NetworkObject PickPrefab(SocketType type, bool connected)
         {

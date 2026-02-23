@@ -9,6 +9,9 @@ namespace DungeonGame.SpireGen
     /// </summary>
     public class RoomSocket : MonoBehaviour
     {
+        [Tooltip("Stable id for this socket. Auto-generated; do not duplicate within a room prefab.")]
+        public string socketId;
+
         public SocketType socketType = SocketType.DoorSmall;
 
         [Tooltip("Optional size class. Only sockets with matching size can connect.")]
@@ -16,6 +19,14 @@ namespace DungeonGame.SpireGen
 
         [Tooltip("If true, generator will avoid using this socket except as a fallback.")]
         public bool lowPriority;
+
+        private void OnValidate()
+        {
+            if (string.IsNullOrWhiteSpace(socketId))
+            {
+                socketId = System.Guid.NewGuid().ToString("N");
+            }
+        }
 
         private void OnDrawGizmosSelected()
         {

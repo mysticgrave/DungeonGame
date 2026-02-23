@@ -271,19 +271,22 @@ namespace DungeonGame.SpireGen
                 // Record explicit connection (A = target/existing socket, B = new room socket)
                 if (sourceSocketInstance != null)
                 {
+                    var aNet = target.roomRoot.GetComponentInParent<NetworkObject>();
+                    var bNet = placedRoom.root.GetComponentInParent<NetworkObject>();
+
                     data.connections.Add(new SocketConnection
                     {
                         a = new SocketRef
                         {
-                            roomIndex = FindRoomIndexByRoot(data, target.roomRoot),
-                            socketPath = GetRelativePath(target.roomRoot, target.socket.transform),
+                            roomNetId = aNet != null ? aNet.NetworkObjectId : 0,
+                            socketId = target.socket.socketId,
                             socketType = target.socket.socketType,
                             size = target.socket.size,
                         },
                         b = new SocketRef
                         {
-                            roomIndex = newRoomIndex,
-                            socketPath = sourceSocketPath,
+                            roomNetId = bNet != null ? bNet.NetworkObjectId : 0,
+                            socketId = sourceSocketInstance.socketId,
                             socketType = sourceSocketInstance.socketType,
                             size = sourceSocketInstance.size,
                         }
