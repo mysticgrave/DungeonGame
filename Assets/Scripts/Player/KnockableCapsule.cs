@@ -106,7 +106,7 @@ namespace DungeonGame.Player
         private void Recover()
         {
             // Stop motion.
-            rb.velocity = Vector3.zero;
+            rb.linearVelocity = Vector3.zero;
             rb.angularVelocity = Vector3.zero;
 
             // Snap transform to rigidbody pose.
@@ -135,7 +135,7 @@ namespace DungeonGame.Player
 
             // Apply impulse.
             rb.AddForce(impulse, ForceMode.Impulse);
-            rb.AddTorque(new Vector3(Random.Range(-3f, 3f), Random.Range(-2f, 2f), Random.Range(-3f, 3f)), ForceMode.Impulse);
+            rb.AddTorque(new Vector3(UnityEngine.Random.Range(-3f, 3f), UnityEngine.Random.Range(-2f, 2f), UnityEngine.Random.Range(-3f, 3f)), ForceMode.Impulse);
         }
 
         private bool IsGroundedForKnock()
