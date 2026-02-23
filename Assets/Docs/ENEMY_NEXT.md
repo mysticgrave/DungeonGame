@@ -21,10 +21,17 @@ In `Spire_Slice` scene, on your `Spire` generator object:
 This rebuilds the navmesh after the layout spawns.
 
 ## Spawning
-Create an empty GameObject in `Spire_Slice` scene:
+### Recommended (procedural): EnemySpawnPoint markers
+In each room prefab, add 1–3 empty child transforms where enemies can spawn.
+Attach:
+- `DungeonGame.Enemies.EnemySpawnPoint`
+
+In `Spire_Slice` scene, create an empty GameObject:
 - Add `NetworkObject`
 - Add `DungeonGame.Enemies.GhoulSpawner`
 - Assign `ghoulPrefab` to your `GhoulRunner` prefab
+
+The spawner will auto-collect EnemySpawnPoint markers after navmesh/layout is ready.
 
 ## Test
 - Host

@@ -16,11 +16,19 @@ namespace DungeonGame.Enemies
         [SerializeField] private float radius = 12f;
         [SerializeField] private List<Transform> spawnPoints = new();
 
+        [Header("Procedural Spawn Points")]
+        [Tooltip("If true, will auto-collect EnemySpawnPoint markers in the scene after layout/navmesh is ready.")]
+        [SerializeField] private bool autoCollectSpawnMarkers = true;
+
+        [Tooltip("Which marker kinds this spawner is allowed to use.")]
+        [SerializeField] private EnemySpawnPoint.SpawnKind[] allowedKinds = { EnemySpawnPoint.SpawnKind.Default };
+
         [Header("Safety")]
         [SerializeField] private float minDistanceFromPlayers = 10f;
         [SerializeField] private int maxPositionAttempts = 30;
 
         private bool spawned;
+        private readonly List<Transform> cachedMarkerPoints = new();
 
         public override void OnNetworkSpawn()
         {
@@ -54,6 +62,8 @@ namespace DungeonGame.Enemies
             if (baker == null) return;
             if (baker.gameObject.scene != gameObject.scene) return;
 
+            CacheSpawnMarkers();
+
             spawned = false; // allow retry
             SpawnIfNeeded();
         }
@@ -61,11 +71,34 @@ namespace DungeonGame.Enemies
         private void TrySpawnTick()
         {
             // Keep trying until we succeed.
+            CacheSpawnMarkers();
             SpawnIfNeeded();
 
             if (spawned)
             {
                 CancelInvoke(nameof(TrySpawnTick));
+            }
+        }
+
+        private void CacheSpawnMarkers()
+        {
+            if (!autoCollectSpawnMarkers) return;
+
+            cachedMarkerPoints.Clear();
+
+            // Gather markers only in our current scene.
+            var markers = FindObjectsByType<EnemySpawnPoint>(FindObjectsSortMode.None);
+            if (markers == null || markers.Length == 0) return;
+
+            var allowed = new HashSet<EnemySpawnPoint.SpawnKind>(allowedKinds ?? new[] { EnemySpawnPoint.SpawnKind.Default });
+
+            foreach (var m in markers)
+            {
+                if (m == null) continue;
+                if (m.gameObject.scene != gameObject.scene) continue;
+                if (!allowed.Contains(m.kind)) continue;
+
+                cachedMarkerPoints.Add(m.transform);
             }
         }
 
@@ -113,10 +146,19 @@ namespace DungeonGame.Enemies
                 // Snap to NavMesh if available.
                 if (UnityEngine.AI.NavMesh.SamplePosition(candidate, out var navHit, 4f, UnityEngine.AI.NavMesh.AllAreas))
                 {
-                    return navHit.position;
+                    var snapped = navHit.position;
+                    if (IsTooCloseToAnyPlayer(snapped))
+                    {
+                        continue;
+                    }
+                    return snapped;
                 }
 
-                return candidate;
+                // If no navmesh yet, still enforce distance.
+                if (!IsTooCloseToAnyPlayer(candidate))
+                {
+                    return candidate;
+                }
             }
 
             // Fallback: whatever we get (still try to snap to navmesh).
@@ -130,15 +172,26 @@ namespace DungeonGame.Enemies
 
         private Vector3 GetCandidatePos(int i, int attempt)
         {
+            // 1) Explicit spawn points assigned in inspector.
             if (spawnPoints != null && spawnPoints.Count > 0)
             {
-                // Offset slightly so multiple spawns don't stack.
                 var basePos = spawnPoints[i % spawnPoints.Count].position;
                 var jitter = Random.insideUnitCircle * 1.5f;
                 return basePos + new Vector3(jitter.x, 0f, jitter.y);
             }
 
-            // Random ring around the spawner.
+            // 2) Procedural spawn markers collected from room prefabs.
+            if (cachedMarkerPoints.Count > 0)
+            {
+                var t = cachedMarkerPoints[Random.Range(0, cachedMarkerPoints.Count)];
+                if (t != null)
+                {
+                    var jitter = Random.insideUnitCircle * 1.25f;
+                    return t.position + new Vector3(jitter.x, 0f, jitter.y);
+                }
+            }
+
+            // 3) Fallback: random ring around the spawner.
             var r = Random.insideUnitCircle.normalized * Random.Range(2f, radius);
             return transform.position + new Vector3(r.x, 0f, r.y);
         }
