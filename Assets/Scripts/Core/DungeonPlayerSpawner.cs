@@ -7,16 +7,14 @@ using UnityEngine;
 namespace DungeonGame.Core
 {
     /// <summary>
-    /// When players enter the dungeon (Spire scene), repositions all connected players to spawn points in the scene.
-    /// Use this in the dungeon scene (e.g. Spire_Slice). Spawn points can be in the scene or inside room prefabs (e.g. start room).
-    /// 
-    /// - If the dungeon is procedural: subscribes to SpireLayoutGenerator.OnLayoutGenerated and repositions after rooms (and their spawn points) exist.
-    /// - Fallback: repositions once after a short delay in Start (for fixed scenes or if layout already ran).
+    /// When players enter the dungeon (Spire scene), repositions all connected players to spawn points
+    /// once the dungeon layout is fully generated. Players are frozen (CharacterController disabled)
+    /// until the layout finishes so they don't fall through the void during generation.
     /// </summary>
-    public class DungeonPlayerSpawner : MonoBehaviour
+    public class DungeonPlayerSpawner : NetworkBehaviour
     {
-        [Tooltip("Delay before fallback reposition (when no layout event fires). Use ~1–2s if layout runs asynchronously.")]
-        [SerializeField] private float fallbackDelay = 1.5f;
+        [Tooltip("Delay before fallback reposition (when no layout event fires). Use ~2s if layout runs asynchronously.")]
+        [SerializeField] private float fallbackDelay = 2f;
 
         private bool _repositioned;
 
@@ -36,6 +34,39 @@ namespace DungeonGame.Core
             Invoke(nameof(FallbackReposition), fallbackDelay);
         }
 
+        public override void OnNetworkSpawn()
+        {
+            base.OnNetworkSpawn();
+            if (IsServer)
+            {
+                NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnectedDuringGen;
+            }
+        }
+
+        public override void OnNetworkDespawn()
+        {
+            if (IsServer && NetworkManager.Singleton != null)
+            {
+                NetworkManager.Singleton.OnClientConnectedCallback -= OnClientConnectedDuringGen;
+            }
+            base.OnNetworkDespawn();
+        }
+
+        private void OnClientConnectedDuringGen(ulong clientId)
+        {
+            if (!SpireLayoutGenerator.IsGenerating) return;
+
+            var nm = NetworkManager.Singleton;
+            if (nm == null || !nm.IsServer) return;
+            if (!nm.ConnectedClients.TryGetValue(clientId, out var client)) return;
+            var player = client.PlayerObject;
+            if (player == null) return;
+
+            var cc = player.GetComponent<CharacterController>();
+            if (cc != null) cc.enabled = false;
+            Debug.Log($"[DungeonSpawn] Client {clientId} connected during generation — frozen until layout finishes.");
+        }
+
         private void OnLayoutGenerated(SpireLayoutGenerator gen, SpireLayoutData layout)
         {
             if (gen == null) return;
@@ -46,6 +77,7 @@ namespace DungeonGame.Core
         private void FallbackReposition()
         {
             if (_repositioned) return;
+            if (SpireLayoutGenerator.IsGenerating) return;
             RepositionAllPlayers();
         }
 
@@ -69,6 +101,10 @@ namespace DungeonGame.Core
 
                 var t = spawns[index % spawns.Count];
                 player.transform.SetPositionAndRotation(t.position, t.rotation);
+
+                var cc = player.GetComponent<CharacterController>();
+                if (cc != null) cc.enabled = true;
+
                 SnapPlayerToGround(player.transform);
                 index++;
             }
@@ -89,9 +125,6 @@ namespace DungeonGame.Core
             return list;
         }
 
-        /// <summary>
-        /// Raycast down from the player and place their feet on the ground so they don't fall through.
-        /// </summary>
         private static void SnapPlayerToGround(Transform playerRoot)
         {
             var cc = playerRoot.GetComponent<CharacterController>();

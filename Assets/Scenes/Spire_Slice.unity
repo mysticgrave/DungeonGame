@@ -17,7 +17,7 @@ RenderSettings:
   m_Fog: 1
   m_FogColor: {r: 0.084905684, g: 0.084905684, b: 0.084905684, a: 1}
   m_FogMode: 3
-  m_FogDensity: 0.1
+  m_FogDensity: 0.045
   m_LinearFogStart: 0
   m_LinearFogEnd: 300
   m_AmbientSkyColor: {r: 0, g: 0, b: 0, a: 1}
@@ -359,6 +359,7 @@ MonoBehaviour:
   bossRoom: {fileID: 6225585302384070521, guid: ab2623f8a519bda40976d87e0a803264, type: 3}
   minRoomsBeforeBoss: 12
   maxBacktracks: 20
+  attemptsPerFrame: 20
 --- !u!114 &488105089
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -433,6 +434,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d32e02cd127f67c4da4177477faa7b43, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DungeonGame.Core.DungeonPlayerSpawner
+  ShowTopMostFoldoutHeaderGroup: 1
   fallbackDelay: 1.5
 --- !u!1 &718454992
 GameObject:

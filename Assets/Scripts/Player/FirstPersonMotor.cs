@@ -34,6 +34,7 @@ namespace DungeonGame.Player
         {
             if (!IsOwner) return;
             if (Keyboard.current == null) return;
+            if (!cc.enabled) return;
 
             var move = ReadMove();
             bool sprint = Keyboard.current.leftShiftKey.isPressed;

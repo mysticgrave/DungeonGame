@@ -191,26 +191,35 @@ namespace DungeonGame.Player
         {
             if (_ragdollSwitch != null)
             {
+                bool ccWasEnabled = _cc != null && _cc.enabled;
+                if (_cc != null) _cc.enabled = false;
+
                 _ragdollSwitch.SnapRootToRagdoll();
                 SnapRootToGround();
                 transform.rotation = Quaternion.Euler(0f, _savedYaw, 0f);
                 _ragdollSwitch.SetStanding();
+
+                if (_cc != null) _cc.enabled = ccWasEnabled;
             }
-            // If no ragdoll, KnockableCapsule / non-ragdoll path would have handled physics; we just go Standing.
         }
 
         private void SnapRootToGround()
         {
             if (_cc == null) return;
-            float bottomY = transform.position.y + _cc.center.y - _cc.height * 0.5f;
-            float rayStartY = transform.position.y + Mathf.Max(1f, _cc.height * 0.5f);
-            Vector3 origin = new Vector3(transform.position.x, rayStartY, transform.position.z);
-            float maxDist = rayStartY - bottomY + 2f;
+
+            float halfHeight = _cc.height * 0.5f;
+            float bottomOffset = _cc.center.y - halfHeight;
+
+            // Cast from well above current position so the ray origin is never inside terrain/floor geometry.
+            float castHeight = 50f;
+            Vector3 origin = new Vector3(transform.position.x, transform.position.y + castHeight, transform.position.z);
+            float maxDist = castHeight + Mathf.Abs(bottomOffset) + 10f;
+
             if (Physics.Raycast(origin, Vector3.down, out RaycastHit hit, maxDist, ~0, QueryTriggerInteraction.Ignore))
             {
                 float groundY = hit.point.y;
-                if (bottomY < groundY)
-                    transform.position += Vector3.up * (groundY - bottomY);
+                float targetY = groundY - bottomOffset + 0.05f;
+                transform.position = new Vector3(transform.position.x, targetY, transform.position.z);
             }
         }
 

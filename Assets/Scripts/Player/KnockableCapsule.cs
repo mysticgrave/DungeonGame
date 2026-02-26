@@ -140,10 +140,15 @@ namespace DungeonGame.Player
         {
             if (ragdollSwitch != null)
             {
+                bool ccWasEnabled = cc != null && cc.enabled;
+                if (cc != null) cc.enabled = false;
+
                 ragdollSwitch.SnapRootToRagdoll();
                 SnapRootToGround();
                 transform.rotation = Quaternion.Euler(0f, savedYaw, 0f);
                 ragdollSwitch.SetStanding();
+
+                if (cc != null) cc.enabled = ccWasEnabled;
             }
             else
             {
@@ -158,15 +163,19 @@ namespace DungeonGame.Player
         private void SnapRootToGround()
         {
             if (cc == null) return;
-            float bottomY = transform.position.y + cc.center.y - cc.height * 0.5f;
-            float rayStartY = transform.position.y + Mathf.Max(1f, cc.height * 0.5f);
-            Vector3 origin = new Vector3(transform.position.x, rayStartY, transform.position.z);
-            float maxDist = rayStartY - bottomY + 2f;
+
+            float halfHeight = cc.height * 0.5f;
+            float bottomOffset = cc.center.y - halfHeight;
+
+            float castHeight = 50f;
+            Vector3 origin = new Vector3(transform.position.x, transform.position.y + castHeight, transform.position.z);
+            float maxDist = castHeight + Mathf.Abs(bottomOffset) + 10f;
+
             if (Physics.Raycast(origin, Vector3.down, out RaycastHit hit, maxDist, ~0, QueryTriggerInteraction.Ignore))
             {
                 float groundY = hit.point.y;
-                if (bottomY < groundY)
-                    transform.position += Vector3.up * (groundY - bottomY);
+                float targetY = groundY - bottomOffset + 0.05f;
+                transform.position = new Vector3(transform.position.x, targetY, transform.position.z);
             }
         }
 

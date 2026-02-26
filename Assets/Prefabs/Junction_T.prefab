@@ -2128,7 +2128,7 @@ MonoBehaviour:
   uniquePerSlice: 0
   landmark: 0
   connector: 0
-  repeatCooldown: 1
+  repeatCooldown: 4
   sockets:
   - {fileID: 3264908878027480491}
   - {fileID: 4247614684581311207}

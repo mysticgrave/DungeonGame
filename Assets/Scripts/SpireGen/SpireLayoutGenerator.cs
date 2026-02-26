@@ -116,6 +116,9 @@ namespace DungeonGame.SpireGen
 
         private Coroutine _generateCoroutine;
 
+        /// <summary>True while the dungeon is being generated. Other systems should wait for this to become false.</summary>
+        public static bool IsGenerating { get; private set; }
+
         private void HandleSeed(int seed)
         {
             if (!IsServer) return;
@@ -128,32 +131,75 @@ namespace DungeonGame.SpireGen
 
         private IEnumerator GenerateCoroutine(int seed)
         {
+            IsGenerating = true;
+            FreezeAllPlayers(true);
+
             rng = spireSeed.CreateRandom("layout");
             ClearExistingGeneratedRooms();
 
             var data = new SpireLayoutData { seed = seed };
             yield return StartCoroutine(GenerateLayoutCoroutine(seed, data));
 
+            IsGenerating = false;
             SpawnLayout(data);
+            FreezeAllPlayers(false);
             _generateCoroutine = null;
+        }
+
+        /// <summary>
+        /// Disable/enable CharacterControllers on all players so they don't fall during generation.
+        /// Server notifies clients via ClientRpc.
+        /// </summary>
+        private void FreezeAllPlayers(bool freeze)
+        {
+            var nm = NetworkManager.Singleton;
+            if (nm == null) return;
+
+            foreach (var kvp in nm.ConnectedClients)
+            {
+                var player = kvp.Value?.PlayerObject;
+                if (player == null) continue;
+                SetPlayerFrozen(player.transform, freeze);
+            }
+
+            FreezePlayersClientRpc(freeze);
+        }
+
+        [ClientRpc]
+        private void FreezePlayersClientRpc(bool freeze)
+        {
+            if (IsServer) return; // already handled
+            var nm = NetworkManager.Singleton;
+            if (nm == null) return;
+            foreach (var kvp in nm.ConnectedClients)
+            {
+                var player = kvp.Value?.PlayerObject;
+                if (player == null) continue;
+                SetPlayerFrozen(player.transform, freeze);
+            }
+        }
+
+        private static void SetPlayerFrozen(Transform playerRoot, bool freeze)
+        {
+            var cc = playerRoot.GetComponent<CharacterController>();
+            if (cc != null)
+                cc.enabled = !freeze;
+
+            var rb = playerRoot.GetComponent<Rigidbody>();
+            if (rb != null && !rb.isKinematic)
+                rb.linearVelocity = Vector3.zero;
         }
 
         private void ClearExistingGeneratedRooms()
         {
-            // Destroy previously generated room roots (children of this generator object).
-            // Note: if you want persistence across loads, parent elsewhere.
             for (int i = transform.childCount - 1; i >= 0; i--)
             {
                 var child = transform.GetChild(i);
                 var no = child.GetComponent<NetworkObject>();
                 if (no != null && no.IsSpawned)
-                {
                     no.Despawn(true);
-                }
                 else
-                {
                     Destroy(child.gameObject);
-                }
             }
 
             placed.Clear();
@@ -298,28 +344,29 @@ namespace DungeonGame.SpireGen
             ShuffleList(tipSockets);
             if (tipSockets.Count == 0) return false;
 
-            // Build candidate prefabs (shuffled).
+            // Try with cooldown enforced first, then relax cooldown only if everything else failed.
+            if (TryExtendWithCandidates(data, tip, tipSockets, minSockets, forceLandmark, ignoreCooldown: false, mainPath))
+                return true;
+            if (forceLandmark && TryExtendWithCandidates(data, tip, tipSockets, minSockets, false, ignoreCooldown: false, mainPath))
+                return true;
+            if (TryExtendWithCandidates(data, tip, tipSockets, minSockets, false, ignoreCooldown: true, mainPath))
+                return true;
+
+            return false;
+        }
+
+        private bool TryExtendWithCandidates(SpireLayoutData data, PlacedRoom tip, List<RoomSocket> tipSockets,
+            int minSockets, bool forceLandmark, bool ignoreCooldown, List<PlacedRoom> mainPath)
+        {
             var candidates = new List<RoomPrefab>();
             foreach (var p in roomPrefabs)
             {
                 if (p == null) continue;
                 if (CountCompatibleSockets(p) < minSockets) continue;
-                if (!PassesMainPathFilters(p, forceLandmark)) continue;
+                if (!PassesMainPathFilters(p, forceLandmark, ignoreCooldown)) continue;
                 candidates.Add(p);
             }
             ShuffleList(candidates);
-            if (candidates.Count == 0 && forceLandmark)
-            {
-                // Relax landmark requirement.
-                foreach (var p in roomPrefabs)
-                {
-                    if (p == null) continue;
-                    if (CountCompatibleSockets(p) < minSockets) continue;
-                    if (!PassesMainPathFilters(p, false)) continue;
-                    candidates.Add(p);
-                }
-                ShuffleList(candidates);
-            }
             if (candidates.Count == 0) return false;
 
             foreach (var targetSocket in tipSockets)
@@ -342,7 +389,6 @@ namespace DungeonGame.SpireGen
                         var sourceSocketInstance = FindSocketInstanceById(placedRoom.prefab, sourceSocketAsset.socketId)
                             ?? FindSocketInstance(placedRoom.root, sourceSocketPath);
 
-                        // Success — wire it up.
                         MarkSocketUsed(tip.root, targetSocket);
                         if (sourceSocketInstance != null)
                             MarkSocketUsed(placedRoom.root, sourceSocketInstance);
@@ -367,15 +413,15 @@ namespace DungeonGame.SpireGen
             return false;
         }
 
-        /// <summary>Filter for main-path room selection. Skips boss, respects unique/cooldown.</summary>
-        private bool PassesMainPathFilters(RoomPrefab p, bool forceLandmark)
+        /// <summary>Filter for main-path room selection. Skips boss, respects unique. Cooldown checked separately.</summary>
+        private bool PassesMainPathFilters(RoomPrefab p, bool forceLandmark, bool ignoreCooldown)
         {
             if (!HasCompatibleSocket(p)) return false;
             if (bossRoom != null && p.roomId == bossRoom.roomId) return false;
             if (forceLandmark && !p.landmark) return false;
             if ((p.uniquePerSlice || p.landmark) && usedUniqueRoomIds.Contains(p.roomId)) return false;
             if (p.weight <= 0) return false;
-            // Intentionally skip repeatCooldown for the main path — reaching target length is more important.
+            if (!ignoreCooldown && p.repeatCooldown > 0 && recentRoomIds.Contains(p.roomId)) return false;
             return true;
         }
 
@@ -977,7 +1023,6 @@ namespace DungeonGame.SpireGen
 
             var go = Instantiate(prefabAsset.gameObject, pos, rot, transform);
 
-            // Overlap check (simple AABB in world space using renderers/colliders).
             var bounds = ComputeWorldBounds(go);
             bounds.Expand(overlapPadding);
             for (int i = 0; i < placed.Count; i++)
@@ -990,7 +1035,6 @@ namespace DungeonGame.SpireGen
                 }
             }
 
-            // Spawn network object.
             var no = go.GetComponent<NetworkObject>();
             if (no != null && !no.IsSpawned)
             {
