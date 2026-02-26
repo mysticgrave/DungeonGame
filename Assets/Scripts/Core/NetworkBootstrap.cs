@@ -43,7 +43,10 @@ namespace DungeonGame.Core
                 nm = CreateNetworkManager();
 
             if (nm != null)
+            {
                 DontDestroyOnLoad(nm.gameObject);
+                UnityTransportQueueFix.ApplyIfNeeded(nm, 512);
+            }
         }
 
         private void Start()

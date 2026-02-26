@@ -1,11 +1,9 @@
+using DungeonGame.Core;
 using Unity.Netcode;
 using Unity.Netcode.Transports.UTP;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
-#if !DISABLESTEAMWORKS
-using DungeonGame.Core;
-#endif
 
 namespace DungeonGame.UI
 {
@@ -62,6 +60,7 @@ namespace DungeonGame.UI
             _nm = NetworkManager.Singleton;
             if (_nm != null)
             {
+                UnityTransportQueueFix.ApplyIfNeeded(_nm, 512);
                 _nm.OnClientConnectedCallback += OnClientConnected;
                 _nm.OnClientDisconnectCallback += OnClientDisconnected;
             }
@@ -194,10 +193,8 @@ namespace DungeonGame.UI
         private void LoadGameScene()
         {
             var nm = NetworkManager.Singleton;
-            if (nm != null && nm.IsServer)
-                nm.SceneManager.LoadScene(gameSceneName, LoadSceneMode.Single);
-            else
-                SceneManager.LoadScene(gameSceneName);
+            if (nm == null || !nm.IsServer) return;
+            nm.SceneManager.LoadScene(gameSceneName, LoadSceneMode.Single);
         }
 
         private void ShutdownAndReturn()
@@ -213,9 +210,9 @@ namespace DungeonGame.UI
 
         private void OnClientConnected(ulong clientId)
         {
-            var nm = _nm ?? NetworkManager.Singleton;
-            if (nm != null && !nm.IsServer && clientId == nm.LocalClientId)
-                LoadGameScene();
+            // Nothing to do here for the client — the host's NetworkManager.SceneManager
+            // automatically syncs the client into the correct scene. Loading it manually
+            // would destroy all synced NetworkObjects and break everything.
         }
 
         private void OnClientDisconnected(ulong clientId)

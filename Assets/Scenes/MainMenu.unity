@@ -5302,6 +5302,7 @@ GameObject:
   - component: {fileID: 915182020}
   - component: {fileID: 915182019}
   - component: {fileID: 915182021}
+  - component: {fileID: 915182022}
   m_Layer: 0
   m_Name: NetworkManager
   m_TagString: Untagged
@@ -5462,6 +5463,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DungeonGame.Core.FacepunchTransport
   targetSteamId: 0
+--- !u!114 &915182022
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 915182013}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b6222d451ced9874aaaf4607d50ee5cf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DungeonGame.Core.DisconnectToMainMenu
+  mainMenuSceneName: MainMenu
 --- !u!4 &935726197 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 414962, guid: 472eefd56110c694798273288354869a, type: 3}
