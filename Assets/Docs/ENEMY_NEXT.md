@@ -20,6 +20,8 @@ In `Spire_Slice` scene, on your `Spire` generator object:
 
 This rebuilds the navmesh after the layout spawns.
 
+**Builds / runtime:** NavMesh baking at runtime needs mesh read access. If you see "Source mesh X does not allow read access" in the player build, enable **Read/Write** on that mesh. **Fast fix for many assets:** run **Tools → DungeonGame → Enable Read/Write on All Model Meshes** once; it finds all FBX/OBJ/etc. in Assets and sets Read/Write, then reimports (progress bar, can cancel).
+
 ## Spawning
 ### Recommended (procedural): EnemySpawnPoint markers
 In each room prefab, add 1–3 empty child transforms where enemies can spawn.

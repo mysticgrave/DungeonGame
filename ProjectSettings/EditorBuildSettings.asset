@@ -5,9 +5,6 @@ EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Scenes:
-  - enabled: 0
-    path: Assets/Scenes/SampleScene.unity
-    guid: 99c9720ab356a0642a771bea13969a05
   - enabled: 1
     path: Assets/Scenes/Town.unity
     guid: 7e0a21b0e24c2454b8d5c28c6b3afbc6
@@ -15,5 +12,8 @@ EditorBuildSettings:
     path: Assets/Scenes/Spire_Slice.unity
     guid: 627a1e1e610824c45b22c3c7e1937ebb
   m_configObjects:
+    com.unity.adaptivePerformance.basic.provider_settings: {fileID: 11400000, guid: fab2c67237adb3547bce94320114c1a3, type: 2}
+    com.unity.adaptiveperformance.loader_settings: {fileID: 11400000, guid: 4a7aeb4ac246e204aa727da5e045ce04, type: 2}
+    com.unity.adaptiveperformance.simulator.provider_settings: {fileID: 11400000, guid: a19205ee7acae11488154eab7f078de8, type: 2}
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   m_UseUCBPForAssetBundles: 0

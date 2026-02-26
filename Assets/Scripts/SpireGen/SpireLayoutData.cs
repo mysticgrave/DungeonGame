@@ -39,5 +39,8 @@ namespace DungeonGame.SpireGen
         public int seed;
         public List<RoomPlacement> rooms = new();
         public List<SocketConnection> connections = new();
+
+        /// <summary>Index into rooms list for the boss/end room. -1 if none was placed.</summary>
+        public int bossRoomIndex = -1;
     }
 }

@@ -28,9 +28,10 @@ namespace DungeonGame.Player
             }
         }
 
-        [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
-        public void DamageRpc(int amount)
+        /// <summary>Server-only. Call from server logic (e.g. enemy AI, traps) to apply damage.</summary>
+        public void TakeDamage(int amount)
         {
+            if (!IsServer) return;
             if (amount <= 0) return;
             if (hpNet.Value <= 0) return;
 
@@ -38,8 +39,14 @@ namespace DungeonGame.Player
 
             if (hpNet.Value == 0)
             {
-                Debug.Log($"[PlayerHealth] Player {OwnerClientId} HP=0 (downed system later)");
+                Debug.Log($"[PlayerHealth] Player " + OwnerClientId + " HP=0 (downed system later)");
             }
+        }
+
+        [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
+        public void DamageRpc(int amount)
+        {
+            TakeDamage(amount);
         }
 
         [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]

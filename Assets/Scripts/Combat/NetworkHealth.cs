@@ -16,6 +16,8 @@ namespace DungeonGame.Combat
         public int Hp => hpNet.Value;
 
         public event Action<int, int> OnHealthChanged;
+        /// <summary>Fired when this object takes damage (after HP is reduced). Amount is the damage dealt.</summary>
+        public event Action<int> OnDamaged;
         public event Action OnDied;
 
         private readonly NetworkVariable<int> hpNet = new(
@@ -58,6 +60,7 @@ namespace DungeonGame.Combat
             if (hpNet.Value <= 0) return;
 
             hpNet.Value = Mathf.Max(0, hpNet.Value - amount);
+            OnDamaged?.Invoke(amount);
 
             if (hpNet.Value <= 0)
             {

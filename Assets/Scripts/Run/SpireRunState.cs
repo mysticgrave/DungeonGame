@@ -1,19 +1,22 @@
 using System;
+using DungeonGame.Meta;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace DungeonGame.Run
 {
     /// <summary>
     /// Persistent run state for the current host session.
-    /// MVP: used to prototype segment progression (5 floors per segment) and evac.
-    /// 
-    /// Attach to the persistent NetworkManager GameObject.
+    /// Handles floor/segment progression, evac, and end-of-run rewards (gold, EXP) then return to Town.
     /// </summary>
     public class SpireRunState : NetworkBehaviour
     {
         [Header("Progression")]
         [SerializeField, Min(1)] private int floorsPerSegment = 5;
+
+        [Header("Scenes")]
+        [SerializeField] private string townSceneName = "Town";
 
         public int FloorsPerSegment => floorsPerSegment;
 
@@ -71,15 +74,56 @@ namespace DungeonGame.Run
             Debug.Log($"[Run] Floor={FloorNet.Value} Segment={seg} Unlocked={HighestUnlockedSegmentNet.Value}");
         }
 
+        /// <summary>
+        /// Server: end the run with the given outcome, grant rewards to all clients, wipe run state, then load Town.
+        /// The spire run is reset so the next time they enter the Spire it's a fresh run.
+        /// </summary>
+        public void EndRunAndReturnToTown(RunOutcome outcome)
+        {
+            if (!IsServer) return;
+
+            int floorsReached = FloorNet.Value;
+            var result = RunRewardsCalculator.Compute(floorsReached, outcome);
+            RunEndedClientRpc(result.Gold, result.Exp, (int)result.Outcome);
+
+            // Wipe run state so the next Spire entry is a fresh run (fail/evac/victory = run over).
+            FloorNet.Value = 0;
+            HighestUnlockedSegmentNet.Value = 0;
+
+            if (NetworkManager.Singleton != null && NetworkManager.Singleton.SceneManager != null
+                && SceneManager.GetActiveScene().name != townSceneName)
+            {
+                Debug.Log($"[Run] End run outcome={outcome} gold={result.Gold} exp={result.Exp}; wiping run; loading {townSceneName}");
+                NetworkManager.Singleton.SceneManager.LoadScene(townSceneName, LoadSceneMode.Single);
+            }
+        }
+
+        [ClientRpc]
+        private void RunEndedClientRpc(int gold, int exp, int outcome)
+        {
+            string classId = null;
+            var nm = NetworkManager.Singleton;
+            if (nm != null && nm.LocalClient != null && nm.LocalClient.PlayerObject != null)
+            {
+                var pc = nm.LocalClient.PlayerObject.GetComponent<DungeonGame.Classes.PlayerClass>();
+                if (pc != null) classId = pc.ClassId;
+            }
+
+            var meta = Meta.MetaProgression.Instance;
+            if (meta != null)
+            {
+                meta.ApplyRunReward(gold, exp, classId ?? "");
+                meta.SetLastRunResult(gold, exp, (RunOutcome)outcome, classId ?? "");
+            }
+
+            Debug.Log($"[Run] Client: applied reward gold={gold} exp={exp} class={classId} outcome={(RunOutcome)outcome}");
+        }
+
         [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
         public void EvacRpc()
         {
-            // MVP: evacuation knocks you back one segment (min 0).
-            int seg = SegmentFromFloor(FloorNet.Value);
-            int knocked = Mathf.Max(0, seg - 1);
-            FloorNet.Value = knocked * floorsPerSegment;
-
-            Debug.Log($"[Run] EVAC: returning to segment {knocked} (floor {FloorNet.Value})");
+            if (!IsServer) return;
+            EndRunAndReturnToTown(RunOutcome.Evac);
         }
     }
 }

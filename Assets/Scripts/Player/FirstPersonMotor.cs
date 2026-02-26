@@ -61,6 +61,24 @@ namespace DungeonGame.Player
             cc.Move(vel * Time.deltaTime);
         }
 
+        /// <summary>
+        /// Current move input magnitude (0 = no keys, 1 = full). Used by PlayerLocomotionAnimator for responsive animation.
+        /// </summary>
+        public float GetMoveInputMagnitude()
+        {
+            if (Keyboard.current == null) return 0f;
+            var move = ReadMove();
+            return Mathf.Clamp01(move.magnitude);
+        }
+
+        /// <summary>
+        /// True when sprint key is held. Used by PlayerLocomotionAnimator.
+        /// </summary>
+        public bool IsSprinting()
+        {
+            return Keyboard.current != null && Keyboard.current.leftShiftKey.isPressed;
+        }
+
         private static Vector2 ReadMove()
         {
             float x = 0f;

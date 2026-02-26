@@ -49,3 +49,10 @@ sysinfo.txt
 # Local-only: auto-generated textures / recovery (optional)
 /[Aa]ssets/_Recovery/
 /[Aa]ssets/GeneratedTextures/
+
+# Third-party asset packs (purchased / downloaded — not needed in repo)
+/[Aa]ssets/Daniel Mistage/
+/[Aa]ssets/SoStylized/
+/[Aa]ssets/PolygonDungeon/
+/[Aa]ssets/PolysplitGames/
+/[Aa]ssets/TextMesh Pro/

@@ -5,11 +5,8 @@ using UnityEngine;
 namespace DungeonGame.Player
 {
     /// <summary>
-    /// MVP "ragdoll": temporarily disables CharacterController and enables a Rigidbody tumble.
-    /// 
-    /// Netcode note:
-    /// - Server triggers the knock, but physics is simulated locally on each client for now.
-    ///   (Good enough for slop prototyping; can move to server-authoritative later.)
+    /// Handles knock/ragdoll RPC and movement disable. When PlayerBodyStateMachine is present and ragdoll is set up,
+    /// delegates to the state machine; otherwise uses legacy timer + ragdoll logic (no state machine).
     /// </summary>
     [DefaultExecutionOrder(-50)]
     [RequireComponent(typeof(CharacterController))]
@@ -17,128 +14,168 @@ namespace DungeonGame.Player
     [RequireComponent(typeof(Rigidbody))]
     public class KnockableCapsule : NetworkBehaviour
     {
-        [Header("Tuning")]
-        [SerializeField] private float defaultKnockSeconds = 1.6f;
-        [Tooltip("If true, the recovery timer starts only after the capsule first touches ground.")]
+        [Header("Legacy ragdoll (only if no PlayerBodyStateMachine)")]
+        [SerializeField] private float defaultKnockSeconds = 4f;
         [SerializeField] private bool startTimerOnGroundContact = true;
+        [SerializeField] private float maxKnockSeconds = 8f;
         [SerializeField] private float groundCheckDistance = 0.25f;
 
         [Header("Refs")]
         [SerializeField] private MonoBehaviour[] disableWhileKnocked;
 
+        [Header("Physics (legacy / non-ragdoll tumble)")]
+        [SerializeField] private float knockedDrag = 2.0f;
+        [SerializeField] private float knockedAngularDrag = 6.0f;
+        [SerializeField] private float maxAngularVelocity = 14f;
+
         private CharacterController cc;
         private Rigidbody rb;
         private CapsuleCollider col;
+        private RagdollColliderSwitch ragdollSwitch;
+        private PlayerBodyStateMachine stateMachine;
 
         public event Action OnKnocked;
         public event Action OnRecovered;
 
+        // Legacy path (when no state machine, or no ragdoll)
         private float knockedUntil;
         private float pendingDuration;
+        private float knockedAt;
         private bool knocked;
         private bool groundedDuringKnock;
-
-        private float baseDrag;
-        private float baseAngularDrag;
-        private float savedYaw;
-
-        [Header("Physics (knocked)")]
-        [SerializeField] private float knockedDrag = 2.0f;
-        [SerializeField] private float knockedAngularDrag = 6.0f;
-        [SerializeField] private float maxAngularVelocity = 14f;
+        private float baseDrag, baseAngularDrag, savedYaw;
 
         private void Awake()
         {
             cc = GetComponent<CharacterController>();
             rb = GetComponent<Rigidbody>();
             col = GetComponent<CapsuleCollider>();
+            ragdollSwitch = GetComponent<RagdollColliderSwitch>();
+            stateMachine = GetComponent<PlayerBodyStateMachine>();
 
-            // Rigidbody defaults for character tumble.
             rb.isKinematic = true;
             rb.interpolation = RigidbodyInterpolation.Interpolate;
             rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
             rb.maxAngularVelocity = maxAngularVelocity;
-
             baseDrag = rb.linearDamping;
             baseAngularDrag = rb.angularDamping;
-
-            // Use CapsuleCollider for physics; keep it disabled while controlled.
             col.enabled = false;
         }
 
         private void Update()
         {
+            if (stateMachine != null && ragdollSwitch != null) return; // state machine drives ragdoll timer
             if (!knocked) return;
 
             if (startTimerOnGroundContact && !groundedDuringKnock)
             {
                 if (!IsGroundedForKnock())
                 {
-                    // Don't recover mid-air.
+                    if (Time.time >= knockedAt + maxKnockSeconds)
+                    {
+                        RecoverLegacy();
+                        return;
+                    }
                     return;
                 }
-
                 groundedDuringKnock = true;
                 knockedUntil = Time.time + pendingDuration;
             }
 
-            if (Time.time >= knockedUntil)
-            {
-                Recover();
-            }
+            if (Time.time >= knockedUntil || Time.time >= knockedAt + maxKnockSeconds)
+                RecoverLegacy();
         }
 
-        private void SetKnocked(bool value)
+        /// <summary>Called by PlayerBodyStateMachine when entering/exiting Ragdoll. Disables movement and fires OnKnocked/OnRecovered. </summary>
+        public void SetKnockedFromStateMachine(bool value)
         {
-            knocked = value;
+            SetMovementDisabled(value);
+            if (value) OnKnocked?.Invoke();
+            else OnRecovered?.Invoke();
+        }
 
-            // Disable controller + enable physics collider
-            cc.enabled = !value;
-            col.enabled = value;
+        /// <summary>Called by PlayerBodyStateMachine when entering Stunned/Frozen (or Standing from those). Only toggles CC and disableWhileKnocked list. </summary>
+        public void SetMovementDisabled(bool disabled)
+        {
+            cc.enabled = !disabled;
 
-            rb.isKinematic = !value;
-            rb.useGravity = value;
-
-            if (value)
+            if (ragdollSwitch == null)
             {
-                rb.linearDamping = knockedDrag;
-                rb.angularDamping = knockedAngularDrag;
-                rb.maxAngularVelocity = maxAngularVelocity;
-            }
-            else
-            {
-                rb.linearDamping = baseDrag;
-                rb.angularDamping = baseAngularDrag;
-                rb.maxAngularVelocity = maxAngularVelocity;
+                col.enabled = disabled;
+                rb.isKinematic = !disabled;
+                rb.useGravity = disabled;
+                if (disabled)
+                {
+                    rb.linearDamping = knockedDrag;
+                    rb.angularDamping = knockedAngularDrag;
+                    rb.maxAngularVelocity = maxAngularVelocity;
+                }
+                else
+                {
+                    rb.linearDamping = baseDrag;
+                    rb.angularDamping = baseAngularDrag;
+                    rb.maxAngularVelocity = maxAngularVelocity;
+                }
             }
 
             if (disableWhileKnocked != null)
             {
                 foreach (var b in disableWhileKnocked)
                 {
-                    if (b == null) continue;
-                    // Never disable this component, otherwise it can't recover.
-                    if (ReferenceEquals(b, this)) continue;
-                    b.enabled = !value;
+                    if (b == null || ReferenceEquals(b, this)) continue;
+                    b.enabled = !disabled;
                 }
             }
+        }
 
+        private void SetKnockedLegacy(bool value)
+        {
+            knocked = value;
+            SetMovementDisabled(value);
             if (value) OnKnocked?.Invoke();
             else OnRecovered?.Invoke();
         }
 
-        private void Recover()
+        private void RecoverLegacy()
         {
-            // Stop motion.
-            rb.linearVelocity = Vector3.zero;
-            rb.angularVelocity = Vector3.zero;
+            if (ragdollSwitch != null)
+            {
+                ragdollSwitch.SnapRootToRagdoll();
+                SnapRootToGround();
+                transform.rotation = Quaternion.Euler(0f, savedYaw, 0f);
+                ragdollSwitch.SetStanding();
+            }
+            else
+            {
+                rb.linearVelocity = Vector3.zero;
+                rb.angularVelocity = Vector3.zero;
+                transform.position = rb.position;
+                transform.rotation = Quaternion.Euler(0f, savedYaw, 0f);
+            }
+            SetKnockedLegacy(false);
+        }
 
-            // Snap transform to rigidbody pose.
-            transform.position = rb.position;
-            // Restore stable yaw (pre-knock) so FPS doesn't inherit spin.
-            transform.rotation = Quaternion.Euler(0f, savedYaw, 0f);
+        private void SnapRootToGround()
+        {
+            if (cc == null) return;
+            float bottomY = transform.position.y + cc.center.y - cc.height * 0.5f;
+            float rayStartY = transform.position.y + Mathf.Max(1f, cc.height * 0.5f);
+            Vector3 origin = new Vector3(transform.position.x, rayStartY, transform.position.z);
+            float maxDist = rayStartY - bottomY + 2f;
+            if (Physics.Raycast(origin, Vector3.down, out RaycastHit hit, maxDist, ~0, QueryTriggerInteraction.Ignore))
+            {
+                float groundY = hit.point.y;
+                if (bottomY < groundY)
+                    transform.position += Vector3.up * (groundY - bottomY);
+            }
+        }
 
-            SetKnocked(false);
+        /// <summary>Server-only. Call from traps/hazards (e.g. spinning object) when they hit a player. Triggers ragdoll on all clients.</summary>
+        public void KnockFromServer(Vector3 impulse, float durationSeconds = -1f)
+        {
+            if (!IsServer) return;
+            float dur = durationSeconds > 0 ? durationSeconds : defaultKnockSeconds;
+            KnockClientRpc(impulse, dur);
         }
 
         [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
@@ -151,30 +188,45 @@ namespace DungeonGame.Player
         [Rpc(SendTo.Everyone)]
         private void KnockClientRpc(Vector3 impulse, float seconds)
         {
-            // Start knock locally.
             float dur = Mathf.Clamp(seconds, 0.2f, 10f);
-            pendingDuration = dur;
 
+            if (stateMachine != null && ragdollSwitch != null)
+            {
+                stateMachine.EnterRagdoll(impulse, dur);
+                return;
+            }
+
+            // Legacy: no state machine or no ragdoll
+            pendingDuration = dur;
+            knockedAt = Time.time;
             groundedDuringKnock = !startTimerOnGroundContact;
             knockedUntil = groundedDuringKnock ? (Time.time + dur) : float.PositiveInfinity;
-
-            // Save a stable yaw to restore after recovery.
             savedYaw = transform.rotation.eulerAngles.y;
 
-            SetKnocked(true);
+            if (ragdollSwitch != null)
+                ragdollSwitch.SetRagdoll(impulse);
+            SetKnockedLegacy(true);
 
-            // Apply impulse.
-            rb.AddForce(impulse, ForceMode.Impulse);
-            rb.AddTorque(new Vector3(UnityEngine.Random.Range(-3f, 3f), UnityEngine.Random.Range(-2f, 2f), UnityEngine.Random.Range(-3f, 3f)), ForceMode.Impulse);
+            if (ragdollSwitch == null)
+            {
+                rb.AddForce(impulse, ForceMode.Impulse);
+                rb.AddTorque(new Vector3(UnityEngine.Random.Range(-3f, 3f), UnityEngine.Random.Range(-2f, 2f), UnityEngine.Random.Range(-3f, 3f)), ForceMode.Impulse);
+            }
         }
 
         private bool IsGroundedForKnock()
         {
-            // Raycast down from rigidbody position.
-            var origin = rb.position + Vector3.up * 0.1f;
+            Vector3 origin = (ragdollSwitch != null)
+                ? ragdollSwitch.GetRagdollWorldPosition() + Vector3.up * 0.1f
+                : rb.position + Vector3.up * 0.1f;
             return Physics.Raycast(origin, Vector3.down, out _, groundCheckDistance + 0.1f, ~0, QueryTriggerInteraction.Ignore);
         }
 
-        public bool IsKnocked() => knocked;
+        public bool IsKnocked()
+        {
+            if (stateMachine != null)
+                return stateMachine.IsRagdoll;
+            return knocked;
+        }
     }
 }

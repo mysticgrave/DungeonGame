@@ -13,7 +13,6 @@ namespace DungeonGame.Enemies
     {
         [SerializeField] private NetworkObject ghoulPrefab;
         [SerializeField, Min(0)] private int count = 8;
-        [SerializeField] private float radius = 12f;
         [SerializeField] private List<Transform> spawnPoints = new();
 
         [Header("Procedural Spawn Points")]
@@ -107,6 +106,12 @@ namespace DungeonGame.Enemies
             if (spawned) return;
             spawned = true;
 
+            if (!HasAnySpawnPoints())
+            {
+                Debug.Log("[GhoulSpawner] No spawn points (explicit or markers); skipping spawn.");
+                return;
+            }
+
             // If navmesh isn't ready yet, we'll retry after bake event / retry tick.
             if (!UnityEngine.AI.NavMesh.SamplePosition(transform.position, out _, 50f, UnityEngine.AI.NavMesh.AllAreas))
             {
@@ -170,6 +175,11 @@ namespace DungeonGame.Enemies
             return fallback;
         }
 
+        private bool HasAnySpawnPoints()
+        {
+            return (spawnPoints != null && spawnPoints.Count > 0) || cachedMarkerPoints.Count > 0;
+        }
+
         private Vector3 GetCandidatePos(int i, int attempt)
         {
             // 1) Explicit spawn points assigned in inspector.
@@ -180,7 +190,7 @@ namespace DungeonGame.Enemies
                 return basePos + new Vector3(jitter.x, 0f, jitter.y);
             }
 
-            // 2) Procedural spawn markers collected from room prefabs.
+            // 2) Procedural spawn markers collected from room prefabs (only source if no explicit points).
             if (cachedMarkerPoints.Count > 0)
             {
                 var t = cachedMarkerPoints[Random.Range(0, cachedMarkerPoints.Count)];
@@ -191,9 +201,7 @@ namespace DungeonGame.Enemies
                 }
             }
 
-            // 3) Fallback: random ring around the spawner.
-            var r = Random.insideUnitCircle.normalized * Random.Range(2f, radius);
-            return transform.position + new Vector3(r.x, 0f, r.y);
+            return transform.position;
         }
 
         private bool IsTooCloseToAnyPlayer(Vector3 pos)

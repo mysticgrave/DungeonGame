@@ -1,20 +1,29 @@
+using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.Rendering.Universal;
 using UnityEngine.SceneManagement;
 
 namespace DungeonGame.Player
 {
     /// <summary>
     /// Creates a simple 3rd-person camera rig for the local player only.
-    /// Ensures exactly one AudioListener by only enabling it for the owner camera.
+    /// Use an optional camera prefab or let the rig create one with correct far clip and Volume support.
     /// 
     /// Controls:
     /// - Mouse: look
-    /// - RMB: (optional) can be used later for aim
     /// </summary>
     public class LocalPlayerCameraRig : NetworkBehaviour
     {
+        [Header("Camera")]
+        [Tooltip("Optional. If set, this prefab is instantiated and used (Camera + URP data). Otherwise a camera is created with the settings below.")]
+        [SerializeField] private GameObject cameraPrefab;
+        [Tooltip("Far clip plane (used when no prefab; increase so sky/fog and distant meshes render).")]
+        [SerializeField] private float farClipPlane = 2000f;
+        [Tooltip("Field of view when creating camera from code.")]
+        [SerializeField] private float fov = 70f;
+
         [Header("Rig")]
         [SerializeField] private Transform followTarget;
         [SerializeField] private float distance = 4.0f;
@@ -25,12 +34,10 @@ namespace DungeonGame.Player
         [SerializeField] private float minPitch = -70f;
         [SerializeField] private float maxPitch = 70f;
 
-        [Header("Camera")]
-        [SerializeField] private float fov = 70f;
-
         private Camera cam;
         private float yaw;
         private float pitch;
+        private readonly List<AudioListener> _disabledListeners = new List<AudioListener>();
 
         public float Yaw => yaw;
         public Transform CameraTransform => cam != null ? cam.transform : null;
@@ -47,20 +54,42 @@ namespace DungeonGame.Player
 
             if (followTarget == null) followTarget = transform;
 
-            // Create camera object
-            var go = new GameObject("LocalPlayerCamera");
+            GameObject go;
+            if (cameraPrefab != null)
+            {
+                go = Instantiate(cameraPrefab);
+                cam = go.GetComponentInChildren<Camera>(true);
+                if (cam == null) cam = go.GetComponent<Camera>();
+                if (cam == null)
+                {
+                    Debug.LogError("[LocalPlayerCameraRig] cameraPrefab has no Camera component.", this);
+                    Destroy(go);
+                    return;
+                }
+            }
+            else
+            {
+                go = new GameObject("LocalPlayerCamera");
+                cam = go.AddComponent<Camera>();
+                cam.fieldOfView = fov;
+                cam.nearClipPlane = 0.3f;
+                cam.farClipPlane = farClipPlane;
+                cam.clearFlags = CameraClearFlags.Skybox;
+                cam.backgroundColor = Color.black;
+                EnsureURPCameraData(cam);
+            }
+
+            go.name = "LocalPlayerCamera";
             DontDestroyOnLoad(go);
-
-            cam = go.AddComponent<Camera>();
-            cam.fieldOfView = fov;
             cam.tag = "MainCamera";
-
-            // Default: use skybox. We'll override to black per-scene.
             cam.clearFlags = CameraClearFlags.Skybox;
             cam.backgroundColor = Color.black;
+            cam.farClipPlane = farClipPlane;
+            EnsureURPCameraData(cam);
+            if (cam.gameObject.GetComponent<AudioListener>() == null)
+                cam.gameObject.AddComponent<AudioListener>();
 
-            // Only the local camera gets an audio listener.
-            go.AddComponent<AudioListener>();
+            DisableOtherAudioListeners(cam.gameObject);
 
             // Initialize orientation
             var e = transform.rotation.eulerAngles;
@@ -126,13 +155,46 @@ namespace DungeonGame.Player
         {
             SceneManager.activeSceneChanged -= HandleActiveSceneChanged;
 
-            // If we owned the camera, clean it up.
-            if (IsOwner && cam != null)
+            if (IsOwner)
             {
-                Destroy(cam.gameObject);
+                ReenableDisabledAudioListeners();
+                if (cam != null) Destroy(cam.gameObject);
             }
 
             base.OnNetworkDespawn();
+        }
+
+        private void DisableOtherAudioListeners(GameObject ourCameraObject)
+        {
+            _disabledListeners.Clear();
+            var listeners = FindObjectsByType<AudioListener>(FindObjectsSortMode.None);
+            foreach (var listener in listeners)
+            {
+                if (listener.gameObject == ourCameraObject) continue;
+                if (listener.enabled)
+                {
+                    listener.enabled = false;
+                    _disabledListeners.Add(listener);
+                }
+            }
+        }
+
+        private void ReenableDisabledAudioListeners()
+        {
+            foreach (var listener in _disabledListeners)
+            {
+                if (listener != null) listener.enabled = true;
+            }
+            _disabledListeners.Clear();
+        }
+
+        private static void EnsureURPCameraData(Camera camera)
+        {
+            if (camera == null) return;
+            var data = camera.GetUniversalAdditionalCameraData();
+            if (data == null) return;
+            data.renderPostProcessing = true;
+            data.volumeLayerMask = 1; // Default layer so Global Fog / Volumes apply
         }
     }
 }

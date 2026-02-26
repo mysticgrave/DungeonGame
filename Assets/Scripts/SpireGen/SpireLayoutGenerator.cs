@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using DungeonGame.Core;
 using Unity.Netcode;
@@ -54,6 +55,13 @@ namespace DungeonGame.SpireGen
         [Tooltip("Optional starting room prefab. If null, a random room is chosen.")]
         [SerializeField] private RoomPrefab startRoom;
 
+        [Header("Boss / End Room")]
+        [Tooltip("The final destination room placed at the end of the main path. Must have at least 1 compatible socket. Excluded from the normal room pool.")]
+        [SerializeField] private RoomPrefab bossRoom;
+
+        [Tooltip("Minimum number of rooms on the main path before the boss room can be placed. If the main path is shorter, the boss room is placed at the end regardless.")]
+        [SerializeField, Min(1)] private int minRoomsBeforeBoss = 10;
+
         private SpireSeed spireSeed;
 
         private readonly List<PlacedRoom> placed = new();
@@ -106,16 +114,28 @@ namespace DungeonGame.SpireGen
             base.OnNetworkDespawn();
         }
 
+        private Coroutine _generateCoroutine;
+
         private void HandleSeed(int seed)
         {
             if (!IsServer) return;
 
-            rng = spireSeed.CreateRandom("layout");
+            if (_generateCoroutine != null)
+                StopCoroutine(_generateCoroutine);
 
+            _generateCoroutine = StartCoroutine(GenerateCoroutine(seed));
+        }
+
+        private IEnumerator GenerateCoroutine(int seed)
+        {
+            rng = spireSeed.CreateRandom("layout");
             ClearExistingGeneratedRooms();
 
-            var layout = GenerateLayout(seed);
-            SpawnLayout(layout);
+            var data = new SpireLayoutData { seed = seed };
+            yield return StartCoroutine(GenerateLayoutCoroutine(seed, data));
+
+            SpawnLayout(data);
+            _generateCoroutine = null;
         }
 
         private void ClearExistingGeneratedRooms()
@@ -142,69 +162,392 @@ namespace DungeonGame.SpireGen
             recentRoomIds.Clear();
         }
 
-        public SpireLayoutData GenerateLayout(int seed)
+        [Header("Debug")]
+        [Tooltip("Max total backtracks across the entire main-path build.")]
+        [SerializeField, Range(0, 50)] private int maxBacktracks = 20;
+
+        [Tooltip("Yield to the next frame after this many placement attempts to prevent freezing.")]
+        [SerializeField, Range(5, 100)] private int attemptsPerFrame = 20;
+
+        /// <summary>
+        /// Global counter incremented each time PlaceRoom instantiates + tests a room.
+        /// Used to yield periodically in the coroutine.
+        /// </summary>
+        private int _placementAttempts;
+
+        private IEnumerator GenerateLayoutCoroutine(int seed, SpireLayoutData data)
         {
             if (roomPrefabs.Count == 0)
             {
                 Debug.LogError("[SpireGen] No room prefabs assigned.");
-                return new SpireLayoutData { seed = seed };
+                yield break;
             }
 
-            var data = new SpireLayoutData { seed = seed };
+            _placementAttempts = 0;
 
-            // Place start room at origin.
+            // ── Phase 1: Start room ──
             var start = startRoom != null ? startRoom : PickRoomPrefab(null, forceLandmark: false, forceConnector: false);
             var startRot = Rotation90(rng.Next(0, 4));
             var startPlacement = PlaceRoom(start, Vector3.zero, startRot);
             if (startPlacement == null || startPlacement.root == null)
             {
                 Debug.LogError("[SpireGen] Failed to place start room.");
-                return data;
+                yield break;
             }
 
-            int startIndex = data.rooms.Count;
             data.rooms.Add(new RoomPlacement
             {
                 roomId = start.roomId,
                 position = startPlacement.root.position,
                 rotationY = (int)startRot.eulerAngles.y
             });
-
             NotePlaced(start.roomId, start);
 
-            // Main path: always extend from the newest room's available sockets.
-            for (int i = 0; i < mainPathRooms - 1; i++)
-            {
-                bool placeLandmark = landmarkEvery > 0 && i > 0 && (i % landmarkEvery == 0);
+            // ── Phase 2: Build linear main path (start → boss) ──
+            var mainPath = new List<PlacedRoom> { startPlacement };
+            yield return StartCoroutine(BuildMainPathCoroutine(data, mainPath));
 
-                if (!TryExtendOnce(data, preferRandomSocket: false, forceLandmark: placeLandmark))
+            Debug.Log($"[SpireGen] Main path: {mainPath.Count} rooms.");
+
+            // ── Phase 3: Boss room at the tip ──
+            if (bossRoom != null)
+            {
+                if (mainPath.Count < minRoomsBeforeBoss)
+                    Debug.LogWarning($"[SpireGen] Main path only reached {mainPath.Count} rooms (minimum {minRoomsBeforeBoss} before boss). Placing boss anyway.");
+
+                if (TryPlaceBossRoom(data, mainPath))
+                    Debug.Log($"[SpireGen] Boss room placed at index {data.bossRoomIndex} after {mainPath.Count} main-path rooms.");
+                else
+                    Debug.LogError("[SpireGen] Failed to place boss room!");
+            }
+
+            yield return null;
+
+            // ── Phase 4: Branches off main path open sockets ──
+            yield return StartCoroutine(BuildBranchesCoroutine(data, mainPath));
+
+            // ── Phase 5: Loop connectors ──
+            for (int l = 0; l < loopAttempts; l++)
+                TryCreateLoop(data);
+
+            Debug.Log($"[SpireGen] GenerateLayout done: rooms={data.rooms.Count}, connections={data.connections.Count}");
+        }
+
+        /// <summary>Check if we should yield to the next frame to keep the app responsive.</summary>
+        private IEnumerator YieldIfNeeded()
+        {
+            if (_placementAttempts >= attemptsPerFrame)
+            {
+                _placementAttempts = 0;
+                yield return null;
+            }
+        }
+
+        /// <summary>
+        /// Builds a strictly linear main path by only extending from the tip room.
+        /// If the tip is stuck, backtracks (removes the tip) and retries with a different piece.
+        /// Yields periodically so the app stays responsive.
+        /// </summary>
+        private IEnumerator BuildMainPathCoroutine(SpireLayoutData data, List<PlacedRoom> mainPath)
+        {
+            int totalBacktracks = 0;
+
+            while (mainPath.Count < mainPathRooms)
+            {
+                yield return StartCoroutine(YieldIfNeeded());
+
+                var tip = mainPath[mainPath.Count - 1];
+                bool placeLandmark = landmarkEvery > 0 && mainPath.Count > 1 && (mainPath.Count % landmarkEvery == 0);
+
+                bool extended = TryExtendFromRoom(data, tip, minSockets: 2, forceLandmark: placeLandmark, mainPath);
+                if (!extended)
+                    extended = TryExtendFromRoom(data, tip, minSockets: 2, forceLandmark: false, mainPath);
+                if (!extended)
+                    extended = TryExtendFromRoom(data, tip, minSockets: 1, forceLandmark: false, mainPath);
+
+                if (extended)
+                    continue;
+
+                // Stuck at the tip — backtrack.
+                if (mainPath.Count <= 1 || totalBacktracks >= maxBacktracks)
                 {
-                    Debug.LogWarning($"[SpireGen] Main path extension failed at i={i}.");
+                    Debug.LogWarning($"[SpireGen] Main path stuck at {mainPath.Count} rooms after {totalBacktracks} total backtracks.");
+                    break;
+                }
+
+                Debug.Log($"[SpireGen] Backtracking at room {mainPath.Count} (backtrack {totalBacktracks + 1}/{maxBacktracks}).");
+                UndoLastMainPathRoom(data, mainPath);
+                totalBacktracks++;
+            }
+        }
+
+        /// <summary>
+        /// Try to extend the main path from a specific room's unused sockets.
+        /// Tries every prefab × every socket × 4 rotations before giving up.
+        /// </summary>
+        private bool TryExtendFromRoom(SpireLayoutData data, PlacedRoom tip, int minSockets, bool forceLandmark, List<PlacedRoom> mainPath)
+        {
+            // Get unused sockets on the tip room.
+            var tipSockets = new List<RoomSocket>();
+            foreach (var sock in tip.prefab.GetSockets(socketType, socketSize))
+            {
+                if (sock == null) continue;
+                if (IsSocketUsed(tip.root, sock)) continue;
+                tipSockets.Add(sock);
+            }
+            ShuffleList(tipSockets);
+            if (tipSockets.Count == 0) return false;
+
+            // Build candidate prefabs (shuffled).
+            var candidates = new List<RoomPrefab>();
+            foreach (var p in roomPrefabs)
+            {
+                if (p == null) continue;
+                if (CountCompatibleSockets(p) < minSockets) continue;
+                if (!PassesMainPathFilters(p, forceLandmark)) continue;
+                candidates.Add(p);
+            }
+            ShuffleList(candidates);
+            if (candidates.Count == 0 && forceLandmark)
+            {
+                // Relax landmark requirement.
+                foreach (var p in roomPrefabs)
+                {
+                    if (p == null) continue;
+                    if (CountCompatibleSockets(p) < minSockets) continue;
+                    if (!PassesMainPathFilters(p, false)) continue;
+                    candidates.Add(p);
+                }
+                ShuffleList(candidates);
+            }
+            if (candidates.Count == 0) return false;
+
+            foreach (var targetSocket in tipSockets)
+            {
+                var targetOpen = new OpenSocket { socket = targetSocket, roomRoot = tip.root };
+
+                foreach (var prefabAsset in candidates)
+                {
+                    var sourceSockets = GetCompatibleSockets(prefabAsset);
+                    ShuffleList(sourceSockets);
+
+                    foreach (var sourceSocketAsset in sourceSockets)
+                    {
+                        string sourceSocketPath = GetRelativePath(prefabAsset.transform, sourceSocketAsset.transform);
+                        var aligned = ComputeSnapTransform(targetOpen, sourceSocketAsset, Rotation90(rng.Next(0, 4)));
+
+                        var placedRoom = PlaceRoom(prefabAsset, aligned.pos, aligned.rot);
+                        if (placedRoom == null || placedRoom.root == null) continue;
+
+                        var sourceSocketInstance = FindSocketInstanceById(placedRoom.prefab, sourceSocketAsset.socketId)
+                            ?? FindSocketInstance(placedRoom.root, sourceSocketPath);
+
+                        // Success — wire it up.
+                        MarkSocketUsed(tip.root, targetSocket);
+                        if (sourceSocketInstance != null)
+                            MarkSocketUsed(placedRoom.root, sourceSocketInstance);
+
+                        data.rooms.Add(new RoomPlacement
+                        {
+                            roomId = prefabAsset.roomId,
+                            position = placedRoom.root.position,
+                            rotationY = (int)placedRoom.root.rotation.eulerAngles.y
+                        });
+
+                        if (sourceSocketInstance != null)
+                            RecordConnection(data, targetOpen, placedRoom.root, sourceSocketInstance);
+
+                        NotePlaced(prefabAsset.roomId, prefabAsset);
+                        mainPath.Add(placedRoom);
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>Filter for main-path room selection. Skips boss, respects unique/cooldown.</summary>
+        private bool PassesMainPathFilters(RoomPrefab p, bool forceLandmark)
+        {
+            if (!HasCompatibleSocket(p)) return false;
+            if (bossRoom != null && p.roomId == bossRoom.roomId) return false;
+            if (forceLandmark && !p.landmark) return false;
+            if ((p.uniquePerSlice || p.landmark) && usedUniqueRoomIds.Contains(p.roomId)) return false;
+            if (p.weight <= 0) return false;
+            // Intentionally skip repeatCooldown for the main path — reaching target length is more important.
+            return true;
+        }
+
+        /// <summary>Remove the last room on the main path so we can try a different piece.</summary>
+        private void UndoLastMainPathRoom(SpireLayoutData data, List<PlacedRoom> mainPath)
+        {
+            if (mainPath.Count <= 1) return;
+
+            var tip = mainPath[mainPath.Count - 1];
+            mainPath.RemoveAt(mainPath.Count - 1);
+
+            // Remove from placed list.
+            placed.Remove(tip);
+
+            // Remove from data.rooms (last entry).
+            if (data.rooms.Count > 0)
+                data.rooms.RemoveAt(data.rooms.Count - 1);
+
+            // Remove any connections referencing this room's NetworkObject.
+            if (tip.root != null)
+            {
+                var tipNet = tip.root.GetComponentInParent<NetworkObject>();
+                if (tipNet != null)
+                {
+                    ulong tipId = tipNet.NetworkObjectId;
+                    data.connections.RemoveAll(c => c.a.roomNetId == tipId || c.b.roomNetId == tipId);
+                }
+            }
+
+            // Restore the socket on the previous tip that was used to connect to this room.
+            // We do this by clearing the used socket path that matched.
+            var prevTip = mainPath[mainPath.Count - 1];
+            if (prevTip.usedSocketPaths != null && prevTip.usedSocketPaths.Count > 0)
+            {
+                // Remove the most recently added used socket (the one that connected to the removed room).
+                // Since HashSet doesn't track order, we re-check which sockets are actually connected.
+                var toRestore = new List<string>();
+                foreach (var path in prevTip.usedSocketPaths)
+                {
+                    var sockTransform = prevTip.root.Find(path);
+                    if (sockTransform == null) continue;
+                    // If no placed room is connected at this socket position anymore, restore it.
+                    bool stillConnected = false;
+                    foreach (var pr in placed)
+                    {
+                        if (pr == prevTip) continue;
+                        if (pr.root == null) continue;
+                        foreach (var s in pr.prefab.GetSockets(socketType, socketSize))
+                        {
+                            if (s == null) continue;
+                            if (Vector3.Distance(s.transform.position, sockTransform.position) < 0.5f)
+                            {
+                                stillConnected = true;
+                                break;
+                            }
+                        }
+                        if (stillConnected) break;
+                    }
+                    if (!stillConnected)
+                        toRestore.Add(path);
+                }
+                foreach (var p in toRestore)
+                    prevTip.usedSocketPaths.Remove(p);
+            }
+
+            // Despawn and destroy the removed room.
+            if (tip.root != null)
+            {
+                var no = tip.root.GetComponentInParent<NetworkObject>();
+                if (no != null && no.IsSpawned)
+                    no.Despawn(true);
+                else if (tip.root.gameObject != null)
+                    Destroy(tip.root.gameObject);
+            }
+        }
+
+        /// <summary>
+        /// Builds branches off the main path. Each branch is a linear chain grown from
+        /// an unused socket on a main-path room, with retries and backtracking.
+        /// Yields periodically so the app stays responsive.
+        /// </summary>
+        private IEnumerator BuildBranchesCoroutine(SpireLayoutData data, List<PlacedRoom> mainPath)
+        {
+            var branchPoints = new List<PlacedRoom>();
+            foreach (var room in mainPath)
+            {
+                if (room.root == null) continue;
+                foreach (var sock in room.prefab.GetSockets(socketType, socketSize))
+                {
+                    if (sock == null) continue;
+                    if (IsSocketUsed(room.root, sock)) continue;
+                    branchPoints.Add(room);
                     break;
                 }
             }
+            ShuffleList(branchPoints);
 
-            // Branches: extend from random open sockets.
-            for (int b = 0; b < branches; b++)
+            int branchesBuilt = 0;
+            foreach (var branchRoot in branchPoints)
             {
-                int len = rng.Next(branchLengthMin, branchLengthMax + 1);
-                for (int i = 0; i < len; i++)
+                if (branchesBuilt >= branches) break;
+
+                int targetLen = rng.Next(branchLengthMin, branchLengthMax + 1);
+                var branch = new List<PlacedRoom> { branchRoot };
+                int branchBacktracks = 0;
+                int maxBranchBacktracks = Mathf.Max(5, targetLen * 2);
+
+                while (branch.Count - 1 < targetLen)
                 {
-                    if (!TryExtendOnce(data, preferRandomSocket: true, forceLandmark: false)) break;
+                    yield return StartCoroutine(YieldIfNeeded());
+
+                    var tip = branch[branch.Count - 1];
+                    bool isLastRoom = (branch.Count - 1 == targetLen - 1);
+                    int minSock = isLastRoom ? 1 : 2;
+
+                    bool extended = TryExtendFromRoom(data, tip, minSockets: minSock, forceLandmark: false, mainPath: branch);
+                    if (!extended && minSock > 1)
+                        extended = TryExtendFromRoom(data, tip, minSockets: 1, forceLandmark: false, mainPath: branch);
+
+                    if (extended)
+                        continue;
+
+                    if (branch.Count <= 1 || branchBacktracks >= maxBranchBacktracks)
+                        break;
+
+                    UndoLastMainPathRoom(data, branch);
+                    branchBacktracks++;
+                }
+
+                int branchLen = branch.Count - 1;
+                if (branchLen >= branchLengthMin)
+                {
+                    branchesBuilt++;
+                    Debug.Log($"[SpireGen] Branch {branchesBuilt}/{branches}: {branchLen} rooms.");
+                }
+                else if (branchLen > 0)
+                {
+                    Debug.Log($"[SpireGen] Branch too short ({branchLen} < {branchLengthMin}), removing.");
+                    while (branch.Count > 1)
+                        UndoLastMainPathRoom(data, branch);
                 }
             }
 
-            // Loops: attempt to connect two existing open sockets using a connector room.
-            for (int l = 0; l < loopAttempts; l++)
-            {
-                TryCreateLoop(data);
-            }
-
-            Debug.Log($"[SpireGen] GenerateLayout done: rooms={data.rooms.Count}, connections={data.connections.Count}");
-            return data;
+            if (branchesBuilt < branches)
+                Debug.LogWarning($"[SpireGen] Only built {branchesBuilt}/{branches} branches (not enough free sockets on main path).");
         }
 
-        private bool TryExtendOnce(SpireLayoutData data, bool preferRandomSocket, bool forceLandmark)
+        private void RecordConnection(SpireLayoutData data, OpenSocket target, Transform newRoomRoot, RoomSocket newSocket)
+        {
+            var aNet = target.roomRoot.GetComponentInParent<NetworkObject>();
+            var bNet = newRoomRoot.GetComponentInParent<NetworkObject>();
+
+            data.connections.Add(new SocketConnection
+            {
+                a = new SocketRef
+                {
+                    roomNetId = aNet != null ? aNet.NetworkObjectId : 0,
+                    socketId = target.socket.socketId,
+                    socketType = target.socket.socketType,
+                    size = target.socket.size,
+                },
+                b = new SocketRef
+                {
+                    roomNetId = bNet != null ? bNet.NetworkObjectId : 0,
+                    socketId = newSocket.socketId,
+                    socketType = newSocket.socketType,
+                    size = newSocket.size,
+                }
+            });
+        }
+
+        private bool TryExtendOnce(SpireLayoutData data, bool preferRandomSocket, bool forceLandmark, int minSockets = 1)
         {
             if (openSockets.Count == 0)
             {
@@ -215,105 +558,200 @@ namespace DungeonGame.SpireGen
             PruneOpenSockets();
             if (openSockets.Count == 0) return false;
 
-            // Choose a target open socket.
-            OpenSocket target = preferRandomSocket
-                ? openSockets[rng.Next(0, openSockets.Count)]
-                : openSockets[openSockets.Count - 1];
+            // Build a list of target sockets to try (shuffled or ordered).
+            var targetCandidates = new List<OpenSocket>(openSockets);
+            if (preferRandomSocket)
+                ShuffleList(targetCandidates);
+            else
+                targetCandidates.Reverse(); // newest first
 
-            if (target.socket == null || target.roomRoot == null)
+            foreach (var target in targetCandidates)
             {
-                // Should not happen after pruning, but be defensive.
-                openSockets.RemoveAll(s => s.socket == null || s.roomRoot == null);
+                if (target.socket == null || target.roomRoot == null) continue;
+
+                if (TryPlaceAtSocket(data, target, forceLandmark, minSockets))
+                    return true;
+            }
+
+            return false;
+        }
+
+        private bool TryPlaceAtSocket(SpireLayoutData data, OpenSocket target, bool forceLandmark, int minSockets)
+        {
+            // Build a shuffled list of candidate prefabs for this attempt.
+            var candidatePrefabs = new List<RoomPrefab>();
+            foreach (var p in roomPrefabs)
+            {
+                if (p == null) continue;
+                if (CountCompatibleSockets(p) < minSockets) continue;
+                candidatePrefabs.Add(p);
+            }
+            ShuffleList(candidatePrefabs);
+
+            int attempts = 0;
+            foreach (var prefabAsset in candidatePrefabs)
+            {
+                if (attempts >= maxAttemptsPerPlacement) break;
+
+                // Apply the same filters as PickRoomPrefab.
+                if (!PassesPlacementFilters(prefabAsset, forceLandmark, forceConnector: false)) continue;
+
+                // Get all compatible sockets on this candidate, shuffled.
+                var compatibleSockets = GetCompatibleSockets(prefabAsset);
+                ShuffleList(compatibleSockets);
+
+                foreach (var sourceSocketAsset in compatibleSockets)
+                {
+                    if (attempts >= maxAttemptsPerPlacement) break;
+                    attempts++;
+
+                    string sourceSocketPath = GetRelativePath(prefabAsset.transform, sourceSocketAsset.transform);
+
+                    var aligned = ComputeSnapTransform(target, sourceSocketAsset, Rotation90(rng.Next(0, 4)));
+
+                    var placedRoom = PlaceRoom(prefabAsset, aligned.pos, aligned.rot);
+                    if (placedRoom == null || placedRoom.root == null) continue;
+
+                    var sourceSocketInstance = FindSocketInstanceById(placedRoom.prefab, sourceSocketAsset.socketId);
+                    if (sourceSocketInstance == null)
+                        sourceSocketInstance = FindSocketInstance(placedRoom.root, sourceSocketPath);
+
+                    if (sourceSocketInstance == null)
+                        Debug.LogWarning($"[SpireGen] Could not resolve socket on '{placedRoom.root.name}'.");
+
+                    MarkSocketUsed(target.roomRoot, target.socket);
+                    if (sourceSocketInstance != null)
+                        MarkSocketUsed(placedRoom.root, sourceSocketInstance);
+
+                    openSockets.RemoveAll(s => s.socket == target.socket && s.roomRoot == target.roomRoot);
+
+                    data.rooms.Add(new RoomPlacement
+                    {
+                        roomId = prefabAsset.roomId,
+                        position = placedRoom.root.position,
+                        rotationY = (int)placedRoom.root.rotation.eulerAngles.y
+                    });
+
+                    if (sourceSocketInstance != null)
+                    {
+                        var aNet = target.roomRoot.GetComponentInParent<NetworkObject>();
+                        var bNet = placedRoom.root.GetComponentInParent<NetworkObject>();
+
+                        var conn = new SocketConnection
+                        {
+                            a = new SocketRef
+                            {
+                                roomNetId = aNet != null ? aNet.NetworkObjectId : 0,
+                                socketId = target.socket.socketId,
+                                socketType = target.socket.socketType,
+                                size = target.socket.size,
+                            },
+                            b = new SocketRef
+                            {
+                                roomNetId = bNet != null ? bNet.NetworkObjectId : 0,
+                                socketId = sourceSocketInstance.socketId,
+                                socketType = sourceSocketInstance.socketType,
+                                size = sourceSocketInstance.size,
+                            }
+                        };
+
+                        data.connections.Add(conn);
+                        Debug.Log($"[SpireGen] CONNECT a(room={conn.a.roomNetId}, socket={conn.a.socketId[..Mathf.Min(6, conn.a.socketId.Length)]}) -> b(room={conn.b.roomNetId}, socket={conn.b.socketId[..Mathf.Min(6, conn.b.socketId.Length)]})");
+                    }
+
+                    NotePlaced(prefabAsset.roomId, prefabAsset);
+                    AddOpenSocketsForRoom(placedRoom.root, placedRoom.prefab);
+                    return true;
+                }
+            }
+
+            // If landmark was required but nothing worked, retry without it.
+            if (forceLandmark)
+                return TryPlaceAtSocket(data, target, forceLandmark: false, minSockets);
+
+            return false;
+        }
+
+        private bool PassesPlacementFilters(RoomPrefab p, bool forceLandmark, bool forceConnector)
+        {
+            if (!HasCompatibleSocket(p)) return false;
+            if (forceLandmark && !p.landmark) return false;
+            if (forceConnector && !p.connector) return false;
+            if ((p.uniquePerSlice || p.landmark) && usedUniqueRoomIds.Contains(p.roomId)) return false;
+            if (p.repeatCooldown > 0 && recentRoomIds.Contains(p.roomId)) return false;
+            if (p.weight <= 0) return false;
+            // Never place the boss room through normal selection.
+            if (bossRoom != null && p.roomId == bossRoom.roomId) return false;
+            return true;
+        }
+
+        /// <summary>
+        /// Tries to place the boss room at the end of the main path.
+        /// Walks backwards from the tip if the tip's sockets are all blocked.
+        /// </summary>
+        private bool TryPlaceBossRoom(SpireLayoutData data, List<PlacedRoom> mainPath)
+        {
+            if (bossRoom == null) return false;
+
+            var compatibleSockets = GetCompatibleSockets(bossRoom);
+            if (compatibleSockets.Count == 0)
+            {
+                Debug.LogError("[SpireGen] Boss room has no compatible sockets.");
                 return false;
             }
 
-            // Try place a room connected to it.
-            for (int attempt = 0; attempt < maxAttemptsPerPlacement; attempt++)
+            // Try from tip backwards along main path.
+            for (int m = mainPath.Count - 1; m >= 0; m--)
             {
-                var prefabAsset = PickRoomPrefab(target.socket, forceLandmark: forceLandmark, forceConnector: false);
-                if (prefabAsset == null) continue;
+                var room = mainPath[m];
+                if (room.root == null) continue;
 
-                if (!TryGetCompatibleSocket(prefabAsset, out var sourceSocketAsset)) continue;
-
-                string sourceSocketPath = GetRelativePath(prefabAsset.transform, sourceSocketAsset.transform);
-
-                // Determine rotation and position so that sourceSocket faces opposite of target.socket.
-                var initialRot = Rotation90(rng.Next(0, 4));
-                var aligned = ComputeSnapTransform(target, sourceSocketAsset, initialRot);
-
-                var placedRoom = PlaceRoom(prefabAsset, aligned.pos, aligned.rot);
-                if (placedRoom == null || placedRoom.root == null) continue;
-
-                // Resolve socket instance on placed room by stable socketId (preferred).
-                var sourceSocketInstance = FindSocketInstanceById(placedRoom.prefab, sourceSocketAsset.socketId);
-                if (sourceSocketInstance == null)
+                var roomSockets = new List<RoomSocket>();
+                foreach (var sock in room.prefab.GetSockets(socketType, socketSize))
                 {
-                    // Fallback to transform path.
-                    sourceSocketInstance = FindSocketInstance(placedRoom.root, sourceSocketPath);
+                    if (sock == null) continue;
+                    if (IsSocketUsed(room.root, sock)) continue;
+                    roomSockets.Add(sock);
                 }
+                ShuffleList(roomSockets);
 
-                if (sourceSocketInstance == null)
+                foreach (var targetSocket in roomSockets)
                 {
-                    Debug.LogWarning($"[SpireGen] Could not resolve socket instance id/path (id='{sourceSocketAsset.socketId}', path='{sourceSocketPath}') on '{placedRoom.root.name}'.");
-                }
+                    var targetOpen = new OpenSocket { socket = targetSocket, roomRoot = room.root };
+                    ShuffleList(compatibleSockets);
 
-                // Mark sockets used.
-                MarkSocketUsed(target.roomRoot, target.socket);
-                if (sourceSocketInstance != null)
-                {
-                    MarkSocketUsed(placedRoom.root, sourceSocketInstance);
-                }
-
-                // Remove used target socket from open list.
-                openSockets.RemoveAll(s => s.socket == target.socket && s.roomRoot == target.roomRoot);
-
-                int newRoomIndex = data.rooms.Count;
-                data.rooms.Add(new RoomPlacement
-                {
-                    roomId = prefabAsset.roomId,
-                    position = placedRoom.root.position,
-                    rotationY = (int)placedRoom.root.rotation.eulerAngles.y
-                });
-
-                // Record explicit connection (A = target/existing socket, B = new room socket)
-                if (sourceSocketInstance != null)
-                {
-                    var aNet = target.roomRoot.GetComponentInParent<NetworkObject>();
-                    var bNet = placedRoom.root.GetComponentInParent<NetworkObject>();
-
-                    var conn = new SocketConnection
+                    foreach (var sourceSocketAsset in compatibleSockets)
                     {
-                        a = new SocketRef
-                        {
-                            roomNetId = aNet != null ? aNet.NetworkObjectId : 0,
-                            socketId = target.socket.socketId,
-                            socketType = target.socket.socketType,
-                            size = target.socket.size,
-                        },
-                        b = new SocketRef
-                        {
-                            roomNetId = bNet != null ? bNet.NetworkObjectId : 0,
-                            socketId = sourceSocketInstance.socketId,
-                            socketType = sourceSocketInstance.socketType,
-                            size = sourceSocketInstance.size,
-                        }
-                    };
+                        string sourceSocketPath = GetRelativePath(bossRoom.transform, sourceSocketAsset.transform);
+                        var aligned = ComputeSnapTransform(targetOpen, sourceSocketAsset, Rotation90(rng.Next(0, 4)));
 
-                    data.connections.Add(conn);
+                        var placedRoom = PlaceRoom(bossRoom, aligned.pos, aligned.rot);
+                        if (placedRoom == null || placedRoom.root == null) continue;
 
-                    Debug.Log($"[SpireGen] CONNECT a(room={conn.a.roomNetId}, socket={conn.a.socketId[..Mathf.Min(6, conn.a.socketId.Length)]}) @ {target.socket.transform.position} -> b(room={conn.b.roomNetId}, socket={conn.b.socketId[..Mathf.Min(6, conn.b.socketId.Length)]}) @ {sourceSocketInstance.transform.position}");
+                        var sourceSocketInstance = FindSocketInstanceById(placedRoom.prefab, sourceSocketAsset.socketId)
+                            ?? FindSocketInstance(placedRoom.root, sourceSocketPath);
+
+                        MarkSocketUsed(room.root, targetSocket);
+                        if (sourceSocketInstance != null)
+                            MarkSocketUsed(placedRoom.root, sourceSocketInstance);
+
+                        data.bossRoomIndex = data.rooms.Count;
+                        data.rooms.Add(new RoomPlacement
+                        {
+                            roomId = bossRoom.roomId,
+                            position = placedRoom.root.position,
+                            rotationY = (int)placedRoom.root.rotation.eulerAngles.y
+                        });
+
+                        if (sourceSocketInstance != null)
+                            RecordConnection(data, targetOpen, placedRoom.root, sourceSocketInstance);
+
+                        NotePlaced(bossRoom.roomId, bossRoom);
+                        return true;
+                    }
                 }
-
-                NotePlaced(prefabAsset.roomId, prefabAsset);
-
-                // Add new room sockets to open list.
-                AddOpenSocketsForRoom(placedRoom.root, placedRoom.prefab);
-
-                return true;
             }
 
-            // If we failed to extend from this socket, drop it.
-            openSockets.RemoveAll(s => s.socket == target.socket && s.roomRoot == target.roomRoot);
             return false;
         }
 
@@ -379,16 +817,29 @@ namespace DungeonGame.SpireGen
             }
         }
 
-        private bool TryGetCompatibleSocket(RoomPrefab prefabAsset, out RoomSocket socket)
+        private List<RoomSocket> GetCompatibleSockets(RoomPrefab prefabAsset)
         {
+            var list = new List<RoomSocket>();
             foreach (var s in prefabAsset.GetSockets(socketType, socketSize))
-            {
-                socket = s;
-                return true;
-            }
+                list.Add(s);
+            return list;
+        }
 
-            socket = null;
-            return false;
+        private void ShuffleList<T>(List<T> list)
+        {
+            for (int i = list.Count - 1; i > 0; i--)
+            {
+                int j = rng.Next(0, i + 1);
+                (list[i], list[j]) = (list[j], list[i]);
+            }
+        }
+
+        private int CountCompatibleSockets(RoomPrefab prefab)
+        {
+            int count = 0;
+            foreach (var _ in prefab.GetSockets(socketType, socketSize))
+                count++;
+            return count;
         }
 
         private (Vector3 pos, Quaternion rot) ComputeSnapTransform(OpenSocket target, RoomSocket sourceSocketAsset, Quaternion initialRoomRot)
@@ -522,7 +973,8 @@ namespace DungeonGame.SpireGen
 
         private PlacedRoom PlaceRoom(RoomPrefab prefabAsset, Vector3 pos, Quaternion rot)
         {
-            // Instantiate under generator for cleanup.
+            _placementAttempts++;
+
             var go = Instantiate(prefabAsset.gameObject, pos, rot, transform);
 
             // Overlap check (simple AABB in world space using renderers/colliders).
@@ -621,6 +1073,9 @@ namespace DungeonGame.SpireGen
             {
                 if (p == null) continue;
                 if (!HasCompatibleSocket(p)) continue;
+
+                // Boss room is placed separately — never through normal selection.
+                if (bossRoom != null && p.roomId == bossRoom.roomId) continue;
 
                 if (forceLandmark && !p.landmark) continue;
                 if (forceConnector && !p.connector) continue;

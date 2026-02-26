@@ -9,6 +9,9 @@ namespace DungeonGame.Run
     /// </summary>
     public class RunDebugHUD : MonoBehaviour
     {
+        [Tooltip("Uncheck to hide the debug HUD while playing.")]
+        [SerializeField] private bool visible;
+
         private SpireRunState run;
 
         private void Awake()
@@ -19,7 +22,7 @@ namespace DungeonGame.Run
 
         private void OnGUI()
         {
-            if (run == null) return;
+            if (!visible || run == null) return;
             if (NetworkManager.Singleton == null || !NetworkManager.Singleton.IsListening) return;
 
             GUILayout.BeginArea(new Rect(10, 10, 450, 180), GUI.skin.box);

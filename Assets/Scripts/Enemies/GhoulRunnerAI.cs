@@ -1,4 +1,5 @@
 using System;
+using DungeonGame.Player;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.AI;
@@ -31,10 +32,14 @@ namespace DungeonGame.Enemies
         [SerializeField] private float lungeSpeed = 12.5f;
         [SerializeField] private float lungeDuration = 0.35f;
         [SerializeField] private float lungeCooldown = 2.5f;
+        [Tooltip("Damage dealt to the player when a lunge connects.")]
+        [SerializeField] private int lungeDamage = 1;
 
         private NavMeshAgent agent;
         private float lungeUntil;
         private float nextLungeAt;
+        private Transform _lastLungeTarget;
+        private bool _lungeDamageApplied;
 
         private void Awake()
         {
@@ -97,7 +102,22 @@ namespace DungeonGame.Enemies
             {
                 lungeUntil = Time.time + lungeDuration;
                 nextLungeAt = Time.time + lungeCooldown;
+                _lastLungeTarget = target;
+                _lungeDamageApplied = false;
             }
+
+            // Apply lunge damage once when in range during lunge
+            if (lungeDamage > 0 && Time.time < lungeUntil && _lastLungeTarget != null && !_lungeDamageApplied && dist <= lungeRange * 1.2f)
+            {
+                var playerHealth = _lastLungeTarget.GetComponent<PlayerHealth>();
+                if (playerHealth != null)
+                {
+                    playerHealth.TakeDamage(lungeDamage);
+                    _lungeDamageApplied = true;
+                }
+            }
+            if (Time.time >= lungeUntil)
+                _lastLungeTarget = null;
         }
 
         private Transform FindNearestPlayer()

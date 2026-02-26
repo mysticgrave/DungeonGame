@@ -12,7 +12,8 @@ namespace DungeonGame.Player
     {
         [SerializeField] private float force = 14f;
         [SerializeField] private float upForce = 5f;
-        [SerializeField] private float seconds = 1.6f;
+        [Tooltip("Ragdoll duration in seconds (time on ground before recovery). Pass -1 to use KnockableCapsule's defaultKnockSeconds.")]
+        [SerializeField] private float seconds = -1f;
 
         private KnockableCapsule knock;
 
@@ -41,7 +42,7 @@ namespace DungeonGame.Player
             }
 
             var impulse = transform.forward * force + Vector3.up * upForce;
-            knock.KnockRpc(impulse, seconds);
+            knock.KnockRpc(impulse, seconds > 0 ? seconds : -1f);
         }
     }
 }

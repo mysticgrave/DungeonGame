@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -8,14 +9,17 @@ namespace DungeonGame.Core
     /// Server-side spawn positioning for NGO player objects.
     /// 
     /// NGO will instantiate the Player Prefab automatically when a client connects.
-    /// This script simply moves that spawned player to an available SpawnPoint.
+    /// This script moves that spawned player to an available spawn point.
     /// 
-    /// Usage:
-    /// - Put this on the same GameObject as NetworkManager (recommended).
-    /// - Create one or more GameObjects in the scene tagged "PlayerSpawn" (or set tagName below).
+    /// Spawn points (pick one):
+    /// - Add <see cref="PlayerSpawnPoint"/> to GameObjects in the scene or in a prefab; position them where players should spawn.
+    /// - Or create GameObjects tagged "PlayerSpawn" (or set spawnTagName below).
+    /// 
+    /// If any PlayerSpawnPoint components exist, they are used (sorted by Spawn Index); otherwise tagged objects are used.
     /// </summary>
     public class PlayerSpawnSystem : MonoBehaviour
     {
+        [Tooltip("Used only when no PlayerSpawnPoint components are found in the scene.")]
         [SerializeField] private string spawnTagName = "PlayerSpawn";
 
         private readonly List<Transform> cachedSpawns = new();
@@ -40,15 +44,22 @@ namespace DungeonGame.Core
         private void CacheSpawnPoints()
         {
             cachedSpawns.Clear();
-            foreach (var go in GameObject.FindGameObjectsWithTag(spawnTagName))
+
+            var byComponent = Object.FindObjectsByType<PlayerSpawnPoint>(FindObjectsSortMode.None);
+            if (byComponent != null && byComponent.Length > 0)
             {
-                cachedSpawns.Add(go.transform);
+                foreach (var t in byComponent.OrderBy(p => p.SpawnIndex).Select(p => p.transform))
+                    cachedSpawns.Add(t);
             }
 
             if (cachedSpawns.Count == 0)
             {
-                Debug.LogWarning($"[Spawn] No spawn points found with tag '{spawnTagName}'. Using (0,0,0).");
+                foreach (var go in GameObject.FindGameObjectsWithTag(spawnTagName))
+                    cachedSpawns.Add(go.transform);
             }
+
+            if (cachedSpawns.Count == 0)
+                Debug.LogWarning($"[Spawn] No PlayerSpawnPoint components or tag '{spawnTagName}' found. Using (0,0,0).");
         }
 
         private void OnClientConnected(ulong clientId)

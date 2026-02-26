@@ -1,8 +1,6 @@
-using DungeonGame.Core;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.SceneManagement;
 
 namespace DungeonGame.Run
 {
@@ -16,8 +14,6 @@ namespace DungeonGame.Run
     /// </summary>
     public class RunDebugHotkeys : MonoBehaviour
     {
-        [SerializeField] private string townSceneName = "Town";
-
         private SpireRunState run;
 
         private void Awake()
@@ -47,12 +43,6 @@ namespace DungeonGame.Run
             if (Keyboard.current.f12Key.wasPressedThisFrame)
             {
                 run.EvacRpc();
-
-                if (nm.SceneManager != null && SceneManager.GetActiveScene().name != townSceneName)
-                {
-                    Debug.Log("[Run] EVAC: loading Town");
-                    nm.SceneManager.LoadScene(townSceneName, LoadSceneMode.Single);
-                }
             }
         }
     }
