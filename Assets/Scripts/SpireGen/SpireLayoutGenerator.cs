@@ -168,7 +168,9 @@ namespace DungeonGame.SpireGen
         [ClientRpc]
         private void FreezePlayersClientRpc(bool freeze)
         {
-            if (IsServer) return; // already handled
+            IsGenerating = freeze;
+
+            if (IsServer) return; // server already handled the CC toggles
             var nm = NetworkManager.Singleton;
             if (nm == null) return;
             foreach (var kvp in nm.ConnectedClients)

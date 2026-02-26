@@ -9,11 +9,15 @@ namespace DungeonGame.SpireGen
 {
     /// <summary>
     /// Rebuilds NavMeshSurface after procedural layout generation.
+    /// Excludes the "IgnoreNavMesh" layer (and objects with tag "IgnoreNavMesh") from the bake.
     /// Attach this to the Spire generator object in Spire_Slice.
     /// </summary>
     [RequireComponent(typeof(NavMeshSurface))]
     public class NavMeshBakeOnLayout : NetworkBehaviour
     {
+        public const string IgnoreNavMeshLayerName = "IgnoreNavMesh";
+        public const string IgnoreNavMeshTag = "IgnoreNavMesh";
+
         private NavMeshSurface surface;
 
         private void Awake()
@@ -48,10 +52,7 @@ namespace DungeonGame.SpireGen
             if (!IsServer) return;
             if (surface == null) return;
 
-            surface.BuildNavMesh();
-            var tri = NavMesh.CalculateTriangulation();
-            Debug.Log($"[NavMesh] Fallback build (tris={tri.indices?.Length ?? 0})");
-            OnNavMeshBuilt?.Invoke(this);
+            ApplyIgnoreNavMeshAndBake();
         }
 
         public static event Action<NavMeshBakeOnLayout> OnNavMeshBuilt;
@@ -61,16 +62,36 @@ namespace DungeonGame.SpireGen
             if (!IsServer) return;
             if (surface == null) return;
 
-            // Bake only if the layout generator is in the same Unity scene.
             if (gen == null) return;
             if (gen.gameObject.scene != gameObject.scene) return;
 
+            ApplyIgnoreNavMeshAndBake();
+        }
+
+        /// <summary>
+        /// Assign IgnoreNavMesh layer to objects with tag "IgnoreNavMesh", then set the surface
+        /// to exclude that layer and build. This makes both the tag and the layer work.
+        /// </summary>
+        private void ApplyIgnoreNavMeshAndBake()
+        {
+            int ignoreLayer = LayerMask.NameToLayer(IgnoreNavMeshLayerName);
+            if (ignoreLayer >= 0)
+            {
+                // So tag-based exclusion works: move any object with the tag onto the ignore layer.
+                foreach (var go in FindObjectsByType<GameObject>(FindObjectsSortMode.None))
+                {
+                    if (go != null && go.CompareTag(IgnoreNavMeshTag))
+                        go.layer = ignoreLayer;
+                }
+
+                // Exclude the IgnoreNavMesh layer from the bake (works even if user forgot to uncheck in Inspector).
+                var current = surface.layerMask;
+                surface.layerMask = current & ~(1 << ignoreLayer);
+            }
+
             surface.BuildNavMesh();
-
-            // Basic sanity check
             var tri = NavMesh.CalculateTriangulation();
-            Debug.Log($"[NavMesh] Rebuilt navmesh after layout generation (tris={tri.indices?.Length ?? 0})");
-
+            Debug.Log($"[NavMesh] Rebuilt navmesh (tris={tri.indices?.Length ?? 0}), layer '{IgnoreNavMeshLayerName}' excluded.");
             OnNavMeshBuilt?.Invoke(this);
         }
     }

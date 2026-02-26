@@ -1,0 +1,41 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ad97642ed68540e4a83418a7ad50f1d0, type: 3}
+  m_Name: Ghoul
+  m_EditorClassIdentifier: Assembly-CSharp::DungeonGame.Enemies.EnemyConfig
+  enemyName: Enemy
+  prefab: {fileID: 3207621949798327085, guid: 89832b832c5fa60449f723b11a4304bf, type: 3}
+  maxHp: 3
+  aggroRange: 18
+  giveUpRange: 28
+  moveSpeed: 4.5
+  chaseSpeed: 6.5
+  acceleration: 40
+  attacks:
+  - attackName: Lunge
+    type: 0
+    damage: 0
+    range: 0
+    cooldown: 0
+    lungeSpeedMultiplier: 0
+    lungeDuration: 0
+    projectilePrefab: {fileID: 0}
+    projectileSpeed: 0
+    aoeRadius: 0
+    appliesEffect: 8
+    effectDuration: 0
+    effectImpulseForce: 20
+    animTrigger: 
+  canBeRagdolled: 1
+  ragdollDuration: 2
+  immunities: 
+  xpReward: 10

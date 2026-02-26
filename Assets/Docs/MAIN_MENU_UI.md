@@ -4,6 +4,22 @@ Use **standard UI buttons** on the left side over your 3D scene (dragon + dungeo
 
 ---
 
+## Streamlined Host / Join (Town is the lobby)
+
+- **Host**: One "Host" (or "Play") button calls **LobbyMenuController.HostAndPlay()**. This creates a Steam lobby (or starts a direct host), then loads **Town** immediately. Town is the lobby — no separate lobby panel. Friends can join via Steam overlay (invite/friends list); your game appears in the public lobby list so others can join from the Join screen.
+- **Join**: "Join" shows a panel with a **lobby list** (Steam) or direct IP fields (non-Steam). Use **LobbyListUI** to show open lobbies; each row has a Join button. When a player joins, they connect and load into Town.
+- **Panels**: Only three — **Title** (Host, Join, Settings, Quit), **Join** (lobby list + optional direct IP), **Connecting** (shown while creating/joining).
+
+### Lobby list board in Town
+
+To show open lobbies on a board in the Town scene (so players can browse and join other groups):
+
+1. Add a UI Panel or world-space board in Town.
+2. Add **LobbyListUI** to it: set **Content Root** to a ScrollView content, **Row Prefab** to a prefab with **LobbyListEntry** (Text + Join button), **Refresh** button, and optional **Empty Message**.
+3. The same component requests the Steam lobby list and fills the board; clicking Join on a row leaves the current game and joins that lobby.
+
+---
+
 ## What you need
 
 1. **Canvas** (Screen Space Overlay or Screen Space – Camera)

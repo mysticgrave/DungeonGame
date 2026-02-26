@@ -7,15 +7,10 @@ namespace DungeonGame.Core
 {
     /// <summary>
     /// Server-side spawn positioning for NGO player objects.
-    /// 
-    /// NGO will instantiate the Player Prefab automatically when a client connects.
-    /// This script moves that spawned player to an available spawn point.
-    /// 
-    /// Spawn points (pick one):
-    /// - Add <see cref="PlayerSpawnPoint"/> to GameObjects in the scene or in a prefab; position them where players should spawn.
-    /// - Or create GameObjects tagged "PlayerSpawn" (or set spawnTagName below).
-    /// 
-    /// If any PlayerSpawnPoint components exist, they are used (sorted by Spawn Index); otherwise tagged objects are used.
+    /// Works in any scene (Town, Dungeon, etc.).
+    ///
+    /// Place PlayerSpawnPoint components in the scene to define where players appear.
+    /// Falls back to tagged objects ("PlayerSpawn") if none are found.
     /// </summary>
     public class PlayerSpawnSystem : MonoBehaviour
     {
@@ -28,17 +23,13 @@ namespace DungeonGame.Core
         private void OnEnable()
         {
             if (NetworkManager.Singleton != null)
-            {
                 NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
-            }
         }
 
         private void OnDisable()
         {
             if (NetworkManager.Singleton != null)
-            {
                 NetworkManager.Singleton.OnClientConnectedCallback -= OnClientConnected;
-            }
         }
 
         private void CacheSpawnPoints()
@@ -68,9 +59,7 @@ namespace DungeonGame.Core
             if (nm == null || !nm.IsServer) return;
 
             if (cachedSpawns.Count == 0)
-            {
                 CacheSpawnPoints();
-            }
 
             if (!nm.ConnectedClients.TryGetValue(clientId, out var client)) return;
             var player = client.PlayerObject;
@@ -92,8 +81,15 @@ namespace DungeonGame.Core
                 rot = t.rotation;
             }
 
+            var cc = player.GetComponent<CharacterController>();
+            if (cc != null) cc.enabled = false;
+
             player.transform.SetPositionAndRotation(pos, rot);
-            Debug.Log($"[Spawn] Positioned client {clientId} at {pos}");
+            GroundSnap.SnapTransform(player.transform, cc);
+
+            if (cc != null) cc.enabled = true;
+
+            Debug.Log($"[Spawn] Positioned client {clientId} at {player.transform.position}");
         }
     }
 }

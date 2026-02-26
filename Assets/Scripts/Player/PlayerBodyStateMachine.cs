@@ -1,4 +1,5 @@
 using System;
+using DungeonGame.Core;
 using UnityEngine;
 
 namespace DungeonGame.Player
@@ -205,22 +206,7 @@ namespace DungeonGame.Player
 
         private void SnapRootToGround()
         {
-            if (_cc == null) return;
-
-            float halfHeight = _cc.height * 0.5f;
-            float bottomOffset = _cc.center.y - halfHeight;
-
-            // Cast from well above current position so the ray origin is never inside terrain/floor geometry.
-            float castHeight = 50f;
-            Vector3 origin = new Vector3(transform.position.x, transform.position.y + castHeight, transform.position.z);
-            float maxDist = castHeight + Mathf.Abs(bottomOffset) + 10f;
-
-            if (Physics.Raycast(origin, Vector3.down, out RaycastHit hit, maxDist, ~0, QueryTriggerInteraction.Ignore))
-            {
-                float groundY = hit.point.y;
-                float targetY = groundY - bottomOffset + 0.05f;
-                transform.position = new Vector3(transform.position.x, targetY, transform.position.z);
-            }
+            GroundSnap.SnapTransform(transform, _cc);
         }
 
         private void UpdateRagdollTimer()

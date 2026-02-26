@@ -392,7 +392,7 @@ MonoBehaviour:
   m_Center: {x: 0, y: 2, z: 0}
   m_LayerMask:
     serializedVersion: 2
-    m_Bits: 4294967295
+    m_Bits: 115
   m_UseGeometry: 0
   m_DefaultArea: 0
   m_GenerateLinks: 1
@@ -448,7 +448,7 @@ GameObject:
   - component: {fileID: 718454994}
   - component: {fileID: 718454995}
   m_Layer: 0
-  m_Name: GhoulSpawner
+  m_Name: EnemySpawner
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -501,18 +501,14 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 718454992}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 620cab749c465ce4e82d52e73d295a24, type: 3}
+  m_Script: {fileID: 11500000, guid: 84344e557f0dc5c4599ecc50d01eabf3, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::DungeonGame.Enemies.GhoulSpawner
+  m_EditorClassIdentifier: Assembly-CSharp::DungeonGame.Enemies.EnemySpawner
   ShowTopMostFoldoutHeaderGroup: 1
-  ghoulPrefab: {fileID: -44480872196362790, guid: 89832b832c5fa60449f723b11a4304bf, type: 3}
-  count: 8
-  spawnPoints: []
-  autoCollectSpawnMarkers: 1
   allowedKinds: 00000000
-  minDistanceFromPlayers: 50
+  minDistanceFromPlayers: 40
   maxPositionAttempts: 30
 --- !u!1 &1163264296
 GameObject:

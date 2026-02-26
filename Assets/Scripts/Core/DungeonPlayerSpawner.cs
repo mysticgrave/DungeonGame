@@ -99,13 +99,14 @@ namespace DungeonGame.Core
                 var player = kvp.Value?.PlayerObject;
                 if (player == null) continue;
 
+                var cc = player.GetComponent<CharacterController>();
+                if (cc != null) cc.enabled = false;
+
                 var t = spawns[index % spawns.Count];
                 player.transform.SetPositionAndRotation(t.position, t.rotation);
-
-                var cc = player.GetComponent<CharacterController>();
-                if (cc != null) cc.enabled = true;
-
                 SnapPlayerToGround(player.transform);
+
+                if (cc != null) cc.enabled = true;
                 index++;
             }
 
@@ -128,19 +129,7 @@ namespace DungeonGame.Core
         private static void SnapPlayerToGround(Transform playerRoot)
         {
             var cc = playerRoot.GetComponent<CharacterController>();
-            if (cc == null) return;
-
-            float bottomY = playerRoot.position.y + cc.center.y - cc.height * 0.5f;
-            float rayStartY = playerRoot.position.y + Mathf.Max(1f, cc.height * 0.5f);
-            Vector3 origin = new Vector3(playerRoot.position.x, rayStartY, playerRoot.position.z);
-            float maxDist = rayStartY - bottomY + 3f;
-
-            if (Physics.Raycast(origin, Vector3.down, out RaycastHit hit, maxDist, ~0, QueryTriggerInteraction.Ignore))
-            {
-                float groundY = hit.point.y;
-                float lift = groundY - bottomY;
-                playerRoot.position += Vector3.up * lift;
-            }
+            GroundSnap.SnapTransform(playerRoot, cc);
         }
     }
 }

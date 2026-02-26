@@ -127,6 +127,115 @@ MonoBehaviour:
   m_ShadowLayerMask: 1
   m_RenderingLayers: 1
   m_ShadowRenderingLayers: 1
+--- !u!1 &1895950117394343939
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3306329604507918851}
+  m_Layer: 7
+  m_Name: Mesh_IgnorNavMesh
+  m_TagString: IgnoreNavMesh
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3306329604507918851
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1895950117394343939}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 2.73974, y: -0.55113, z: -6.7837}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 749544696427314834}
+  - {fileID: 88567153881363511}
+  - {fileID: 3012780873667413728}
+  - {fileID: 7754992449448267023}
+  - {fileID: 2739170255868855317}
+  - {fileID: 212871833676065892}
+  - {fileID: 2169009935443237047}
+  - {fileID: 6593374634103229636}
+  - {fileID: 976235650820839492}
+  - {fileID: 5477274012109514357}
+  - {fileID: 7027014652074565131}
+  - {fileID: 2621315163312222963}
+  - {fileID: 8663520191487004101}
+  - {fileID: 2166214952106396946}
+  - {fileID: 295708417808207059}
+  - {fileID: 6333289747646733243}
+  - {fileID: 5495978522859698651}
+  - {fileID: 299225738753684174}
+  - {fileID: 3831729633524634090}
+  - {fileID: 8706933264660658550}
+  - {fileID: 408209107852103456}
+  - {fileID: 3804291709081752681}
+  - {fileID: 1347554858833028831}
+  - {fileID: 4589400394626711332}
+  - {fileID: 8944035980440756241}
+  - {fileID: 6529121147655200095}
+  - {fileID: 2542509377597270220}
+  - {fileID: 8495069267619899588}
+  - {fileID: 5528920904441819854}
+  - {fileID: 7033276157512387083}
+  - {fileID: 1602096233211807078}
+  - {fileID: 3474236968536475835}
+  - {fileID: 935368505912023795}
+  - {fileID: 4143646733097626665}
+  - {fileID: 7673386689481861524}
+  - {fileID: 4123922371164490838}
+  - {fileID: 6717462360630461701}
+  - {fileID: 3904017828506801492}
+  - {fileID: 4386594741026356794}
+  - {fileID: 7490742455535898098}
+  - {fileID: 3428455758510456364}
+  - {fileID: 2976855750642895088}
+  - {fileID: 20170697222635131}
+  - {fileID: 6395254601249858759}
+  - {fileID: 2946176497083612494}
+  - {fileID: 434714852566356464}
+  - {fileID: 9064271980649225787}
+  - {fileID: 1765446846974321865}
+  - {fileID: 6342961768549242677}
+  - {fileID: 8455478515536877996}
+  - {fileID: 8581111262458221801}
+  - {fileID: 1475357054538822354}
+  - {fileID: 5421936232179774498}
+  - {fileID: 5565662275085637311}
+  - {fileID: 2654991952639936778}
+  - {fileID: 7448561746022628536}
+  - {fileID: 3413683403049132659}
+  - {fileID: 1199512116674161611}
+  - {fileID: 1828422771163228563}
+  - {fileID: 7036775133873083045}
+  - {fileID: 3484507061412307107}
+  - {fileID: 2908525150735794605}
+  - {fileID: 885140229174130925}
+  - {fileID: 3790450646911622164}
+  - {fileID: 7056675581039777330}
+  - {fileID: 4182003495167139044}
+  - {fileID: 1692793320642828849}
+  - {fileID: 2561726701319761337}
+  - {fileID: 4599947859409070740}
+  - {fileID: 2308486627437331562}
+  - {fileID: 2924817943585414003}
+  - {fileID: 8160264730044990432}
+  - {fileID: 947817894900089219}
+  - {fileID: 7493484266434123919}
+  - {fileID: 1807574574178386506}
+  - {fileID: 7669627110655683360}
+  - {fileID: 4135265560928019919}
+  - {fileID: 4096321309062279978}
+  m_Father: {fileID: 8724296759279375144}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1970711255750941736
 GameObject:
   m_ObjectHideFlags: 0
@@ -175,6 +284,58 @@ MonoBehaviour:
   socketType: 0
   size: 0
   lowPriority: 0
+--- !u!1 &2107813773712018836
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3750690809962610208}
+  - component: {fileID: 8093396568644148671}
+  m_Layer: 0
+  m_Name: EnemySpawner (3)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3750690809962610208
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2107813773712018836}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -0.01, y: 0, z: -9.49}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 4323218180115968916}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &8093396568644148671
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2107813773712018836}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a7274391c8a88774396c1f68a0df8663, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DungeonGame.Enemies.EnemySpawnPoint
+  kind: 0
+  enemyPool:
+  - {fileID: 11400000, guid: 102d2ac85c575a348a210353f5bd34ea, type: 2}
+  maxAlive: 3
+  respawnEnabled: 0
+  respawnDelay: 15
+  maxRespawns: 0
+  jitterRadius: 7.06
 --- !u!1 &2240441011078826305
 GameObject:
   m_ObjectHideFlags: 0
@@ -429,6 +590,41 @@ MonoBehaviour:
   m_ShadowLayerMask: 1
   m_RenderingLayers: 1
   m_ShadowRenderingLayers: 1
+--- !u!1 &3487790744752776367
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4323218180115968916}
+  m_Layer: 0
+  m_Name: Spawn Points
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4323218180115968916
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3487790744752776367}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 2.5, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 3281640076299108671}
+  - {fileID: 5490418103728057070}
+  - {fileID: 1236969188788788105}
+  - {fileID: 3750690809962610208}
+  m_Father: {fileID: 8724296759279375144}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &3632858646994905052
 GameObject:
   m_ObjectHideFlags: 0
@@ -702,7 +898,6 @@ Transform:
   - {fileID: 747519906778626352}
   - {fileID: 5316924413320037183}
   - {fileID: 7191096312353868408}
-  - {fileID: 749544696427314834}
   - {fileID: 4976587521064070320}
   - {fileID: 7006668911774150922}
   - {fileID: 8548654283568662208}
@@ -775,83 +970,6 @@ Transform:
   - {fileID: 6666516869726271990}
   - {fileID: 5427499994519654285}
   - {fileID: 1852690934845691537}
-  - {fileID: 7673386689481861524}
-  - {fileID: 4123922371164490838}
-  - {fileID: 6717462360630461701}
-  - {fileID: 3904017828506801492}
-  - {fileID: 4386594741026356794}
-  - {fileID: 7490742455535898098}
-  - {fileID: 3428455758510456364}
-  - {fileID: 2976855750642895088}
-  - {fileID: 20170697222635131}
-  - {fileID: 6395254601249858759}
-  - {fileID: 2946176497083612494}
-  - {fileID: 434714852566356464}
-  - {fileID: 9064271980649225787}
-  - {fileID: 1765446846974321865}
-  - {fileID: 6342961768549242677}
-  - {fileID: 8455478515536877996}
-  - {fileID: 8581111262458221801}
-  - {fileID: 1475357054538822354}
-  - {fileID: 5421936232179774498}
-  - {fileID: 5565662275085637311}
-  - {fileID: 2166214952106396946}
-  - {fileID: 295708417808207059}
-  - {fileID: 6333289747646733243}
-  - {fileID: 5495978522859698651}
-  - {fileID: 299225738753684174}
-  - {fileID: 2654991952639936778}
-  - {fileID: 7448561746022628536}
-  - {fileID: 3831729633524634090}
-  - {fileID: 88567153881363511}
-  - {fileID: 3413683403049132659}
-  - {fileID: 1199512116674161611}
-  - {fileID: 8706933264660658550}
-  - {fileID: 3012780873667413728}
-  - {fileID: 408209107852103456}
-  - {fileID: 3804291709081752681}
-  - {fileID: 1347554858833028831}
-  - {fileID: 4589400394626711332}
-  - {fileID: 1828422771163228563}
-  - {fileID: 7036775133873083045}
-  - {fileID: 8944035980440756241}
-  - {fileID: 7754992449448267023}
-  - {fileID: 3484507061412307107}
-  - {fileID: 2908525150735794605}
-  - {fileID: 6529121147655200095}
-  - {fileID: 2739170255868855317}
-  - {fileID: 885140229174130925}
-  - {fileID: 3790450646911622164}
-  - {fileID: 2542509377597270220}
-  - {fileID: 212871833676065892}
-  - {fileID: 7056675581039777330}
-  - {fileID: 4182003495167139044}
-  - {fileID: 8495069267619899588}
-  - {fileID: 2169009935443237047}
-  - {fileID: 1692793320642828849}
-  - {fileID: 2561726701319761337}
-  - {fileID: 5528920904441819854}
-  - {fileID: 6593374634103229636}
-  - {fileID: 4599947859409070740}
-  - {fileID: 2308486627437331562}
-  - {fileID: 7033276157512387083}
-  - {fileID: 976235650820839492}
-  - {fileID: 5477274012109514357}
-  - {fileID: 1602096233211807078}
-  - {fileID: 7027014652074565131}
-  - {fileID: 3474236968536475835}
-  - {fileID: 2621315163312222963}
-  - {fileID: 935368505912023795}
-  - {fileID: 8663520191487004101}
-  - {fileID: 4143646733097626665}
-  - {fileID: 2924817943585414003}
-  - {fileID: 8160264730044990432}
-  - {fileID: 947817894900089219}
-  - {fileID: 7493484266434123919}
-  - {fileID: 1807574574178386506}
-  - {fileID: 7669627110655683360}
-  - {fileID: 4135265560928019919}
-  - {fileID: 4096321309062279978}
   - {fileID: 7317167546041578460}
   m_Father: {fileID: 8724296759279375144}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -1083,6 +1201,162 @@ MonoBehaviour:
   socketType: 0
   size: 0
   lowPriority: 0
+--- !u!1 &6491615119284197918
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3281640076299108671}
+  - component: {fileID: 4572095179194283900}
+  m_Layer: 0
+  m_Name: EnemySpawner
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3281640076299108671
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6491615119284197918}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -9.25, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 4323218180115968916}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &4572095179194283900
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6491615119284197918}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a7274391c8a88774396c1f68a0df8663, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DungeonGame.Enemies.EnemySpawnPoint
+  kind: 0
+  enemyPool:
+  - {fileID: 11400000, guid: 102d2ac85c575a348a210353f5bd34ea, type: 2}
+  maxAlive: 3
+  respawnEnabled: 0
+  respawnDelay: 15
+  maxRespawns: 0
+  jitterRadius: 7.2
+--- !u!1 &7149897437264404651
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5490418103728057070}
+  - component: {fileID: 3048343914705699577}
+  m_Layer: 0
+  m_Name: EnemySpawner (1)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5490418103728057070
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7149897437264404651}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 9.82, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 4323218180115968916}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &3048343914705699577
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7149897437264404651}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a7274391c8a88774396c1f68a0df8663, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DungeonGame.Enemies.EnemySpawnPoint
+  kind: 0
+  enemyPool:
+  - {fileID: 11400000, guid: 102d2ac85c575a348a210353f5bd34ea, type: 2}
+  maxAlive: 3
+  respawnEnabled: 0
+  respawnDelay: 15
+  maxRespawns: 0
+  jitterRadius: 7.4
+--- !u!1 &7564323257660683601
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1236969188788788105}
+  - component: {fileID: 4718486125224425186}
+  m_Layer: 0
+  m_Name: EnemySpawner (2)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1236969188788788105
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7564323257660683601}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0.21, y: 0, z: 11.73}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 4323218180115968916}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &4718486125224425186
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7564323257660683601}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a7274391c8a88774396c1f68a0df8663, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DungeonGame.Enemies.EnemySpawnPoint
+  kind: 0
+  enemyPool:
+  - {fileID: 11400000, guid: 102d2ac85c575a348a210353f5bd34ea, type: 2}
+  maxAlive: 3
+  respawnEnabled: 0
+  respawnDelay: 15
+  maxRespawns: 0
+  jitterRadius: 7.6
 --- !u!1 &7651347349120895635
 GameObject:
   m_ObjectHideFlags: 0
@@ -1120,6 +1394,8 @@ Transform:
   - {fileID: 6326889889792748675}
   - {fileID: 512770572989275622}
   - {fileID: 5463495132744663612}
+  - {fileID: 4323218180115968916}
+  - {fileID: 3306329604507918851}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &8710891762710900286
@@ -1413,23 +1689,31 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 512770572989275622}
+    m_TransformParent: {fileID: 3306329604507918851}
     m_Modifications:
     - target: {fileID: 117424, guid: 2c52fc029ee6e764aaddc5e8930caf9d, type: 3}
       propertyPath: m_Name
       value: SM_Env_Ceiling_Stone_Pillar_02
       objectReference: {fileID: 0}
+    - target: {fileID: 117424, guid: 2c52fc029ee6e764aaddc5e8930caf9d, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 117424, guid: 2c52fc029ee6e764aaddc5e8930caf9d, type: 3}
+      propertyPath: m_TagString
+      value: IgnoreNavMesh
+      objectReference: {fileID: 0}
     - target: {fileID: 428220, guid: 2c52fc029ee6e764aaddc5e8930caf9d, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -4.89
+      value: -7.6297398
       objectReference: {fileID: 0}
     - target: {fileID: 428220, guid: 2c52fc029ee6e764aaddc5e8930caf9d, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 14.67
+      value: 15.22113
       objectReference: {fileID: 0}
     - target: {fileID: 428220, guid: 2c52fc029ee6e764aaddc5e8930caf9d, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -2.22
+      value: 4.5636997
       objectReference: {fileID: 0}
     - target: {fileID: 428220, guid: 2c52fc029ee6e764aaddc5e8930caf9d, type: 3}
       propertyPath: m_LocalRotation.w
@@ -1537,23 +1821,31 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 512770572989275622}
+    m_TransformParent: {fileID: 3306329604507918851}
     m_Modifications:
     - target: {fileID: 101048, guid: df71eb9ba610fdf4087431bd6adab96b, type: 3}
       propertyPath: m_Name
       value: SM_Env_Ceiling_Stone_Curved_02 (7)
       objectReference: {fileID: 0}
+    - target: {fileID: 101048, guid: df71eb9ba610fdf4087431bd6adab96b, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 101048, guid: df71eb9ba610fdf4087431bd6adab96b, type: 3}
+      propertyPath: m_TagString
+      value: IgnoreNavMesh
+      objectReference: {fileID: 0}
     - target: {fileID: 435388, guid: df71eb9ba610fdf4087431bd6adab96b, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 10
+      value: 7.26026
       objectReference: {fileID: 0}
     - target: {fileID: 435388, guid: df71eb9ba610fdf4087431bd6adab96b, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 10
+      value: 10.55113
       objectReference: {fileID: 0}
     - target: {fileID: 435388, guid: df71eb9ba610fdf4087431bd6adab96b, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 27.500011
+      value: 34.28371
       objectReference: {fileID: 0}
     - target: {fileID: 435388, guid: df71eb9ba610fdf4087431bd6adab96b, type: 3}
       propertyPath: m_LocalRotation.w
@@ -1645,6 +1937,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: WallTorch_Lit (10)
       objectReference: {fileID: 0}
+    - target: {fileID: 8851872942177160285, guid: 95ee42942171b874e831418cae6f3591, type: 3}
+      propertyPath: m_TagString
+      value: IgnoreNavMesh
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -1707,6 +2003,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: WallTorch_Lit (12)
       objectReference: {fileID: 0}
+    - target: {fileID: 8851872942177160285, guid: 95ee42942171b874e831418cae6f3591, type: 3}
+      propertyPath: m_TagString
+      value: IgnoreNavMesh
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -1768,6 +2068,10 @@ PrefabInstance:
     - target: {fileID: 8851872942177160285, guid: 95ee42942171b874e831418cae6f3591, type: 3}
       propertyPath: m_Name
       value: WallTorch_Lit (15)
+      objectReference: {fileID: 0}
+    - target: {fileID: 8851872942177160285, guid: 95ee42942171b874e831418cae6f3591, type: 3}
+      propertyPath: m_TagString
+      value: IgnoreNavMesh
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -1847,23 +2151,31 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 512770572989275622}
+    m_TransformParent: {fileID: 3306329604507918851}
     m_Modifications:
     - target: {fileID: 180038, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
       propertyPath: m_Name
       value: SM_Env_Ceiling_Stone_Curved_01 (14)
       objectReference: {fileID: 0}
+    - target: {fileID: 180038, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 180038, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
+      propertyPath: m_TagString
+      value: IgnoreNavMesh
+      objectReference: {fileID: 0}
     - target: {fileID: 409580, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 10
+      value: 7.26026
       objectReference: {fileID: 0}
     - target: {fileID: 409580, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 10
+      value: 10.55113
       objectReference: {fileID: 0}
     - target: {fileID: 409580, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 12.500002
+      value: 19.283703
       objectReference: {fileID: 0}
     - target: {fileID: 409580, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
       propertyPath: m_LocalRotation.w
@@ -1971,23 +2283,31 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 512770572989275622}
+    m_TransformParent: {fileID: 3306329604507918851}
     m_Modifications:
     - target: {fileID: 147372, guid: 85f5f4776e3804945ab0095870a1212b, type: 3}
       propertyPath: m_Name
       value: SM_Env_Ceiling_Stone_Curved_Corner_01 (3)
       objectReference: {fileID: 0}
+    - target: {fileID: 147372, guid: 85f5f4776e3804945ab0095870a1212b, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 147372, guid: 85f5f4776e3804945ab0095870a1212b, type: 3}
+      propertyPath: m_TagString
+      value: IgnoreNavMesh
+      objectReference: {fileID: 0}
     - target: {fileID: 496582, guid: 85f5f4776e3804945ab0095870a1212b, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -5
+      value: -7.73974
       objectReference: {fileID: 0}
     - target: {fileID: 496582, guid: 85f5f4776e3804945ab0095870a1212b, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 15
+      value: 15.55113
       objectReference: {fileID: 0}
     - target: {fileID: 496582, guid: 85f5f4776e3804945ab0095870a1212b, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 2.5
+      value: 9.2837
       objectReference: {fileID: 0}
     - target: {fileID: 496582, guid: 85f5f4776e3804945ab0095870a1212b, type: 3}
       propertyPath: m_LocalRotation.w
@@ -2033,23 +2353,31 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 512770572989275622}
+    m_TransformParent: {fileID: 3306329604507918851}
     m_Modifications:
     - target: {fileID: 101048, guid: df71eb9ba610fdf4087431bd6adab96b, type: 3}
       propertyPath: m_Name
       value: SM_Env_Ceiling_Stone_Curved_02
       objectReference: {fileID: 0}
+    - target: {fileID: 101048, guid: df71eb9ba610fdf4087431bd6adab96b, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 101048, guid: df71eb9ba610fdf4087431bd6adab96b, type: 3}
+      propertyPath: m_TagString
+      value: IgnoreNavMesh
+      objectReference: {fileID: 0}
     - target: {fileID: 435388, guid: df71eb9ba610fdf4087431bd6adab96b, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 5
+      value: 2.26026
       objectReference: {fileID: 0}
     - target: {fileID: 435388, guid: df71eb9ba610fdf4087431bd6adab96b, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 15
+      value: 15.55113
       objectReference: {fileID: 0}
     - target: {fileID: 435388, guid: df71eb9ba610fdf4087431bd6adab96b, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -7.5
+      value: -0.7163
       objectReference: {fileID: 0}
     - target: {fileID: 435388, guid: df71eb9ba610fdf4087431bd6adab96b, type: 3}
       propertyPath: m_LocalRotation.w
@@ -2293,23 +2621,31 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 512770572989275622}
+    m_TransformParent: {fileID: 3306329604507918851}
     m_Modifications:
     - target: {fileID: 180038, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
       propertyPath: m_Name
       value: SM_Env_Ceiling_Stone_Curved_01
       objectReference: {fileID: 0}
+    - target: {fileID: 180038, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 180038, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
+      propertyPath: m_TagString
+      value: IgnoreNavMesh
+      objectReference: {fileID: 0}
     - target: {fileID: 409580, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 10
+      value: 7.26026
       objectReference: {fileID: 0}
     - target: {fileID: 409580, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 15
+      value: 15.55113
       objectReference: {fileID: 0}
     - target: {fileID: 409580, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 2.5
+      value: 9.2837
       objectReference: {fileID: 0}
     - target: {fileID: 409580, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
       propertyPath: m_LocalRotation.w
@@ -2417,23 +2753,31 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 512770572989275622}
+    m_TransformParent: {fileID: 3306329604507918851}
     m_Modifications:
     - target: {fileID: 117424, guid: 2c52fc029ee6e764aaddc5e8930caf9d, type: 3}
       propertyPath: m_Name
       value: SM_Env_Ceiling_Stone_Pillar_02 (3)
       objectReference: {fileID: 0}
+    - target: {fileID: 117424, guid: 2c52fc029ee6e764aaddc5e8930caf9d, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 117424, guid: 2c52fc029ee6e764aaddc5e8930caf9d, type: 3}
+      propertyPath: m_TagString
+      value: IgnoreNavMesh
+      objectReference: {fileID: 0}
     - target: {fileID: 428220, guid: 2c52fc029ee6e764aaddc5e8930caf9d, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0.33499622
+      value: -2.4047437
       objectReference: {fileID: 0}
     - target: {fileID: 428220, guid: 2c52fc029ee6e764aaddc5e8930caf9d, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 14.67
+      value: 15.22113
       objectReference: {fileID: 0}
     - target: {fileID: 428220, guid: 2c52fc029ee6e764aaddc5e8930caf9d, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -7.48
+      value: -0.6963
       objectReference: {fileID: 0}
     - target: {fileID: 428220, guid: 2c52fc029ee6e764aaddc5e8930caf9d, type: 3}
       propertyPath: m_LocalRotation.w
@@ -2995,6 +3339,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: WallTorch_Lit (11)
       objectReference: {fileID: 0}
+    - target: {fileID: 8851872942177160285, guid: 95ee42942171b874e831418cae6f3591, type: 3}
+      propertyPath: m_TagString
+      value: IgnoreNavMesh
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -3073,23 +3421,31 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 512770572989275622}
+    m_TransformParent: {fileID: 3306329604507918851}
     m_Modifications:
     - target: {fileID: 180038, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
       propertyPath: m_Name
       value: SM_Env_Ceiling_Stone_Curved_01 (2)
       objectReference: {fileID: 0}
+    - target: {fileID: 180038, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 180038, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
+      propertyPath: m_TagString
+      value: IgnoreNavMesh
+      objectReference: {fileID: 0}
     - target: {fileID: 409580, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -20
+      value: -22.73974
       objectReference: {fileID: 0}
     - target: {fileID: 409580, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 10
+      value: 10.55113
       objectReference: {fileID: 0}
     - target: {fileID: 409580, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -7.5
+      value: -0.7163
       objectReference: {fileID: 0}
     - target: {fileID: 409580, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
       propertyPath: m_LocalRotation.w
@@ -3197,23 +3553,31 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 512770572989275622}
+    m_TransformParent: {fileID: 3306329604507918851}
     m_Modifications:
     - target: {fileID: 106404, guid: f5bef9e1bbbbe9f4a89a3c958ad516c7, type: 3}
       propertyPath: m_Name
       value: SM_Env_Ceiling_Stone_Flat_01 (3)
       objectReference: {fileID: 0}
+    - target: {fileID: 106404, guid: f5bef9e1bbbbe9f4a89a3c958ad516c7, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 106404, guid: f5bef9e1bbbbe9f4a89a3c958ad516c7, type: 3}
+      propertyPath: m_TagString
+      value: IgnoreNavMesh
+      objectReference: {fileID: 0}
     - target: {fileID: 460624, guid: f5bef9e1bbbbe9f4a89a3c958ad516c7, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 14.980249
+      value: 12.240509
       objectReference: {fileID: 0}
     - target: {fileID: 460624, guid: f5bef9e1bbbbe9f4a89a3c958ad516c7, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 15
+      value: 15.55113
       objectReference: {fileID: 0}
     - target: {fileID: 460624, guid: f5bef9e1bbbbe9f4a89a3c958ad516c7, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -2.4802709
+      value: 4.303429
       objectReference: {fileID: 0}
     - target: {fileID: 460624, guid: f5bef9e1bbbbe9f4a89a3c958ad516c7, type: 3}
       propertyPath: m_LocalRotation.w
@@ -3259,23 +3623,31 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 512770572989275622}
+    m_TransformParent: {fileID: 3306329604507918851}
     m_Modifications:
     - target: {fileID: 178526, guid: 2d772d7fdfdff1b4e96deee9d48989bd, type: 3}
       propertyPath: m_Name
       value: SM_Env_Ceiling_Stone_Flat_03 (2)
       objectReference: {fileID: 0}
+    - target: {fileID: 178526, guid: 2d772d7fdfdff1b4e96deee9d48989bd, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 178526, guid: 2d772d7fdfdff1b4e96deee9d48989bd, type: 3}
+      propertyPath: m_TagString
+      value: IgnoreNavMesh
+      objectReference: {fileID: 0}
     - target: {fileID: 406994, guid: 2d772d7fdfdff1b4e96deee9d48989bd, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 5
+      value: 2.26026
       objectReference: {fileID: 0}
     - target: {fileID: 406994, guid: 2d772d7fdfdff1b4e96deee9d48989bd, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 15
+      value: 15.55113
       objectReference: {fileID: 0}
     - target: {fileID: 406994, guid: 2d772d7fdfdff1b4e96deee9d48989bd, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -7.4999986
+      value: -0.7162986
       objectReference: {fileID: 0}
     - target: {fileID: 406994, guid: 2d772d7fdfdff1b4e96deee9d48989bd, type: 3}
       propertyPath: m_LocalRotation.w
@@ -3383,23 +3755,31 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 512770572989275622}
+    m_TransformParent: {fileID: 3306329604507918851}
     m_Modifications:
     - target: {fileID: 140360, guid: 8c2d8fa38dd949f4fb0b4e40c868dd68, type: 3}
       propertyPath: m_Name
       value: SM_Env_Ceiling_Stone_Curved_03 (8)
       objectReference: {fileID: 0}
+    - target: {fileID: 140360, guid: 8c2d8fa38dd949f4fb0b4e40c868dd68, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 140360, guid: 8c2d8fa38dd949f4fb0b4e40c868dd68, type: 3}
+      propertyPath: m_TagString
+      value: IgnoreNavMesh
+      objectReference: {fileID: 0}
     - target: {fileID: 492692, guid: 8c2d8fa38dd949f4fb0b4e40c868dd68, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -5
+      value: -7.73974
       objectReference: {fileID: 0}
     - target: {fileID: 492692, guid: 8c2d8fa38dd949f4fb0b4e40c868dd68, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 10
+      value: 10.55113
       objectReference: {fileID: 0}
     - target: {fileID: 492692, guid: 8c2d8fa38dd949f4fb0b4e40c868dd68, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 17.499996
+      value: 24.283695
       objectReference: {fileID: 0}
     - target: {fileID: 492692, guid: 8c2d8fa38dd949f4fb0b4e40c868dd68, type: 3}
       propertyPath: m_LocalRotation.w
@@ -3631,23 +4011,31 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 512770572989275622}
+    m_TransformParent: {fileID: 3306329604507918851}
     m_Modifications:
     - target: {fileID: 101048, guid: df71eb9ba610fdf4087431bd6adab96b, type: 3}
       propertyPath: m_Name
       value: SM_Env_Ceiling_Stone_Curved_02 (8)
       objectReference: {fileID: 0}
+    - target: {fileID: 101048, guid: df71eb9ba610fdf4087431bd6adab96b, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 101048, guid: df71eb9ba610fdf4087431bd6adab96b, type: 3}
+      propertyPath: m_TagString
+      value: IgnoreNavMesh
+      objectReference: {fileID: 0}
     - target: {fileID: 435388, guid: df71eb9ba610fdf4087431bd6adab96b, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -4.9999814
+      value: -7.7397213
       objectReference: {fileID: 0}
     - target: {fileID: 435388, guid: df71eb9ba610fdf4087431bd6adab96b, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 10
+      value: 10.55113
       objectReference: {fileID: 0}
     - target: {fileID: 435388, guid: df71eb9ba610fdf4087431bd6adab96b, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -27.5
+      value: -20.716301
       objectReference: {fileID: 0}
     - target: {fileID: 435388, guid: df71eb9ba610fdf4087431bd6adab96b, type: 3}
       propertyPath: m_LocalRotation.w
@@ -3941,23 +4329,31 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 512770572989275622}
+    m_TransformParent: {fileID: 3306329604507918851}
     m_Modifications:
     - target: {fileID: 140360, guid: 8c2d8fa38dd949f4fb0b4e40c868dd68, type: 3}
       propertyPath: m_Name
       value: SM_Env_Ceiling_Stone_Curved_03
       objectReference: {fileID: 0}
+    - target: {fileID: 140360, guid: 8c2d8fa38dd949f4fb0b4e40c868dd68, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 140360, guid: 8c2d8fa38dd949f4fb0b4e40c868dd68, type: 3}
+      propertyPath: m_TagString
+      value: IgnoreNavMesh
+      objectReference: {fileID: 0}
     - target: {fileID: 492692, guid: 8c2d8fa38dd949f4fb0b4e40c868dd68, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -5
+      value: -7.73974
       objectReference: {fileID: 0}
     - target: {fileID: 492692, guid: 8c2d8fa38dd949f4fb0b4e40c868dd68, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 15
+      value: 15.55113
       objectReference: {fileID: 0}
     - target: {fileID: 492692, guid: 8c2d8fa38dd949f4fb0b4e40c868dd68, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -2.5
+      value: 4.2837
       objectReference: {fileID: 0}
     - target: {fileID: 492692, guid: 8c2d8fa38dd949f4fb0b4e40c868dd68, type: 3}
       propertyPath: m_LocalRotation.w
@@ -4127,23 +4523,31 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 512770572989275622}
+    m_TransformParent: {fileID: 3306329604507918851}
     m_Modifications:
     - target: {fileID: 193676, guid: 50de44d10630cfc43a286af857d33846, type: 3}
       propertyPath: m_Name
       value: SM_Env_Ceiling_Stone_Curved_Corner_02 (7)
       objectReference: {fileID: 0}
+    - target: {fileID: 193676, guid: 50de44d10630cfc43a286af857d33846, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 193676, guid: 50de44d10630cfc43a286af857d33846, type: 3}
+      propertyPath: m_TagString
+      value: IgnoreNavMesh
+      objectReference: {fileID: 0}
     - target: {fileID: 447582, guid: 50de44d10630cfc43a286af857d33846, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -4.867
+      value: -7.60674
       objectReference: {fileID: 0}
     - target: {fileID: 447582, guid: 50de44d10630cfc43a286af857d33846, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 20
+      value: 20.55113
       objectReference: {fileID: 0}
     - target: {fileID: 447582, guid: 50de44d10630cfc43a286af857d33846, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 7.3670006
+      value: 14.150701
       objectReference: {fileID: 0}
     - target: {fileID: 447582, guid: 50de44d10630cfc43a286af857d33846, type: 3}
       propertyPath: m_LocalRotation.w
@@ -4375,23 +4779,31 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 512770572989275622}
+    m_TransformParent: {fileID: 3306329604507918851}
     m_Modifications:
     - target: {fileID: 174938, guid: 620667318a53a7040ad3c980acab36d0, type: 3}
       propertyPath: m_Name
       value: SM_Env_Ceiling_Stone_Flat_04 (1)
       objectReference: {fileID: 0}
+    - target: {fileID: 174938, guid: 620667318a53a7040ad3c980acab36d0, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 174938, guid: 620667318a53a7040ad3c980acab36d0, type: 3}
+      propertyPath: m_TagString
+      value: IgnoreNavMesh
+      objectReference: {fileID: 0}
     - target: {fileID: 412494, guid: 620667318a53a7040ad3c980acab36d0, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 24.980251
+      value: 22.24051
       objectReference: {fileID: 0}
     - target: {fileID: 412494, guid: 620667318a53a7040ad3c980acab36d0, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 15
+      value: 15.55113
       objectReference: {fileID: 0}
     - target: {fileID: 412494, guid: 620667318a53a7040ad3c980acab36d0, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -2.480285
+      value: 4.3034153
       objectReference: {fileID: 0}
     - target: {fileID: 412494, guid: 620667318a53a7040ad3c980acab36d0, type: 3}
       propertyPath: m_LocalRotation.w
@@ -4561,23 +4973,31 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 512770572989275622}
+    m_TransformParent: {fileID: 3306329604507918851}
     m_Modifications:
     - target: {fileID: 140360, guid: 8c2d8fa38dd949f4fb0b4e40c868dd68, type: 3}
       propertyPath: m_Name
       value: SM_Env_Ceiling_Stone_Curved_03 (1)
       objectReference: {fileID: 0}
+    - target: {fileID: 140360, guid: 8c2d8fa38dd949f4fb0b4e40c868dd68, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 140360, guid: 8c2d8fa38dd949f4fb0b4e40c868dd68, type: 3}
+      propertyPath: m_TagString
+      value: IgnoreNavMesh
+      objectReference: {fileID: 0}
     - target: {fileID: 492692, guid: 8c2d8fa38dd949f4fb0b4e40c868dd68, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -15
+      value: -17.73974
       objectReference: {fileID: 0}
     - target: {fileID: 492692, guid: 8c2d8fa38dd949f4fb0b4e40c868dd68, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 10
+      value: 10.55113
       objectReference: {fileID: 0}
     - target: {fileID: 492692, guid: 8c2d8fa38dd949f4fb0b4e40c868dd68, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -7.5
+      value: -0.7163
       objectReference: {fileID: 0}
     - target: {fileID: 492692, guid: 8c2d8fa38dd949f4fb0b4e40c868dd68, type: 3}
       propertyPath: m_LocalRotation.w
@@ -4623,23 +5043,31 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 512770572989275622}
+    m_TransformParent: {fileID: 3306329604507918851}
     m_Modifications:
     - target: {fileID: 193676, guid: 50de44d10630cfc43a286af857d33846, type: 3}
       propertyPath: m_Name
       value: SM_Env_Ceiling_Stone_Curved_Corner_02 (6)
       objectReference: {fileID: 0}
+    - target: {fileID: 193676, guid: 50de44d10630cfc43a286af857d33846, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 193676, guid: 50de44d10630cfc43a286af857d33846, type: 3}
+      propertyPath: m_TagString
+      value: IgnoreNavMesh
+      objectReference: {fileID: 0}
     - target: {fileID: 447582, guid: 50de44d10630cfc43a286af857d33846, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -4.867
+      value: -7.60674
       objectReference: {fileID: 0}
     - target: {fileID: 447582, guid: 50de44d10630cfc43a286af857d33846, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 10
+      value: 10.55113
       objectReference: {fileID: 0}
     - target: {fileID: 447582, guid: 50de44d10630cfc43a286af857d33846, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 7.367
+      value: 14.1507
       objectReference: {fileID: 0}
     - target: {fileID: 447582, guid: 50de44d10630cfc43a286af857d33846, type: 3}
       propertyPath: m_LocalRotation.w
@@ -4747,23 +5175,31 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 512770572989275622}
+    m_TransformParent: {fileID: 3306329604507918851}
     m_Modifications:
     - target: {fileID: 106404, guid: f5bef9e1bbbbe9f4a89a3c958ad516c7, type: 3}
       propertyPath: m_Name
       value: SM_Env_Ceiling_Stone_Flat_01 (1)
       objectReference: {fileID: 0}
+    - target: {fileID: 106404, guid: f5bef9e1bbbbe9f4a89a3c958ad516c7, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 106404, guid: f5bef9e1bbbbe9f4a89a3c958ad516c7, type: 3}
+      propertyPath: m_TagString
+      value: IgnoreNavMesh
+      objectReference: {fileID: 0}
     - target: {fileID: 460624, guid: f5bef9e1bbbbe9f4a89a3c958ad516c7, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 5
+      value: 2.26026
       objectReference: {fileID: 0}
     - target: {fileID: 460624, guid: f5bef9e1bbbbe9f4a89a3c958ad516c7, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 15
+      value: 15.55113
       objectReference: {fileID: 0}
     - target: {fileID: 460624, guid: f5bef9e1bbbbe9f4a89a3c958ad516c7, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -22.5
+      value: -15.7163
       objectReference: {fileID: 0}
     - target: {fileID: 460624, guid: f5bef9e1bbbbe9f4a89a3c958ad516c7, type: 3}
       propertyPath: m_LocalRotation.w
@@ -4809,23 +5245,31 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 512770572989275622}
+    m_TransformParent: {fileID: 3306329604507918851}
     m_Modifications:
     - target: {fileID: 180038, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
       propertyPath: m_Name
       value: SM_Env_Ceiling_Stone_Curved_01 (1)
       objectReference: {fileID: 0}
+    - target: {fileID: 180038, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 180038, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
+      propertyPath: m_TagString
+      value: IgnoreNavMesh
+      objectReference: {fileID: 0}
     - target: {fileID: 409580, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -10
+      value: -12.73974
       objectReference: {fileID: 0}
     - target: {fileID: 409580, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 10
+      value: 10.55113
       objectReference: {fileID: 0}
     - target: {fileID: 409580, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -7.5
+      value: -0.7163
       objectReference: {fileID: 0}
     - target: {fileID: 409580, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
       propertyPath: m_LocalRotation.w
@@ -4995,23 +5439,31 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 512770572989275622}
+    m_TransformParent: {fileID: 3306329604507918851}
     m_Modifications:
     - target: {fileID: 147372, guid: 85f5f4776e3804945ab0095870a1212b, type: 3}
       propertyPath: m_Name
       value: SM_Env_Ceiling_Stone_Curved_Corner_01
       objectReference: {fileID: 0}
+    - target: {fileID: 147372, guid: 85f5f4776e3804945ab0095870a1212b, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 147372, guid: 85f5f4776e3804945ab0095870a1212b, type: 3}
+      propertyPath: m_TagString
+      value: IgnoreNavMesh
+      objectReference: {fileID: 0}
     - target: {fileID: 496582, guid: 85f5f4776e3804945ab0095870a1212b, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0
+      value: -2.73974
       objectReference: {fileID: 0}
     - target: {fileID: 496582, guid: 85f5f4776e3804945ab0095870a1212b, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 15
+      value: 15.55113
       objectReference: {fileID: 0}
     - target: {fileID: 496582, guid: 85f5f4776e3804945ab0095870a1212b, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -7.5
+      value: -0.7163
       objectReference: {fileID: 0}
     - target: {fileID: 496582, guid: 85f5f4776e3804945ab0095870a1212b, type: 3}
       propertyPath: m_LocalRotation.w
@@ -5057,23 +5509,31 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 512770572989275622}
+    m_TransformParent: {fileID: 3306329604507918851}
     m_Modifications:
     - target: {fileID: 180038, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
       propertyPath: m_Name
       value: SM_Env_Ceiling_Stone_Curved_01 (16)
       objectReference: {fileID: 0}
+    - target: {fileID: 180038, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 180038, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
+      propertyPath: m_TagString
+      value: IgnoreNavMesh
+      objectReference: {fileID: 0}
     - target: {fileID: 409580, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -5
+      value: -7.73974
       objectReference: {fileID: 0}
     - target: {fileID: 409580, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 10
+      value: 10.55113
       objectReference: {fileID: 0}
     - target: {fileID: 409580, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 22.499998
+      value: 29.283699
       objectReference: {fileID: 0}
     - target: {fileID: 409580, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
       propertyPath: m_LocalRotation.w
@@ -5119,23 +5579,31 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 512770572989275622}
+    m_TransformParent: {fileID: 3306329604507918851}
     m_Modifications:
     - target: {fileID: 140360, guid: 8c2d8fa38dd949f4fb0b4e40c868dd68, type: 3}
       propertyPath: m_Name
       value: SM_Env_Ceiling_Stone_Curved_03 (7)
       objectReference: {fileID: 0}
+    - target: {fileID: 140360, guid: 8c2d8fa38dd949f4fb0b4e40c868dd68, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 140360, guid: 8c2d8fa38dd949f4fb0b4e40c868dd68, type: 3}
+      propertyPath: m_TagString
+      value: IgnoreNavMesh
+      objectReference: {fileID: 0}
     - target: {fileID: 492692, guid: 8c2d8fa38dd949f4fb0b4e40c868dd68, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -4.9999866
+      value: -7.7397265
       objectReference: {fileID: 0}
     - target: {fileID: 492692, guid: 8c2d8fa38dd949f4fb0b4e40c868dd68, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 10
+      value: 10.55113
       objectReference: {fileID: 0}
     - target: {fileID: 492692, guid: 8c2d8fa38dd949f4fb0b4e40c868dd68, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -17.5
+      value: -10.7163
       objectReference: {fileID: 0}
     - target: {fileID: 492692, guid: 8c2d8fa38dd949f4fb0b4e40c868dd68, type: 3}
       propertyPath: m_LocalRotation.w
@@ -5227,6 +5695,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: WallTorch_Lit (3)
       objectReference: {fileID: 0}
+    - target: {fileID: 8851872942177160285, guid: 95ee42942171b874e831418cae6f3591, type: 3}
+      propertyPath: m_TagString
+      value: IgnoreNavMesh
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -5243,23 +5715,31 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 512770572989275622}
+    m_TransformParent: {fileID: 3306329604507918851}
     m_Modifications:
     - target: {fileID: 180038, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
       propertyPath: m_Name
       value: SM_Env_Ceiling_Stone_Curved_01 (7)
       objectReference: {fileID: 0}
+    - target: {fileID: 180038, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 180038, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
+      propertyPath: m_TagString
+      value: IgnoreNavMesh
+      objectReference: {fileID: 0}
     - target: {fileID: 409580, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 15
+      value: 12.26026
       objectReference: {fileID: 0}
     - target: {fileID: 409580, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 10
+      value: 10.55113
       objectReference: {fileID: 0}
     - target: {fileID: 409580, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -7.5
+      value: -0.7163
       objectReference: {fileID: 0}
     - target: {fileID: 409580, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
       propertyPath: m_LocalRotation.w
@@ -5305,23 +5785,31 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 512770572989275622}
+    m_TransformParent: {fileID: 3306329604507918851}
     m_Modifications:
     - target: {fileID: 140360, guid: 8c2d8fa38dd949f4fb0b4e40c868dd68, type: 3}
       propertyPath: m_Name
       value: SM_Env_Ceiling_Stone_Curved_03 (5)
       objectReference: {fileID: 0}
+    - target: {fileID: 140360, guid: 8c2d8fa38dd949f4fb0b4e40c868dd68, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 140360, guid: 8c2d8fa38dd949f4fb0b4e40c868dd68, type: 3}
+      propertyPath: m_TagString
+      value: IgnoreNavMesh
+      objectReference: {fileID: 0}
     - target: {fileID: 492692, guid: 8c2d8fa38dd949f4fb0b4e40c868dd68, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 10.000011
+      value: 7.2602715
       objectReference: {fileID: 0}
     - target: {fileID: 492692, guid: 8c2d8fa38dd949f4fb0b4e40c868dd68, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 10
+      value: 10.55113
       objectReference: {fileID: 0}
     - target: {fileID: 492692, guid: 8c2d8fa38dd949f4fb0b4e40c868dd68, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -17.499996
+      value: -10.716296
       objectReference: {fileID: 0}
     - target: {fileID: 492692, guid: 8c2d8fa38dd949f4fb0b4e40c868dd68, type: 3}
       propertyPath: m_LocalRotation.w
@@ -5441,23 +5929,31 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 512770572989275622}
+    m_TransformParent: {fileID: 3306329604507918851}
     m_Modifications:
     - target: {fileID: 106404, guid: f5bef9e1bbbbe9f4a89a3c958ad516c7, type: 3}
       propertyPath: m_Name
       value: SM_Env_Ceiling_Stone_Flat_01
       objectReference: {fileID: 0}
+    - target: {fileID: 106404, guid: f5bef9e1bbbbe9f4a89a3c958ad516c7, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 106404, guid: f5bef9e1bbbbe9f4a89a3c958ad516c7, type: 3}
+      propertyPath: m_TagString
+      value: IgnoreNavMesh
+      objectReference: {fileID: 0}
     - target: {fileID: 460624, guid: f5bef9e1bbbbe9f4a89a3c958ad516c7, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 5
+      value: 2.26026
       objectReference: {fileID: 0}
     - target: {fileID: 460624, guid: f5bef9e1bbbbe9f4a89a3c958ad516c7, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 15
+      value: 15.55113
       objectReference: {fileID: 0}
     - target: {fileID: 460624, guid: f5bef9e1bbbbe9f4a89a3c958ad516c7, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 12.5
+      value: 19.283699
       objectReference: {fileID: 0}
     - target: {fileID: 460624, guid: f5bef9e1bbbbe9f4a89a3c958ad516c7, type: 3}
       propertyPath: m_LocalRotation.w
@@ -5503,23 +5999,31 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 512770572989275622}
+    m_TransformParent: {fileID: 3306329604507918851}
     m_Modifications:
     - target: {fileID: 101048, guid: df71eb9ba610fdf4087431bd6adab96b, type: 3}
       propertyPath: m_Name
       value: SM_Env_Ceiling_Stone_Curved_02 (1)
       objectReference: {fileID: 0}
+    - target: {fileID: 101048, guid: df71eb9ba610fdf4087431bd6adab96b, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 101048, guid: df71eb9ba610fdf4087431bd6adab96b, type: 3}
+      propertyPath: m_TagString
+      value: IgnoreNavMesh
+      objectReference: {fileID: 0}
     - target: {fileID: 435388, guid: df71eb9ba610fdf4087431bd6adab96b, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -5
+      value: -7.73974
       objectReference: {fileID: 0}
     - target: {fileID: 435388, guid: df71eb9ba610fdf4087431bd6adab96b, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 10
+      value: 10.55113
       objectReference: {fileID: 0}
     - target: {fileID: 435388, guid: df71eb9ba610fdf4087431bd6adab96b, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -7.5
+      value: -0.7163
       objectReference: {fileID: 0}
     - target: {fileID: 435388, guid: df71eb9ba610fdf4087431bd6adab96b, type: 3}
       propertyPath: m_LocalRotation.w
@@ -5565,23 +6069,31 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 512770572989275622}
+    m_TransformParent: {fileID: 3306329604507918851}
     m_Modifications:
     - target: {fileID: 180038, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
       propertyPath: m_Name
       value: SM_Env_Ceiling_Stone_Curved_01 (12)
       objectReference: {fileID: 0}
+    - target: {fileID: 180038, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 180038, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
+      propertyPath: m_TagString
+      value: IgnoreNavMesh
+      objectReference: {fileID: 0}
     - target: {fileID: 409580, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -5
+      value: -7.73974
       objectReference: {fileID: 0}
     - target: {fileID: 409580, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 10
+      value: 10.55113
       objectReference: {fileID: 0}
     - target: {fileID: 409580, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 12.499995
+      value: 19.283695
       objectReference: {fileID: 0}
     - target: {fileID: 409580, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
       propertyPath: m_LocalRotation.w
@@ -6061,23 +6573,31 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 512770572989275622}
+    m_TransformParent: {fileID: 3306329604507918851}
     m_Modifications:
     - target: {fileID: 180038, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
       propertyPath: m_Name
       value: SM_Env_Ceiling_Stone_Curved_01 (11)
       objectReference: {fileID: 0}
+    - target: {fileID: 180038, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 180038, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
+      propertyPath: m_TagString
+      value: IgnoreNavMesh
+      objectReference: {fileID: 0}
     - target: {fileID: 409580, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -4.9999857
+      value: -7.7397256
       objectReference: {fileID: 0}
     - target: {fileID: 409580, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 10
+      value: 10.55113
       objectReference: {fileID: 0}
     - target: {fileID: 409580, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -22.500002
+      value: -15.716302
       objectReference: {fileID: 0}
     - target: {fileID: 409580, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
       propertyPath: m_LocalRotation.w
@@ -6247,23 +6767,31 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 512770572989275622}
+    m_TransformParent: {fileID: 3306329604507918851}
     m_Modifications:
     - target: {fileID: 178526, guid: 2d772d7fdfdff1b4e96deee9d48989bd, type: 3}
       propertyPath: m_Name
       value: SM_Env_Ceiling_Stone_Flat_03 (1)
       objectReference: {fileID: 0}
+    - target: {fileID: 178526, guid: 2d772d7fdfdff1b4e96deee9d48989bd, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 178526, guid: 2d772d7fdfdff1b4e96deee9d48989bd, type: 3}
+      propertyPath: m_TagString
+      value: IgnoreNavMesh
+      objectReference: {fileID: 0}
     - target: {fileID: 406994, guid: 2d772d7fdfdff1b4e96deee9d48989bd, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 5
+      value: 2.26026
       objectReference: {fileID: 0}
     - target: {fileID: 406994, guid: 2d772d7fdfdff1b4e96deee9d48989bd, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 15
+      value: 15.55113
       objectReference: {fileID: 0}
     - target: {fileID: 406994, guid: 2d772d7fdfdff1b4e96deee9d48989bd, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -17.5
+      value: -10.7163
       objectReference: {fileID: 0}
     - target: {fileID: 406994, guid: 2d772d7fdfdff1b4e96deee9d48989bd, type: 3}
       propertyPath: m_LocalRotation.w
@@ -6309,23 +6837,31 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 512770572989275622}
+    m_TransformParent: {fileID: 3306329604507918851}
     m_Modifications:
     - target: {fileID: 117424, guid: 2c52fc029ee6e764aaddc5e8930caf9d, type: 3}
       propertyPath: m_Name
       value: SM_Env_Ceiling_Stone_Pillar_02 (1)
       objectReference: {fileID: 0}
+    - target: {fileID: 117424, guid: 2c52fc029ee6e764aaddc5e8930caf9d, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 117424, guid: 2c52fc029ee6e764aaddc5e8930caf9d, type: 3}
+      propertyPath: m_TagString
+      value: IgnoreNavMesh
+      objectReference: {fileID: 0}
     - target: {fileID: 428220, guid: 2c52fc029ee6e764aaddc5e8930caf9d, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 10
+      value: 7.26026
       objectReference: {fileID: 0}
     - target: {fileID: 428220, guid: 2c52fc029ee6e764aaddc5e8930caf9d, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 14.5
+      value: 15.05113
       objectReference: {fileID: 0}
     - target: {fileID: 428220, guid: 2c52fc029ee6e764aaddc5e8930caf9d, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -2.5
+      value: 4.2837
       objectReference: {fileID: 0}
     - target: {fileID: 428220, guid: 2c52fc029ee6e764aaddc5e8930caf9d, type: 3}
       propertyPath: m_LocalRotation.w
@@ -6371,23 +6907,31 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 512770572989275622}
+    m_TransformParent: {fileID: 3306329604507918851}
     m_Modifications:
     - target: {fileID: 134854, guid: f1e966c2976c53b4880fbf78effcc871, type: 3}
       propertyPath: m_Name
       value: SM_Env_Ceiling_Stone_Pillar_01 (7)
       objectReference: {fileID: 0}
+    - target: {fileID: 134854, guid: f1e966c2976c53b4880fbf78effcc871, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 134854, guid: f1e966c2976c53b4880fbf78effcc871, type: 3}
+      propertyPath: m_TagString
+      value: IgnoreNavMesh
+      objectReference: {fileID: 0}
     - target: {fileID: 458376, guid: f1e966c2976c53b4880fbf78effcc871, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 10
+      value: 7.26026
       objectReference: {fileID: 0}
     - target: {fileID: 458376, guid: f1e966c2976c53b4880fbf78effcc871, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 10
+      value: 10.55113
       objectReference: {fileID: 0}
     - target: {fileID: 458376, guid: f1e966c2976c53b4880fbf78effcc871, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -7.5
+      value: -0.7163
       objectReference: {fileID: 0}
     - target: {fileID: 458376, guid: f1e966c2976c53b4880fbf78effcc871, type: 3}
       propertyPath: m_LocalRotation.w
@@ -6495,23 +7039,31 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 512770572989275622}
+    m_TransformParent: {fileID: 3306329604507918851}
     m_Modifications:
     - target: {fileID: 101048, guid: df71eb9ba610fdf4087431bd6adab96b, type: 3}
       propertyPath: m_Name
       value: SM_Env_Ceiling_Stone_Curved_02 (9)
       objectReference: {fileID: 0}
+    - target: {fileID: 101048, guid: df71eb9ba610fdf4087431bd6adab96b, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 101048, guid: df71eb9ba610fdf4087431bd6adab96b, type: 3}
+      propertyPath: m_TagString
+      value: IgnoreNavMesh
+      objectReference: {fileID: 0}
     - target: {fileID: 435388, guid: df71eb9ba610fdf4087431bd6adab96b, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -5
+      value: -7.73974
       objectReference: {fileID: 0}
     - target: {fileID: 435388, guid: df71eb9ba610fdf4087431bd6adab96b, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 10
+      value: 10.55113
       objectReference: {fileID: 0}
     - target: {fileID: 435388, guid: df71eb9ba610fdf4087431bd6adab96b, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 7.4999943
+      value: 14.283694
       objectReference: {fileID: 0}
     - target: {fileID: 435388, guid: df71eb9ba610fdf4087431bd6adab96b, type: 3}
       propertyPath: m_LocalRotation.w
@@ -6727,6 +7279,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: WallTorch_Lit (5)
       objectReference: {fileID: 0}
+    - target: {fileID: 8851872942177160285, guid: 95ee42942171b874e831418cae6f3591, type: 3}
+      propertyPath: m_TagString
+      value: IgnoreNavMesh
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -6788,6 +7344,10 @@ PrefabInstance:
     - target: {fileID: 8851872942177160285, guid: 95ee42942171b874e831418cae6f3591, type: 3}
       propertyPath: m_Name
       value: WallTorch_Lit (6)
+      objectReference: {fileID: 0}
+    - target: {fileID: 8851872942177160285, guid: 95ee42942171b874e831418cae6f3591, type: 3}
+      propertyPath: m_TagString
+      value: IgnoreNavMesh
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -7053,23 +7613,31 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 512770572989275622}
+    m_TransformParent: {fileID: 3306329604507918851}
     m_Modifications:
     - target: {fileID: 101048, guid: df71eb9ba610fdf4087431bd6adab96b, type: 3}
       propertyPath: m_Name
       value: SM_Env_Ceiling_Stone_Curved_02 (3)
       objectReference: {fileID: 0}
+    - target: {fileID: 101048, guid: df71eb9ba610fdf4087431bd6adab96b, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 101048, guid: df71eb9ba610fdf4087431bd6adab96b, type: 3}
+      propertyPath: m_TagString
+      value: IgnoreNavMesh
+      objectReference: {fileID: 0}
     - target: {fileID: 435388, guid: df71eb9ba610fdf4087431bd6adab96b, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -25
+      value: -27.73974
       objectReference: {fileID: 0}
     - target: {fileID: 435388, guid: df71eb9ba610fdf4087431bd6adab96b, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 10
+      value: 10.55113
       objectReference: {fileID: 0}
     - target: {fileID: 435388, guid: df71eb9ba610fdf4087431bd6adab96b, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 7.5
+      value: 14.2837
       objectReference: {fileID: 0}
     - target: {fileID: 435388, guid: df71eb9ba610fdf4087431bd6adab96b, type: 3}
       propertyPath: m_LocalRotation.w
@@ -7115,23 +7683,31 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 512770572989275622}
+    m_TransformParent: {fileID: 3306329604507918851}
     m_Modifications:
     - target: {fileID: 134854, guid: f1e966c2976c53b4880fbf78effcc871, type: 3}
       propertyPath: m_Name
       value: SM_Env_Ceiling_Stone_Pillar_01 (3)
       objectReference: {fileID: 0}
+    - target: {fileID: 134854, guid: f1e966c2976c53b4880fbf78effcc871, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 134854, guid: f1e966c2976c53b4880fbf78effcc871, type: 3}
+      propertyPath: m_TagString
+      value: IgnoreNavMesh
+      objectReference: {fileID: 0}
     - target: {fileID: 458376, guid: f1e966c2976c53b4880fbf78effcc871, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 10
+      value: 7.26026
       objectReference: {fileID: 0}
     - target: {fileID: 458376, guid: f1e966c2976c53b4880fbf78effcc871, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 10
+      value: 10.55113
       objectReference: {fileID: 0}
     - target: {fileID: 458376, guid: f1e966c2976c53b4880fbf78effcc871, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 7.5
+      value: 14.2837
       objectReference: {fileID: 0}
     - target: {fileID: 458376, guid: f1e966c2976c53b4880fbf78effcc871, type: 3}
       propertyPath: m_LocalRotation.w
@@ -7177,23 +7753,31 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 512770572989275622}
+    m_TransformParent: {fileID: 3306329604507918851}
     m_Modifications:
     - target: {fileID: 178526, guid: 2d772d7fdfdff1b4e96deee9d48989bd, type: 3}
       propertyPath: m_Name
       value: SM_Env_Ceiling_Stone_Flat_03 (3)
       objectReference: {fileID: 0}
+    - target: {fileID: 178526, guid: 2d772d7fdfdff1b4e96deee9d48989bd, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 178526, guid: 2d772d7fdfdff1b4e96deee9d48989bd, type: 3}
+      propertyPath: m_TagString
+      value: IgnoreNavMesh
+      objectReference: {fileID: 0}
     - target: {fileID: 406994, guid: 2d772d7fdfdff1b4e96deee9d48989bd, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 19.98025
+      value: 17.240509
       objectReference: {fileID: 0}
     - target: {fileID: 406994, guid: 2d772d7fdfdff1b4e96deee9d48989bd, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 15
+      value: 15.55113
       objectReference: {fileID: 0}
     - target: {fileID: 406994, guid: 2d772d7fdfdff1b4e96deee9d48989bd, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -2.4802783
+      value: 4.303422
       objectReference: {fileID: 0}
     - target: {fileID: 406994, guid: 2d772d7fdfdff1b4e96deee9d48989bd, type: 3}
       propertyPath: m_LocalRotation.w
@@ -7239,23 +7823,31 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 512770572989275622}
+    m_TransformParent: {fileID: 3306329604507918851}
     m_Modifications:
     - target: {fileID: 180038, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
       propertyPath: m_Name
       value: SM_Env_Ceiling_Stone_Curved_01 (3)
       objectReference: {fileID: 0}
+    - target: {fileID: 180038, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 180038, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
+      propertyPath: m_TagString
+      value: IgnoreNavMesh
+      objectReference: {fileID: 0}
     - target: {fileID: 409580, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -20
+      value: -22.73974
       objectReference: {fileID: 0}
     - target: {fileID: 409580, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 10
+      value: 10.55113
       objectReference: {fileID: 0}
     - target: {fileID: 409580, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 7.5
+      value: 14.2837
       objectReference: {fileID: 0}
     - target: {fileID: 409580, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
       propertyPath: m_LocalRotation.w
@@ -7611,23 +8203,31 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 512770572989275622}
+    m_TransformParent: {fileID: 3306329604507918851}
     m_Modifications:
     - target: {fileID: 180038, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
       propertyPath: m_Name
       value: SM_Env_Ceiling_Stone_Curved_01 (13)
       objectReference: {fileID: 0}
+    - target: {fileID: 180038, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 180038, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
+      propertyPath: m_TagString
+      value: IgnoreNavMesh
+      objectReference: {fileID: 0}
     - target: {fileID: 409580, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 10.000013
+      value: 7.2602735
       objectReference: {fileID: 0}
     - target: {fileID: 409580, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 10
+      value: 10.55113
       objectReference: {fileID: 0}
     - target: {fileID: 409580, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -22.499992
+      value: -15.716292
       objectReference: {fileID: 0}
     - target: {fileID: 409580, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
       propertyPath: m_LocalRotation.w
@@ -7673,23 +8273,31 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 512770572989275622}
+    m_TransformParent: {fileID: 3306329604507918851}
     m_Modifications:
     - target: {fileID: 101048, guid: df71eb9ba610fdf4087431bd6adab96b, type: 3}
       propertyPath: m_Name
       value: SM_Env_Ceiling_Stone_Curved_02 (2)
       objectReference: {fileID: 0}
+    - target: {fileID: 101048, guid: df71eb9ba610fdf4087431bd6adab96b, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 101048, guid: df71eb9ba610fdf4087431bd6adab96b, type: 3}
+      propertyPath: m_TagString
+      value: IgnoreNavMesh
+      objectReference: {fileID: 0}
     - target: {fileID: 435388, guid: df71eb9ba610fdf4087431bd6adab96b, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0
+      value: -2.73974
       objectReference: {fileID: 0}
     - target: {fileID: 435388, guid: df71eb9ba610fdf4087431bd6adab96b, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 15
+      value: 15.55113
       objectReference: {fileID: 0}
     - target: {fileID: 435388, guid: df71eb9ba610fdf4087431bd6adab96b, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 7.5
+      value: 14.2837
       objectReference: {fileID: 0}
     - target: {fileID: 435388, guid: df71eb9ba610fdf4087431bd6adab96b, type: 3}
       propertyPath: m_LocalRotation.w
@@ -7735,23 +8343,31 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 512770572989275622}
+    m_TransformParent: {fileID: 3306329604507918851}
     m_Modifications:
     - target: {fileID: 101048, guid: df71eb9ba610fdf4087431bd6adab96b, type: 3}
       propertyPath: m_Name
       value: SM_Env_Ceiling_Stone_Curved_02 (4)
       objectReference: {fileID: 0}
+    - target: {fileID: 101048, guid: df71eb9ba610fdf4087431bd6adab96b, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 101048, guid: df71eb9ba610fdf4087431bd6adab96b, type: 3}
+      propertyPath: m_TagString
+      value: IgnoreNavMesh
+      objectReference: {fileID: 0}
     - target: {fileID: 435388, guid: df71eb9ba610fdf4087431bd6adab96b, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 30
+      value: 27.26026
       objectReference: {fileID: 0}
     - target: {fileID: 435388, guid: df71eb9ba610fdf4087431bd6adab96b, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 10
+      value: 10.55113
       objectReference: {fileID: 0}
     - target: {fileID: 435388, guid: df71eb9ba610fdf4087431bd6adab96b, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -7.5
+      value: -0.7163
       objectReference: {fileID: 0}
     - target: {fileID: 435388, guid: df71eb9ba610fdf4087431bd6adab96b, type: 3}
       propertyPath: m_LocalRotation.w
@@ -7797,23 +8413,31 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 512770572989275622}
+    m_TransformParent: {fileID: 3306329604507918851}
     m_Modifications:
     - target: {fileID: 134854, guid: f1e966c2976c53b4880fbf78effcc871, type: 3}
       propertyPath: m_Name
       value: SM_Env_Ceiling_Stone_Pillar_01 (5)
       objectReference: {fileID: 0}
+    - target: {fileID: 134854, guid: f1e966c2976c53b4880fbf78effcc871, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 134854, guid: f1e966c2976c53b4880fbf78effcc871, type: 3}
+      propertyPath: m_TagString
+      value: IgnoreNavMesh
+      objectReference: {fileID: 0}
     - target: {fileID: 458376, guid: f1e966c2976c53b4880fbf78effcc871, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -5
+      value: -7.73974
       objectReference: {fileID: 0}
     - target: {fileID: 458376, guid: f1e966c2976c53b4880fbf78effcc871, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 10
+      value: 10.55113
       objectReference: {fileID: 0}
     - target: {fileID: 458376, guid: f1e966c2976c53b4880fbf78effcc871, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -7.5
+      value: -0.7163
       objectReference: {fileID: 0}
     - target: {fileID: 458376, guid: f1e966c2976c53b4880fbf78effcc871, type: 3}
       propertyPath: m_LocalRotation.w
@@ -8045,23 +8669,31 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 512770572989275622}
+    m_TransformParent: {fileID: 3306329604507918851}
     m_Modifications:
     - target: {fileID: 106404, guid: f5bef9e1bbbbe9f4a89a3c958ad516c7, type: 3}
       propertyPath: m_Name
       value: SM_Env_Ceiling_Stone_Flat_01 (5)
       objectReference: {fileID: 0}
+    - target: {fileID: 106404, guid: f5bef9e1bbbbe9f4a89a3c958ad516c7, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 106404, guid: f5bef9e1bbbbe9f4a89a3c958ad516c7, type: 3}
+      propertyPath: m_TagString
+      value: IgnoreNavMesh
+      objectReference: {fileID: 0}
     - target: {fileID: 460624, guid: f5bef9e1bbbbe9f4a89a3c958ad516c7, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -25.019753
+      value: -27.759493
       objectReference: {fileID: 0}
     - target: {fileID: 460624, guid: f5bef9e1bbbbe9f4a89a3c958ad516c7, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 15
+      value: 15.55113
       objectReference: {fileID: 0}
     - target: {fileID: 460624, guid: f5bef9e1bbbbe9f4a89a3c958ad516c7, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -2.4802148
+      value: 4.303485
       objectReference: {fileID: 0}
     - target: {fileID: 460624, guid: f5bef9e1bbbbe9f4a89a3c958ad516c7, type: 3}
       propertyPath: m_LocalRotation.w
@@ -8169,23 +8801,31 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 512770572989275622}
+    m_TransformParent: {fileID: 3306329604507918851}
     m_Modifications:
     - target: {fileID: 134854, guid: f1e966c2976c53b4880fbf78effcc871, type: 3}
       propertyPath: m_Name
       value: SM_Env_Ceiling_Stone_Pillar_01 (4)
       objectReference: {fileID: 0}
+    - target: {fileID: 134854, guid: f1e966c2976c53b4880fbf78effcc871, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 134854, guid: f1e966c2976c53b4880fbf78effcc871, type: 3}
+      propertyPath: m_TagString
+      value: IgnoreNavMesh
+      objectReference: {fileID: 0}
     - target: {fileID: 458376, guid: f1e966c2976c53b4880fbf78effcc871, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -4.944
+      value: -7.6837397
       objectReference: {fileID: 0}
     - target: {fileID: 458376, guid: f1e966c2976c53b4880fbf78effcc871, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 10.035
+      value: 10.58613
       objectReference: {fileID: 0}
     - target: {fileID: 458376, guid: f1e966c2976c53b4880fbf78effcc871, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 7.435004
+      value: 14.218704
       objectReference: {fileID: 0}
     - target: {fileID: 458376, guid: f1e966c2976c53b4880fbf78effcc871, type: 3}
       propertyPath: m_LocalRotation.w
@@ -8231,23 +8871,31 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 512770572989275622}
+    m_TransformParent: {fileID: 3306329604507918851}
     m_Modifications:
     - target: {fileID: 106404, guid: f5bef9e1bbbbe9f4a89a3c958ad516c7, type: 3}
       propertyPath: m_Name
       value: SM_Env_Ceiling_Stone_Flat_01 (2)
       objectReference: {fileID: 0}
+    - target: {fileID: 106404, guid: f5bef9e1bbbbe9f4a89a3c958ad516c7, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 106404, guid: f5bef9e1bbbbe9f4a89a3c958ad516c7, type: 3}
+      propertyPath: m_TagString
+      value: IgnoreNavMesh
+      objectReference: {fileID: 0}
     - target: {fileID: 460624, guid: f5bef9e1bbbbe9f4a89a3c958ad516c7, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 5
+      value: 2.26026
       objectReference: {fileID: 0}
     - target: {fileID: 460624, guid: f5bef9e1bbbbe9f4a89a3c958ad516c7, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 15
+      value: 15.55113
       objectReference: {fileID: 0}
     - target: {fileID: 460624, guid: f5bef9e1bbbbe9f4a89a3c958ad516c7, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -27.5
+      value: -20.716301
       objectReference: {fileID: 0}
     - target: {fileID: 460624, guid: f5bef9e1bbbbe9f4a89a3c958ad516c7, type: 3}
       propertyPath: m_LocalRotation.w
@@ -8293,23 +8941,31 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 512770572989275622}
+    m_TransformParent: {fileID: 3306329604507918851}
     m_Modifications:
     - target: {fileID: 114486, guid: 8dd1a7e8541c3f740a6cef5d44c0e172, type: 3}
       propertyPath: m_Name
       value: SM_Env_Ceiling_Stone_Flat_05 (2)
       objectReference: {fileID: 0}
+    - target: {fileID: 114486, guid: 8dd1a7e8541c3f740a6cef5d44c0e172, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 114486, guid: 8dd1a7e8541c3f740a6cef5d44c0e172, type: 3}
+      propertyPath: m_TagString
+      value: IgnoreNavMesh
+      objectReference: {fileID: 0}
     - target: {fileID: 464186, guid: 8dd1a7e8541c3f740a6cef5d44c0e172, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 9.980249
+      value: 7.2405095
       objectReference: {fileID: 0}
     - target: {fileID: 464186, guid: 8dd1a7e8541c3f740a6cef5d44c0e172, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 15
+      value: 15.55113
       objectReference: {fileID: 0}
     - target: {fileID: 464186, guid: 8dd1a7e8541c3f740a6cef5d44c0e172, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -2.4802637
+      value: 4.3034363
       objectReference: {fileID: 0}
     - target: {fileID: 464186, guid: 8dd1a7e8541c3f740a6cef5d44c0e172, type: 3}
       propertyPath: m_LocalRotation.w
@@ -8355,23 +9011,31 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 512770572989275622}
+    m_TransformParent: {fileID: 3306329604507918851}
     m_Modifications:
     - target: {fileID: 180038, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
       propertyPath: m_Name
       value: SM_Env_Ceiling_Stone_Curved_01 (15)
       objectReference: {fileID: 0}
+    - target: {fileID: 180038, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 180038, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
+      propertyPath: m_TagString
+      value: IgnoreNavMesh
+      objectReference: {fileID: 0}
     - target: {fileID: 409580, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -5
+      value: -7.73974
       objectReference: {fileID: 0}
     - target: {fileID: 409580, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 10
+      value: 10.55113
       objectReference: {fileID: 0}
     - target: {fileID: 409580, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -12.500006
+      value: -5.7163057
       objectReference: {fileID: 0}
     - target: {fileID: 409580, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
       propertyPath: m_LocalRotation.w
@@ -8524,6 +9188,10 @@ PrefabInstance:
     - target: {fileID: 8851872942177160285, guid: 95ee42942171b874e831418cae6f3591, type: 3}
       propertyPath: m_Name
       value: WallTorch_Lit (9)
+      objectReference: {fileID: 0}
+    - target: {fileID: 8851872942177160285, guid: 95ee42942171b874e831418cae6f3591, type: 3}
+      propertyPath: m_TagString
+      value: IgnoreNavMesh
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -8711,6 +9379,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: WallTorch_Lit (4)
       objectReference: {fileID: 0}
+    - target: {fileID: 8851872942177160285, guid: 95ee42942171b874e831418cae6f3591, type: 3}
+      propertyPath: m_TagString
+      value: IgnoreNavMesh
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -8727,23 +9399,31 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 512770572989275622}
+    m_TransformParent: {fileID: 3306329604507918851}
     m_Modifications:
     - target: {fileID: 134854, guid: f1e966c2976c53b4880fbf78effcc871, type: 3}
       propertyPath: m_Name
       value: SM_Env_Ceiling_Stone_Pillar_01 (1)
       objectReference: {fileID: 0}
+    - target: {fileID: 134854, guid: f1e966c2976c53b4880fbf78effcc871, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 134854, guid: f1e966c2976c53b4880fbf78effcc871, type: 3}
+      propertyPath: m_TagString
+      value: IgnoreNavMesh
+      objectReference: {fileID: 0}
     - target: {fileID: 458376, guid: f1e966c2976c53b4880fbf78effcc871, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -4.92
+      value: -7.65974
       objectReference: {fileID: 0}
     - target: {fileID: 458376, guid: f1e966c2976c53b4880fbf78effcc871, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 9.97
+      value: 10.521131
       objectReference: {fileID: 0}
     - target: {fileID: 458376, guid: f1e966c2976c53b4880fbf78effcc871, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 7.37
+      value: 14.1537
       objectReference: {fileID: 0}
     - target: {fileID: 458376, guid: f1e966c2976c53b4880fbf78effcc871, type: 3}
       propertyPath: m_LocalRotation.w
@@ -8913,23 +9593,31 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 512770572989275622}
+    m_TransformParent: {fileID: 3306329604507918851}
     m_Modifications:
     - target: {fileID: 114486, guid: 8dd1a7e8541c3f740a6cef5d44c0e172, type: 3}
       propertyPath: m_Name
       value: SM_Env_Ceiling_Stone_Flat_05
       objectReference: {fileID: 0}
+    - target: {fileID: 114486, guid: 8dd1a7e8541c3f740a6cef5d44c0e172, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 114486, guid: 8dd1a7e8541c3f740a6cef5d44c0e172, type: 3}
+      propertyPath: m_TagString
+      value: IgnoreNavMesh
+      objectReference: {fileID: 0}
     - target: {fileID: 464186, guid: 8dd1a7e8541c3f740a6cef5d44c0e172, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 5
+      value: 2.26026
       objectReference: {fileID: 0}
     - target: {fileID: 464186, guid: 8dd1a7e8541c3f740a6cef5d44c0e172, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 20
+      value: 20.55113
       objectReference: {fileID: 0}
     - target: {fileID: 464186, guid: 8dd1a7e8541c3f740a6cef5d44c0e172, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -2.5
+      value: 4.2837
       objectReference: {fileID: 0}
     - target: {fileID: 464186, guid: 8dd1a7e8541c3f740a6cef5d44c0e172, type: 3}
       propertyPath: m_LocalRotation.w
@@ -8975,23 +9663,31 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 512770572989275622}
+    m_TransformParent: {fileID: 3306329604507918851}
     m_Modifications:
     - target: {fileID: 140360, guid: 8c2d8fa38dd949f4fb0b4e40c868dd68, type: 3}
       propertyPath: m_Name
       value: SM_Env_Ceiling_Stone_Curved_03 (2)
       objectReference: {fileID: 0}
+    - target: {fileID: 140360, guid: 8c2d8fa38dd949f4fb0b4e40c868dd68, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 140360, guid: 8c2d8fa38dd949f4fb0b4e40c868dd68, type: 3}
+      propertyPath: m_TagString
+      value: IgnoreNavMesh
+      objectReference: {fileID: 0}
     - target: {fileID: 492692, guid: 8c2d8fa38dd949f4fb0b4e40c868dd68, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -15
+      value: -17.73974
       objectReference: {fileID: 0}
     - target: {fileID: 492692, guid: 8c2d8fa38dd949f4fb0b4e40c868dd68, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 10
+      value: 10.55113
       objectReference: {fileID: 0}
     - target: {fileID: 492692, guid: 8c2d8fa38dd949f4fb0b4e40c868dd68, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 7.5
+      value: 14.2837
       objectReference: {fileID: 0}
     - target: {fileID: 492692, guid: 8c2d8fa38dd949f4fb0b4e40c868dd68, type: 3}
       propertyPath: m_LocalRotation.w
@@ -9941,23 +10637,31 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 512770572989275622}
+    m_TransformParent: {fileID: 3306329604507918851}
     m_Modifications:
     - target: {fileID: 193676, guid: 50de44d10630cfc43a286af857d33846, type: 3}
       propertyPath: m_Name
       value: SM_Env_Ceiling_Stone_Curved_Corner_02 (2)
       objectReference: {fileID: 0}
+    - target: {fileID: 193676, guid: 50de44d10630cfc43a286af857d33846, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 193676, guid: 50de44d10630cfc43a286af857d33846, type: 3}
+      propertyPath: m_TagString
+      value: IgnoreNavMesh
+      objectReference: {fileID: 0}
     - target: {fileID: 447582, guid: 50de44d10630cfc43a286af857d33846, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 9.862
+      value: 7.1222606
       objectReference: {fileID: 0}
     - target: {fileID: 447582, guid: 50de44d10630cfc43a286af857d33846, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 20
+      value: 20.55113
       objectReference: {fileID: 0}
     - target: {fileID: 447582, guid: 50de44d10630cfc43a286af857d33846, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -7.351
+      value: -0.56729984
       objectReference: {fileID: 0}
     - target: {fileID: 447582, guid: 50de44d10630cfc43a286af857d33846, type: 3}
       propertyPath: m_LocalRotation.w
@@ -10065,23 +10769,31 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 512770572989275622}
+    m_TransformParent: {fileID: 3306329604507918851}
     m_Modifications:
     - target: {fileID: 174938, guid: 620667318a53a7040ad3c980acab36d0, type: 3}
       propertyPath: m_Name
       value: SM_Env_Ceiling_Stone_Flat_04
       objectReference: {fileID: 0}
+    - target: {fileID: 174938, guid: 620667318a53a7040ad3c980acab36d0, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 174938, guid: 620667318a53a7040ad3c980acab36d0, type: 3}
+      propertyPath: m_TagString
+      value: IgnoreNavMesh
+      objectReference: {fileID: 0}
     - target: {fileID: 412494, guid: 620667318a53a7040ad3c980acab36d0, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 5
+      value: 2.26026
       objectReference: {fileID: 0}
     - target: {fileID: 412494, guid: 620667318a53a7040ad3c980acab36d0, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 15
+      value: 15.55113
       objectReference: {fileID: 0}
     - target: {fileID: 412494, guid: 620667318a53a7040ad3c980acab36d0, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 22.5
+      value: 29.283699
       objectReference: {fileID: 0}
     - target: {fileID: 412494, guid: 620667318a53a7040ad3c980acab36d0, type: 3}
       propertyPath: m_LocalRotation.w
@@ -10263,23 +10975,31 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 512770572989275622}
+    m_TransformParent: {fileID: 3306329604507918851}
     m_Modifications:
     - target: {fileID: 147372, guid: 85f5f4776e3804945ab0095870a1212b, type: 3}
       propertyPath: m_Name
       value: SM_Env_Ceiling_Stone_Curved_Corner_01 (2)
       objectReference: {fileID: 0}
+    - target: {fileID: 147372, guid: 85f5f4776e3804945ab0095870a1212b, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 147372, guid: 85f5f4776e3804945ab0095870a1212b, type: 3}
+      propertyPath: m_TagString
+      value: IgnoreNavMesh
+      objectReference: {fileID: 0}
     - target: {fileID: 496582, guid: 85f5f4776e3804945ab0095870a1212b, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 5
+      value: 2.26026
       objectReference: {fileID: 0}
     - target: {fileID: 496582, guid: 85f5f4776e3804945ab0095870a1212b, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 15
+      value: 15.55113
       objectReference: {fileID: 0}
     - target: {fileID: 496582, guid: 85f5f4776e3804945ab0095870a1212b, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 7.5
+      value: 14.2837
       objectReference: {fileID: 0}
     - target: {fileID: 496582, guid: 85f5f4776e3804945ab0095870a1212b, type: 3}
       propertyPath: m_LocalRotation.w
@@ -10387,23 +11107,31 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 512770572989275622}
+    m_TransformParent: {fileID: 3306329604507918851}
     m_Modifications:
     - target: {fileID: 140360, guid: 8c2d8fa38dd949f4fb0b4e40c868dd68, type: 3}
       propertyPath: m_Name
       value: SM_Env_Ceiling_Stone_Curved_03 (3)
       objectReference: {fileID: 0}
+    - target: {fileID: 140360, guid: 8c2d8fa38dd949f4fb0b4e40c868dd68, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 140360, guid: 8c2d8fa38dd949f4fb0b4e40c868dd68, type: 3}
+      propertyPath: m_TagString
+      value: IgnoreNavMesh
+      objectReference: {fileID: 0}
     - target: {fileID: 492692, guid: 8c2d8fa38dd949f4fb0b4e40c868dd68, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 20
+      value: 17.26026
       objectReference: {fileID: 0}
     - target: {fileID: 492692, guid: 8c2d8fa38dd949f4fb0b4e40c868dd68, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 10
+      value: 10.55113
       objectReference: {fileID: 0}
     - target: {fileID: 492692, guid: 8c2d8fa38dd949f4fb0b4e40c868dd68, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -7.5
+      value: -0.7163
       objectReference: {fileID: 0}
     - target: {fileID: 492692, guid: 8c2d8fa38dd949f4fb0b4e40c868dd68, type: 3}
       propertyPath: m_LocalRotation.w
@@ -10573,23 +11301,31 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 512770572989275622}
+    m_TransformParent: {fileID: 3306329604507918851}
     m_Modifications:
     - target: {fileID: 193676, guid: 50de44d10630cfc43a286af857d33846, type: 3}
       propertyPath: m_Name
       value: SM_Env_Ceiling_Stone_Curved_Corner_02 (5)
       objectReference: {fileID: 0}
+    - target: {fileID: 193676, guid: 50de44d10630cfc43a286af857d33846, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 193676, guid: 50de44d10630cfc43a286af857d33846, type: 3}
+      propertyPath: m_TagString
+      value: IgnoreNavMesh
+      objectReference: {fileID: 0}
     - target: {fileID: 447582, guid: 50de44d10630cfc43a286af857d33846, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 9.85
+      value: 7.1102605
       objectReference: {fileID: 0}
     - target: {fileID: 447582, guid: 50de44d10630cfc43a286af857d33846, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 20
+      value: 20.55113
       objectReference: {fileID: 0}
     - target: {fileID: 447582, guid: 50de44d10630cfc43a286af857d33846, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 7.366
+      value: 14.1497
       objectReference: {fileID: 0}
     - target: {fileID: 447582, guid: 50de44d10630cfc43a286af857d33846, type: 3}
       propertyPath: m_LocalRotation.w
@@ -10743,6 +11479,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: WallTorch_Lit
       objectReference: {fileID: 0}
+    - target: {fileID: 8851872942177160285, guid: 95ee42942171b874e831418cae6f3591, type: 3}
+      propertyPath: m_TagString
+      value: IgnoreNavMesh
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -10866,6 +11606,10 @@ PrefabInstance:
     - target: {fileID: 8851872942177160285, guid: 95ee42942171b874e831418cae6f3591, type: 3}
       propertyPath: m_Name
       value: WallTorch_Lit (7)
+      objectReference: {fileID: 0}
+    - target: {fileID: 8851872942177160285, guid: 95ee42942171b874e831418cae6f3591, type: 3}
+      propertyPath: m_TagString
+      value: IgnoreNavMesh
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -11689,23 +12433,31 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 512770572989275622}
+    m_TransformParent: {fileID: 3306329604507918851}
     m_Modifications:
     - target: {fileID: 147372, guid: 85f5f4776e3804945ab0095870a1212b, type: 3}
       propertyPath: m_Name
       value: SM_Env_Ceiling_Stone_Curved_Corner_01 (1)
       objectReference: {fileID: 0}
+    - target: {fileID: 147372, guid: 85f5f4776e3804945ab0095870a1212b, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 147372, guid: 85f5f4776e3804945ab0095870a1212b, type: 3}
+      propertyPath: m_TagString
+      value: IgnoreNavMesh
+      objectReference: {fileID: 0}
     - target: {fileID: 496582, guid: 85f5f4776e3804945ab0095870a1212b, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 10
+      value: 7.26026
       objectReference: {fileID: 0}
     - target: {fileID: 496582, guid: 85f5f4776e3804945ab0095870a1212b, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 15
+      value: 15.55113
       objectReference: {fileID: 0}
     - target: {fileID: 496582, guid: 85f5f4776e3804945ab0095870a1212b, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -2.5
+      value: 4.2837
       objectReference: {fileID: 0}
     - target: {fileID: 496582, guid: 85f5f4776e3804945ab0095870a1212b, type: 3}
       propertyPath: m_LocalRotation.w
@@ -11751,23 +12503,31 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 512770572989275622}
+    m_TransformParent: {fileID: 3306329604507918851}
     m_Modifications:
     - target: {fileID: 193676, guid: 50de44d10630cfc43a286af857d33846, type: 3}
       propertyPath: m_Name
       value: SM_Env_Ceiling_Stone_Curved_Corner_02 (1)
       objectReference: {fileID: 0}
+    - target: {fileID: 193676, guid: 50de44d10630cfc43a286af857d33846, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 193676, guid: 50de44d10630cfc43a286af857d33846, type: 3}
+      propertyPath: m_TagString
+      value: IgnoreNavMesh
+      objectReference: {fileID: 0}
     - target: {fileID: 447582, guid: 50de44d10630cfc43a286af857d33846, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 9.862
+      value: 7.1222606
       objectReference: {fileID: 0}
     - target: {fileID: 447582, guid: 50de44d10630cfc43a286af857d33846, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 10
+      value: 10.55113
       objectReference: {fileID: 0}
     - target: {fileID: 447582, guid: 50de44d10630cfc43a286af857d33846, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -7.351
+      value: -0.56729984
       objectReference: {fileID: 0}
     - target: {fileID: 447582, guid: 50de44d10630cfc43a286af857d33846, type: 3}
       propertyPath: m_LocalRotation.w
@@ -11813,7 +12573,7 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 512770572989275622}
+    m_TransformParent: {fileID: 3306329604507918851}
     m_Modifications:
     - target: {fileID: 5944479400969047383, guid: c2368392f4979ea429ff1cdfe0eb964c, type: 3}
       propertyPath: m_LocalScale.x
@@ -11825,15 +12585,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5944479400969047383, guid: c2368392f4979ea429ff1cdfe0eb964c, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 2.31
+      value: -0.42973995
       objectReference: {fileID: 0}
     - target: {fileID: 5944479400969047383, guid: c2368392f4979ea429ff1cdfe0eb964c, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -0.06
+      value: 0.49113
       objectReference: {fileID: 0}
     - target: {fileID: 5944479400969047383, guid: c2368392f4979ea429ff1cdfe0eb964c, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 0
+      value: 6.7837
       objectReference: {fileID: 0}
     - target: {fileID: 5944479400969047383, guid: c2368392f4979ea429ff1cdfe0eb964c, type: 3}
       propertyPath: m_LocalRotation.w
@@ -11866,6 +12626,14 @@ PrefabInstance:
     - target: {fileID: 6428000241048573933, guid: c2368392f4979ea429ff1cdfe0eb964c, type: 3}
       propertyPath: m_Name
       value: Water_Plane
+      objectReference: {fileID: 0}
+    - target: {fileID: 6428000241048573933, guid: c2368392f4979ea429ff1cdfe0eb964c, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 6428000241048573933, guid: c2368392f4979ea429ff1cdfe0eb964c, type: 3}
+      propertyPath: m_TagString
+      value: IgnoreNavMesh
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -11945,23 +12713,31 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 512770572989275622}
+    m_TransformParent: {fileID: 3306329604507918851}
     m_Modifications:
     - target: {fileID: 117424, guid: 2c52fc029ee6e764aaddc5e8930caf9d, type: 3}
       propertyPath: m_Name
       value: SM_Env_Ceiling_Stone_Pillar_02 (2)
       objectReference: {fileID: 0}
+    - target: {fileID: 117424, guid: 2c52fc029ee6e764aaddc5e8930caf9d, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 117424, guid: 2c52fc029ee6e764aaddc5e8930caf9d, type: 3}
+      propertyPath: m_TagString
+      value: IgnoreNavMesh
+      objectReference: {fileID: 0}
     - target: {fileID: 428220, guid: 2c52fc029ee6e764aaddc5e8930caf9d, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0.33500433
+      value: -2.4047356
       objectReference: {fileID: 0}
     - target: {fileID: 428220, guid: 2c52fc029ee6e764aaddc5e8930caf9d, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 14.67
+      value: 15.22113
       objectReference: {fileID: 0}
     - target: {fileID: 428220, guid: 2c52fc029ee6e764aaddc5e8930caf9d, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 7.3750005
+      value: 14.158701
       objectReference: {fileID: 0}
     - target: {fileID: 428220, guid: 2c52fc029ee6e764aaddc5e8930caf9d, type: 3}
       propertyPath: m_LocalRotation.w
@@ -12069,23 +12845,31 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 512770572989275622}
+    m_TransformParent: {fileID: 3306329604507918851}
     m_Modifications:
     - target: {fileID: 180038, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
       propertyPath: m_Name
       value: SM_Env_Ceiling_Stone_Curved_01 (6)
       objectReference: {fileID: 0}
+    - target: {fileID: 180038, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 180038, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
+      propertyPath: m_TagString
+      value: IgnoreNavMesh
+      objectReference: {fileID: 0}
     - target: {fileID: 409580, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 15
+      value: 12.26026
       objectReference: {fileID: 0}
     - target: {fileID: 409580, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 10
+      value: 10.55113
       objectReference: {fileID: 0}
     - target: {fileID: 409580, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 7.5
+      value: 14.2837
       objectReference: {fileID: 0}
     - target: {fileID: 409580, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
       propertyPath: m_LocalRotation.w
@@ -12193,23 +12977,31 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 512770572989275622}
+    m_TransformParent: {fileID: 3306329604507918851}
     m_Modifications:
     - target: {fileID: 140360, guid: 8c2d8fa38dd949f4fb0b4e40c868dd68, type: 3}
       propertyPath: m_Name
       value: SM_Env_Ceiling_Stone_Curved_03 (6)
       objectReference: {fileID: 0}
+    - target: {fileID: 140360, guid: 8c2d8fa38dd949f4fb0b4e40c868dd68, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 140360, guid: 8c2d8fa38dd949f4fb0b4e40c868dd68, type: 3}
+      propertyPath: m_TagString
+      value: IgnoreNavMesh
+      objectReference: {fileID: 0}
     - target: {fileID: 492692, guid: 8c2d8fa38dd949f4fb0b4e40c868dd68, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 10
+      value: 7.26026
       objectReference: {fileID: 0}
     - target: {fileID: 492692, guid: 8c2d8fa38dd949f4fb0b4e40c868dd68, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 10
+      value: 10.55113
       objectReference: {fileID: 0}
     - target: {fileID: 492692, guid: 8c2d8fa38dd949f4fb0b4e40c868dd68, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 17.500008
+      value: 24.283707
       objectReference: {fileID: 0}
     - target: {fileID: 492692, guid: 8c2d8fa38dd949f4fb0b4e40c868dd68, type: 3}
       propertyPath: m_LocalRotation.w
@@ -12317,23 +13109,31 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 512770572989275622}
+    m_TransformParent: {fileID: 3306329604507918851}
     m_Modifications:
     - target: {fileID: 134854, guid: f1e966c2976c53b4880fbf78effcc871, type: 3}
       propertyPath: m_Name
       value: SM_Env_Ceiling_Stone_Pillar_01 (2)
       objectReference: {fileID: 0}
+    - target: {fileID: 134854, guid: f1e966c2976c53b4880fbf78effcc871, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 134854, guid: f1e966c2976c53b4880fbf78effcc871, type: 3}
+      propertyPath: m_TagString
+      value: IgnoreNavMesh
+      objectReference: {fileID: 0}
     - target: {fileID: 458376, guid: f1e966c2976c53b4880fbf78effcc871, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 10
+      value: 7.26026
       objectReference: {fileID: 0}
     - target: {fileID: 458376, guid: f1e966c2976c53b4880fbf78effcc871, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 10
+      value: 10.55113
       objectReference: {fileID: 0}
     - target: {fileID: 458376, guid: f1e966c2976c53b4880fbf78effcc871, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -7.5
+      value: -0.7163
       objectReference: {fileID: 0}
     - target: {fileID: 458376, guid: f1e966c2976c53b4880fbf78effcc871, type: 3}
       propertyPath: m_LocalRotation.w
@@ -12424,6 +13224,10 @@ PrefabInstance:
     - target: {fileID: 8851872942177160285, guid: 95ee42942171b874e831418cae6f3591, type: 3}
       propertyPath: m_Name
       value: WallTorch_Lit (8)
+      objectReference: {fileID: 0}
+    - target: {fileID: 8851872942177160285, guid: 95ee42942171b874e831418cae6f3591, type: 3}
+      propertyPath: m_TagString
+      value: IgnoreNavMesh
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -12548,6 +13352,10 @@ PrefabInstance:
     - target: {fileID: 8851872942177160285, guid: 95ee42942171b874e831418cae6f3591, type: 3}
       propertyPath: m_Name
       value: WallTorch_Lit (2)
+      objectReference: {fileID: 0}
+    - target: {fileID: 8851872942177160285, guid: 95ee42942171b874e831418cae6f3591, type: 3}
+      propertyPath: m_TagString
+      value: IgnoreNavMesh
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -12689,23 +13497,31 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 512770572989275622}
+    m_TransformParent: {fileID: 3306329604507918851}
     m_Modifications:
     - target: {fileID: 178526, guid: 2d772d7fdfdff1b4e96deee9d48989bd, type: 3}
       propertyPath: m_Name
       value: SM_Env_Ceiling_Stone_Flat_03
       objectReference: {fileID: 0}
+    - target: {fileID: 178526, guid: 2d772d7fdfdff1b4e96deee9d48989bd, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 178526, guid: 2d772d7fdfdff1b4e96deee9d48989bd, type: 3}
+      propertyPath: m_TagString
+      value: IgnoreNavMesh
+      objectReference: {fileID: 0}
     - target: {fileID: 406994, guid: 2d772d7fdfdff1b4e96deee9d48989bd, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 5
+      value: 2.26026
       objectReference: {fileID: 0}
     - target: {fileID: 406994, guid: 2d772d7fdfdff1b4e96deee9d48989bd, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 15
+      value: 15.55113
       objectReference: {fileID: 0}
     - target: {fileID: 406994, guid: 2d772d7fdfdff1b4e96deee9d48989bd, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 17.5
+      value: 24.283699
       objectReference: {fileID: 0}
     - target: {fileID: 406994, guid: 2d772d7fdfdff1b4e96deee9d48989bd, type: 3}
       propertyPath: m_LocalRotation.w
@@ -12751,23 +13567,31 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 512770572989275622}
+    m_TransformParent: {fileID: 3306329604507918851}
     m_Modifications:
     - target: {fileID: 140360, guid: 8c2d8fa38dd949f4fb0b4e40c868dd68, type: 3}
       propertyPath: m_Name
       value: SM_Env_Ceiling_Stone_Curved_03 (4)
       objectReference: {fileID: 0}
+    - target: {fileID: 140360, guid: 8c2d8fa38dd949f4fb0b4e40c868dd68, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 140360, guid: 8c2d8fa38dd949f4fb0b4e40c868dd68, type: 3}
+      propertyPath: m_TagString
+      value: IgnoreNavMesh
+      objectReference: {fileID: 0}
     - target: {fileID: 492692, guid: 8c2d8fa38dd949f4fb0b4e40c868dd68, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 20
+      value: 17.26026
       objectReference: {fileID: 0}
     - target: {fileID: 492692, guid: 8c2d8fa38dd949f4fb0b4e40c868dd68, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 10
+      value: 10.55113
       objectReference: {fileID: 0}
     - target: {fileID: 492692, guid: 8c2d8fa38dd949f4fb0b4e40c868dd68, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 7.5
+      value: 14.2837
       objectReference: {fileID: 0}
     - target: {fileID: 492692, guid: 8c2d8fa38dd949f4fb0b4e40c868dd68, type: 3}
       propertyPath: m_LocalRotation.w
@@ -12813,23 +13637,31 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 512770572989275622}
+    m_TransformParent: {fileID: 3306329604507918851}
     m_Modifications:
     - target: {fileID: 180038, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
       propertyPath: m_Name
       value: SM_Env_Ceiling_Stone_Curved_01 (9)
       objectReference: {fileID: 0}
+    - target: {fileID: 180038, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 180038, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
+      propertyPath: m_TagString
+      value: IgnoreNavMesh
+      objectReference: {fileID: 0}
     - target: {fileID: 409580, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 10
+      value: 7.26026
       objectReference: {fileID: 0}
     - target: {fileID: 409580, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 10
+      value: 10.55113
       objectReference: {fileID: 0}
     - target: {fileID: 409580, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -12.499997
+      value: -5.716297
       objectReference: {fileID: 0}
     - target: {fileID: 409580, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
       propertyPath: m_LocalRotation.w
@@ -12937,23 +13769,31 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 512770572989275622}
+    m_TransformParent: {fileID: 3306329604507918851}
     m_Modifications:
     - target: {fileID: 180038, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
       propertyPath: m_Name
       value: SM_Env_Ceiling_Stone_Curved_01 (4)
       objectReference: {fileID: 0}
+    - target: {fileID: 180038, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 180038, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
+      propertyPath: m_TagString
+      value: IgnoreNavMesh
+      objectReference: {fileID: 0}
     - target: {fileID: 409580, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -10
+      value: -12.73974
       objectReference: {fileID: 0}
     - target: {fileID: 409580, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 10
+      value: 10.55113
       objectReference: {fileID: 0}
     - target: {fileID: 409580, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 7.5
+      value: 14.2837
       objectReference: {fileID: 0}
     - target: {fileID: 409580, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
       propertyPath: m_LocalRotation.w
@@ -13265,6 +14105,14 @@ PrefabInstance:
       propertyPath: m_Name
       value: SM_Prop_Candle_Chandelier_02_Preset
       objectReference: {fileID: 0}
+    - target: {fileID: 156216, guid: 07aee309b023b0a419d9270d23add85f, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 156216, guid: 07aee309b023b0a419d9270d23add85f, type: 3}
+      propertyPath: m_TagString
+      value: IgnoreNavMesh
+      objectReference: {fileID: 0}
     - target: {fileID: 428260, guid: 07aee309b023b0a419d9270d23add85f, type: 3}
       propertyPath: m_LocalScale.x
       value: 2
@@ -13341,23 +14189,31 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 512770572989275622}
+    m_TransformParent: {fileID: 3306329604507918851}
     m_Modifications:
     - target: {fileID: 101048, guid: df71eb9ba610fdf4087431bd6adab96b, type: 3}
       propertyPath: m_Name
       value: SM_Env_Ceiling_Stone_Curved_02 (6)
       objectReference: {fileID: 0}
+    - target: {fileID: 101048, guid: df71eb9ba610fdf4087431bd6adab96b, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 101048, guid: df71eb9ba610fdf4087431bd6adab96b, type: 3}
+      propertyPath: m_TagString
+      value: IgnoreNavMesh
+      objectReference: {fileID: 0}
     - target: {fileID: 435388, guid: df71eb9ba610fdf4087431bd6adab96b, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 10
+      value: 7.26026
       objectReference: {fileID: 0}
     - target: {fileID: 435388, guid: df71eb9ba610fdf4087431bd6adab96b, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 10
+      value: 10.55113
       objectReference: {fileID: 0}
     - target: {fileID: 435388, guid: df71eb9ba610fdf4087431bd6adab96b, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -7.499997
+      value: -0.71629715
       objectReference: {fileID: 0}
     - target: {fileID: 435388, guid: df71eb9ba610fdf4087431bd6adab96b, type: 3}
       propertyPath: m_LocalRotation.w
@@ -13465,23 +14321,31 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 512770572989275622}
+    m_TransformParent: {fileID: 3306329604507918851}
     m_Modifications:
     - target: {fileID: 134854, guid: f1e966c2976c53b4880fbf78effcc871, type: 3}
       propertyPath: m_Name
       value: SM_Env_Ceiling_Stone_Pillar_01 (6)
       objectReference: {fileID: 0}
+    - target: {fileID: 134854, guid: f1e966c2976c53b4880fbf78effcc871, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 134854, guid: f1e966c2976c53b4880fbf78effcc871, type: 3}
+      propertyPath: m_TagString
+      value: IgnoreNavMesh
+      objectReference: {fileID: 0}
     - target: {fileID: 458376, guid: f1e966c2976c53b4880fbf78effcc871, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 10
+      value: 7.26026
       objectReference: {fileID: 0}
     - target: {fileID: 458376, guid: f1e966c2976c53b4880fbf78effcc871, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 10
+      value: 10.55113
       objectReference: {fileID: 0}
     - target: {fileID: 458376, guid: f1e966c2976c53b4880fbf78effcc871, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 7.5
+      value: 14.2837
       objectReference: {fileID: 0}
     - target: {fileID: 458376, guid: f1e966c2976c53b4880fbf78effcc871, type: 3}
       propertyPath: m_LocalRotation.w
@@ -13527,23 +14391,31 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 512770572989275622}
+    m_TransformParent: {fileID: 3306329604507918851}
     m_Modifications:
     - target: {fileID: 178526, guid: 2d772d7fdfdff1b4e96deee9d48989bd, type: 3}
       propertyPath: m_Name
       value: SM_Env_Ceiling_Stone_Flat_03 (5)
       objectReference: {fileID: 0}
+    - target: {fileID: 178526, guid: 2d772d7fdfdff1b4e96deee9d48989bd, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 178526, guid: 2d772d7fdfdff1b4e96deee9d48989bd, type: 3}
+      propertyPath: m_TagString
+      value: IgnoreNavMesh
+      objectReference: {fileID: 0}
     - target: {fileID: 406994, guid: 2d772d7fdfdff1b4e96deee9d48989bd, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -5.0197487
+      value: -7.7594886
       objectReference: {fileID: 0}
     - target: {fileID: 406994, guid: 2d772d7fdfdff1b4e96deee9d48989bd, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 15
+      value: 15.55113
       objectReference: {fileID: 0}
     - target: {fileID: 406994, guid: 2d772d7fdfdff1b4e96deee9d48989bd, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -2.4802406
+      value: 4.303459
       objectReference: {fileID: 0}
     - target: {fileID: 406994, guid: 2d772d7fdfdff1b4e96deee9d48989bd, type: 3}
       propertyPath: m_LocalRotation.w
@@ -13775,23 +14647,31 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 512770572989275622}
+    m_TransformParent: {fileID: 3306329604507918851}
     m_Modifications:
     - target: {fileID: 106404, guid: f5bef9e1bbbbe9f4a89a3c958ad516c7, type: 3}
       propertyPath: m_Name
       value: SM_Env_Ceiling_Stone_Flat_01 (4)
       objectReference: {fileID: 0}
+    - target: {fileID: 106404, guid: f5bef9e1bbbbe9f4a89a3c958ad516c7, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 106404, guid: f5bef9e1bbbbe9f4a89a3c958ad516c7, type: 3}
+      propertyPath: m_TagString
+      value: IgnoreNavMesh
+      objectReference: {fileID: 0}
     - target: {fileID: 460624, guid: f5bef9e1bbbbe9f4a89a3c958ad516c7, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -20.019749
+      value: -22.75949
       objectReference: {fileID: 0}
     - target: {fileID: 460624, guid: f5bef9e1bbbbe9f4a89a3c958ad516c7, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 15
+      value: 15.55113
       objectReference: {fileID: 0}
     - target: {fileID: 460624, guid: f5bef9e1bbbbe9f4a89a3c958ad516c7, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -2.4802215
+      value: 4.3034782
       objectReference: {fileID: 0}
     - target: {fileID: 460624, guid: f5bef9e1bbbbe9f4a89a3c958ad516c7, type: 3}
       propertyPath: m_LocalRotation.w
@@ -13899,23 +14779,31 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 512770572989275622}
+    m_TransformParent: {fileID: 3306329604507918851}
     m_Modifications:
     - target: {fileID: 134854, guid: f1e966c2976c53b4880fbf78effcc871, type: 3}
       propertyPath: m_Name
       value: SM_Env_Ceiling_Stone_Pillar_01
       objectReference: {fileID: 0}
+    - target: {fileID: 134854, guid: f1e966c2976c53b4880fbf78effcc871, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 134854, guid: f1e966c2976c53b4880fbf78effcc871, type: 3}
+      propertyPath: m_TagString
+      value: IgnoreNavMesh
+      objectReference: {fileID: 0}
     - target: {fileID: 458376, guid: f1e966c2976c53b4880fbf78effcc871, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -5
+      value: -7.73974
       objectReference: {fileID: 0}
     - target: {fileID: 458376, guid: f1e966c2976c53b4880fbf78effcc871, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 10
+      value: 10.55113
       objectReference: {fileID: 0}
     - target: {fileID: 458376, guid: f1e966c2976c53b4880fbf78effcc871, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -7.5
+      value: -0.7163
       objectReference: {fileID: 0}
     - target: {fileID: 458376, guid: f1e966c2976c53b4880fbf78effcc871, type: 3}
       propertyPath: m_LocalRotation.w
@@ -13961,23 +14849,31 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 512770572989275622}
+    m_TransformParent: {fileID: 3306329604507918851}
     m_Modifications:
     - target: {fileID: 180038, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
       propertyPath: m_Name
       value: SM_Env_Ceiling_Stone_Curved_01 (10)
       objectReference: {fileID: 0}
+    - target: {fileID: 180038, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 180038, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
+      propertyPath: m_TagString
+      value: IgnoreNavMesh
+      objectReference: {fileID: 0}
     - target: {fileID: 409580, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 10
+      value: 7.26026
       objectReference: {fileID: 0}
     - target: {fileID: 409580, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 10
+      value: 10.55113
       objectReference: {fileID: 0}
     - target: {fileID: 409580, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 22.500006
+      value: 29.283707
       objectReference: {fileID: 0}
     - target: {fileID: 409580, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
       propertyPath: m_LocalRotation.w
@@ -14193,6 +15089,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: WallTorch_Lit (13)
       objectReference: {fileID: 0}
+    - target: {fileID: 8851872942177160285, guid: 95ee42942171b874e831418cae6f3591, type: 3}
+      propertyPath: m_TagString
+      value: IgnoreNavMesh
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -14271,23 +15171,31 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 512770572989275622}
+    m_TransformParent: {fileID: 3306329604507918851}
     m_Modifications:
     - target: {fileID: 178526, guid: 2d772d7fdfdff1b4e96deee9d48989bd, type: 3}
       propertyPath: m_Name
       value: SM_Env_Ceiling_Stone_Flat_03 (4)
       objectReference: {fileID: 0}
+    - target: {fileID: 178526, guid: 2d772d7fdfdff1b4e96deee9d48989bd, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 178526, guid: 2d772d7fdfdff1b4e96deee9d48989bd, type: 3}
+      propertyPath: m_TagString
+      value: IgnoreNavMesh
+      objectReference: {fileID: 0}
     - target: {fileID: 406994, guid: 2d772d7fdfdff1b4e96deee9d48989bd, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -15.019751
+      value: -17.759491
       objectReference: {fileID: 0}
     - target: {fileID: 406994, guid: 2d772d7fdfdff1b4e96deee9d48989bd, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 15
+      value: 15.55113
       objectReference: {fileID: 0}
     - target: {fileID: 406994, guid: 2d772d7fdfdff1b4e96deee9d48989bd, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -2.4802291
+      value: 4.3034706
       objectReference: {fileID: 0}
     - target: {fileID: 406994, guid: 2d772d7fdfdff1b4e96deee9d48989bd, type: 3}
       propertyPath: m_LocalRotation.w
@@ -14379,6 +15287,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: WallTorch_Lit (1)
       objectReference: {fileID: 0}
+    - target: {fileID: 8851872942177160285, guid: 95ee42942171b874e831418cae6f3591, type: 3}
+      propertyPath: m_TagString
+      value: IgnoreNavMesh
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -14457,23 +15369,31 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 512770572989275622}
+    m_TransformParent: {fileID: 3306329604507918851}
     m_Modifications:
     - target: {fileID: 193676, guid: 50de44d10630cfc43a286af857d33846, type: 3}
       propertyPath: m_Name
       value: SM_Env_Ceiling_Stone_Curved_Corner_02 (3)
       objectReference: {fileID: 0}
+    - target: {fileID: 193676, guid: 50de44d10630cfc43a286af857d33846, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 193676, guid: 50de44d10630cfc43a286af857d33846, type: 3}
+      propertyPath: m_TagString
+      value: IgnoreNavMesh
+      objectReference: {fileID: 0}
     - target: {fileID: 447582, guid: 50de44d10630cfc43a286af857d33846, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 9.85
+      value: 7.1102605
       objectReference: {fileID: 0}
     - target: {fileID: 447582, guid: 50de44d10630cfc43a286af857d33846, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 10
+      value: 10.55113
       objectReference: {fileID: 0}
     - target: {fileID: 447582, guid: 50de44d10630cfc43a286af857d33846, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 7.366
+      value: 14.1497
       objectReference: {fileID: 0}
     - target: {fileID: 447582, guid: 50de44d10630cfc43a286af857d33846, type: 3}
       propertyPath: m_LocalRotation.w
@@ -14581,23 +15501,31 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 512770572989275622}
+    m_TransformParent: {fileID: 3306329604507918851}
     m_Modifications:
     - target: {fileID: 180038, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
       propertyPath: m_Name
       value: SM_Env_Ceiling_Stone_Curved_01 (8)
       objectReference: {fileID: 0}
+    - target: {fileID: 180038, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 180038, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
+      propertyPath: m_TagString
+      value: IgnoreNavMesh
+      objectReference: {fileID: 0}
     - target: {fileID: 409580, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 25
+      value: 22.26026
       objectReference: {fileID: 0}
     - target: {fileID: 409580, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 10
+      value: 10.55113
       objectReference: {fileID: 0}
     - target: {fileID: 409580, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 7.5
+      value: 14.2837
       objectReference: {fileID: 0}
     - target: {fileID: 409580, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
       propertyPath: m_LocalRotation.w
@@ -14767,23 +15695,31 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 512770572989275622}
+    m_TransformParent: {fileID: 3306329604507918851}
     m_Modifications:
     - target: {fileID: 193676, guid: 50de44d10630cfc43a286af857d33846, type: 3}
       propertyPath: m_Name
       value: SM_Env_Ceiling_Stone_Curved_Corner_02 (4)
       objectReference: {fileID: 0}
+    - target: {fileID: 193676, guid: 50de44d10630cfc43a286af857d33846, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 193676, guid: 50de44d10630cfc43a286af857d33846, type: 3}
+      propertyPath: m_TagString
+      value: IgnoreNavMesh
+      objectReference: {fileID: 0}
     - target: {fileID: 447582, guid: 50de44d10630cfc43a286af857d33846, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -4.779
+      value: -7.5187397
       objectReference: {fileID: 0}
     - target: {fileID: 447582, guid: 50de44d10630cfc43a286af857d33846, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 20
+      value: 20.55113
       objectReference: {fileID: 0}
     - target: {fileID: 447582, guid: 50de44d10630cfc43a286af857d33846, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -7.281
+      value: -0.49730015
       objectReference: {fileID: 0}
     - target: {fileID: 447582, guid: 50de44d10630cfc43a286af857d33846, type: 3}
       propertyPath: m_LocalRotation.w
@@ -14829,23 +15765,31 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 512770572989275622}
+    m_TransformParent: {fileID: 3306329604507918851}
     m_Modifications:
     - target: {fileID: 114486, guid: 8dd1a7e8541c3f740a6cef5d44c0e172, type: 3}
       propertyPath: m_Name
       value: SM_Env_Ceiling_Stone_Flat_05 (1)
       objectReference: {fileID: 0}
+    - target: {fileID: 114486, guid: 8dd1a7e8541c3f740a6cef5d44c0e172, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 114486, guid: 8dd1a7e8541c3f740a6cef5d44c0e172, type: 3}
+      propertyPath: m_TagString
+      value: IgnoreNavMesh
+      objectReference: {fileID: 0}
     - target: {fileID: 464186, guid: 8dd1a7e8541c3f740a6cef5d44c0e172, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 5
+      value: 2.26026
       objectReference: {fileID: 0}
     - target: {fileID: 464186, guid: 8dd1a7e8541c3f740a6cef5d44c0e172, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 15
+      value: 15.55113
       objectReference: {fileID: 0}
     - target: {fileID: 464186, guid: 8dd1a7e8541c3f740a6cef5d44c0e172, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 7.5
+      value: 14.2837
       objectReference: {fileID: 0}
     - target: {fileID: 464186, guid: 8dd1a7e8541c3f740a6cef5d44c0e172, type: 3}
       propertyPath: m_LocalRotation.w
@@ -14953,23 +15897,31 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 512770572989275622}
+    m_TransformParent: {fileID: 3306329604507918851}
     m_Modifications:
     - target: {fileID: 101048, guid: df71eb9ba610fdf4087431bd6adab96b, type: 3}
       propertyPath: m_Name
       value: SM_Env_Ceiling_Stone_Curved_02 (5)
       objectReference: {fileID: 0}
+    - target: {fileID: 101048, guid: df71eb9ba610fdf4087431bd6adab96b, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 101048, guid: df71eb9ba610fdf4087431bd6adab96b, type: 3}
+      propertyPath: m_TagString
+      value: IgnoreNavMesh
+      objectReference: {fileID: 0}
     - target: {fileID: 435388, guid: df71eb9ba610fdf4087431bd6adab96b, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 10
+      value: 7.26026
       objectReference: {fileID: 0}
     - target: {fileID: 435388, guid: df71eb9ba610fdf4087431bd6adab96b, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 10
+      value: 10.55113
       objectReference: {fileID: 0}
     - target: {fileID: 435388, guid: df71eb9ba610fdf4087431bd6adab96b, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 7.5
+      value: 14.2837
       objectReference: {fileID: 0}
     - target: {fileID: 435388, guid: df71eb9ba610fdf4087431bd6adab96b, type: 3}
       propertyPath: m_LocalRotation.w
@@ -15185,6 +16137,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: WallTorch_Lit (14)
       objectReference: {fileID: 0}
+    - target: {fileID: 8851872942177160285, guid: 95ee42942171b874e831418cae6f3591, type: 3}
+      propertyPath: m_TagString
+      value: IgnoreNavMesh
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -15387,23 +16343,31 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 512770572989275622}
+    m_TransformParent: {fileID: 3306329604507918851}
     m_Modifications:
     - target: {fileID: 180038, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
       propertyPath: m_Name
       value: SM_Env_Ceiling_Stone_Curved_01 (5)
       objectReference: {fileID: 0}
+    - target: {fileID: 180038, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 180038, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
+      propertyPath: m_TagString
+      value: IgnoreNavMesh
+      objectReference: {fileID: 0}
     - target: {fileID: 409580, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 25
+      value: 22.26026
       objectReference: {fileID: 0}
     - target: {fileID: 409580, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 10
+      value: 10.55113
       objectReference: {fileID: 0}
     - target: {fileID: 409580, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -7.5
+      value: -0.7163
       objectReference: {fileID: 0}
     - target: {fileID: 409580, guid: fd479d726efdf3d4da9cb024a97137e4, type: 3}
       propertyPath: m_LocalRotation.w
@@ -15709,23 +16673,31 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 512770572989275622}
+    m_TransformParent: {fileID: 3306329604507918851}
     m_Modifications:
     - target: {fileID: 193676, guid: 50de44d10630cfc43a286af857d33846, type: 3}
       propertyPath: m_Name
       value: SM_Env_Ceiling_Stone_Curved_Corner_02
       objectReference: {fileID: 0}
+    - target: {fileID: 193676, guid: 50de44d10630cfc43a286af857d33846, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 193676, guid: 50de44d10630cfc43a286af857d33846, type: 3}
+      propertyPath: m_TagString
+      value: IgnoreNavMesh
+      objectReference: {fileID: 0}
     - target: {fileID: 447582, guid: 50de44d10630cfc43a286af857d33846, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -4.779
+      value: -7.5187397
       objectReference: {fileID: 0}
     - target: {fileID: 447582, guid: 50de44d10630cfc43a286af857d33846, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 10
+      value: 10.55113
       objectReference: {fileID: 0}
     - target: {fileID: 447582, guid: 50de44d10630cfc43a286af857d33846, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -7.281
+      value: -0.49730015
       objectReference: {fileID: 0}
     - target: {fileID: 447582, guid: 50de44d10630cfc43a286af857d33846, type: 3}
       propertyPath: m_LocalRotation.w

@@ -28,6 +28,7 @@ GameObject:
   - component: {fileID: 7777777700000000001}
   - component: {fileID: 7777777700000000002}
   - component: {fileID: -4918552730351407902}
+  - component: {fileID: 4119201469398805842}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -435,6 +436,21 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DungeonGame.Player.TrapKnockOnContact
   ShowTopMostFoldoutHeaderGroup: 1
   cooldownPerTrapSeconds: 0
+--- !u!114 &4119201469398805842
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 874059578035024636}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a51f048dcf2ab464db07ba80db6a8afd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DungeonGame.Player.OutOfBoundsRecovery
+  ShowTopMostFoldoutHeaderGroup: 1
+  killPlaneY: -75
+  checkInterval: 0.5
 --- !u!1001 &4853433078278263461
 PrefabInstance:
   m_ObjectHideFlags: 0

@@ -7,19 +7,24 @@ namespace DungeonGame.Core
 {
     /// <summary>
     /// Minimal Netcode bootstrap.
-    /// - Ensures a NetworkManager + UnityTransport exist.
+    /// - Ensures a NetworkManager + UnityTransport exist (creates one if missing).
     /// - Lets you start Host/Client from keyboard for quick iteration.
     /// 
-    /// MVP intent: get into Play Mode with 2 instances quickly.
-    /// Later: replace with proper main menu + connection flow.
+    /// Place in any scene. If a DontDestroyOnLoad NetworkManager already exists
+    /// (e.g. came from MainMenu), it reuses that and skips creation.
     /// </summary>
     [DefaultExecutionOrder(-1000)]
     public class NetworkBootstrap : MonoBehaviour
     {
         [Header("Quick Start")]
         [Tooltip("If true, automatically starts as Host when entering Play Mode.")]
-        [SerializeField] private bool autoStartHost;
+        [SerializeField] private bool autoStartHost = true;
 
+        [Header("Player Prefab (for auto-created NetworkManager)")]
+        [Tooltip("Assign the Player prefab here. Only used when no NetworkManager exists yet.")]
+        [SerializeField] private GameObject playerPrefab;
+
+        [Header("Connection")]
         [Tooltip("Address for client to connect to (UnityTransport).")]
         [SerializeField] private string address = "127.0.0.1";
 
@@ -30,34 +35,25 @@ namespace DungeonGame.Core
 
         private void Awake()
         {
-            // NetworkManager.Singleton may not be initialized yet depending on script execution order,
-            // so we also search the scene.
             nm = NetworkManager.Singleton;
             if (nm == null)
-            {
                 nm = FindFirstObjectByType<NetworkManager>();
-            }
 
             if (nm == null)
-            {
-                EnsureNetworkManager();
-                return;
-            }
+                nm = CreateNetworkManager();
 
-            DontDestroyOnLoad(nm.gameObject);
+            if (nm != null)
+                DontDestroyOnLoad(nm.gameObject);
         }
 
         private void Start()
         {
             if (autoStartHost)
-            {
                 StartHost();
-            }
         }
 
         private void Update()
         {
-            // Quick iteration hotkeys (Input System)
             if (Keyboard.current == null) return;
 
             if (Keyboard.current.f1Key.wasPressedThisFrame) StartHost();
@@ -65,13 +61,26 @@ namespace DungeonGame.Core
             if (Keyboard.current.f3Key.wasPressedThisFrame) Shutdown();
         }
 
-        private static void EnsureNetworkManager()
+        private NetworkManager CreateNetworkManager()
         {
-            if (NetworkManager.Singleton != null) return;
+            var go = new GameObject("NetworkManager (AutoCreated)");
+            var manager = go.AddComponent<NetworkManager>();
+            var utp = go.AddComponent<UnityTransport>();
 
-            Debug.LogError("[Net] No NetworkManager found in scene. " +
-                           "Create a GameObject named 'NetworkManager' in the Town scene with: " +
-                           "NetworkManager + UnityTransport, then assign the Player Prefab in the inspector.");
+            manager.NetworkConfig.NetworkTransport = utp;
+
+            if (playerPrefab != null)
+            {
+                manager.NetworkConfig.PlayerPrefab = playerPrefab;
+                Debug.Log($"[Net] Auto-created NetworkManager with player prefab '{playerPrefab.name}'");
+            }
+            else
+            {
+                Debug.LogWarning("[Net] Auto-created NetworkManager but no playerPrefab assigned on NetworkBootstrap. " +
+                                 "Assign it in the inspector for player spawning to work.");
+            }
+
+            return manager;
         }
 
         private void ApplyTransport()

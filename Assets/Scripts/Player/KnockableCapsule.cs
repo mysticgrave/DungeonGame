@@ -1,4 +1,5 @@
 using System;
+using DungeonGame.Core;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -162,21 +163,7 @@ namespace DungeonGame.Player
 
         private void SnapRootToGround()
         {
-            if (cc == null) return;
-
-            float halfHeight = cc.height * 0.5f;
-            float bottomOffset = cc.center.y - halfHeight;
-
-            float castHeight = 50f;
-            Vector3 origin = new Vector3(transform.position.x, transform.position.y + castHeight, transform.position.z);
-            float maxDist = castHeight + Mathf.Abs(bottomOffset) + 10f;
-
-            if (Physics.Raycast(origin, Vector3.down, out RaycastHit hit, maxDist, ~0, QueryTriggerInteraction.Ignore))
-            {
-                float groundY = hit.point.y;
-                float targetY = groundY - bottomOffset + 0.05f;
-                transform.position = new Vector3(transform.position.x, targetY, transform.position.z);
-            }
+            GroundSnap.SnapTransform(transform, cc);
         }
 
         /// <summary>Server-only. Call from traps/hazards (e.g. spinning object) when they hit a player. Triggers ragdoll on all clients.</summary>

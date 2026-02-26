@@ -1,3 +1,4 @@
+using DungeonGame.SpireGen;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -18,6 +19,7 @@ namespace DungeonGame.Player
 
         private CharacterController cc;
         private float verticalVel;
+        private bool _wasFrozen;
 
         private void Awake()
         {
@@ -34,7 +36,17 @@ namespace DungeonGame.Player
         {
             if (!IsOwner) return;
             if (Keyboard.current == null) return;
-            if (!cc.enabled) return;
+            if (!cc.enabled || SpireLayoutGenerator.IsGenerating)
+            {
+                _wasFrozen = true;
+                return;
+            }
+
+            if (_wasFrozen)
+            {
+                verticalVel = 0f;
+                _wasFrozen = false;
+            }
 
             var move = ReadMove();
             bool sprint = Keyboard.current.leftShiftKey.isPressed;
