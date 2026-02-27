@@ -5,7 +5,8 @@ namespace DungeonGame.Weapons
     public enum WeaponAttackType
     {
         Melee,
-        Ranged
+        Ranged,
+        Magic
     }
 
     /// <summary>
@@ -29,7 +30,7 @@ namespace DungeonGame.Weapons
         [Tooltip("Radius of sphere in front of player for melee hit.")]
         [Min(0.1f)] public float hitRadius = 0.5f;
 
-        [Header("Ranged (raycast)")]
+        [Header("Ranged / Magic (raycast)")]
         [Tooltip("Layers to hit. -1 = everything.")]
         public LayerMask hitLayers = -1;
 

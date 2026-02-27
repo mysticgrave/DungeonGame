@@ -5,7 +5,9 @@ using System.Threading.Tasks;
 using Steamworks;
 using Steamworks.Data;
 using Unity.Netcode;
+using Unity.Netcode.Transports.UTP;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace DungeonGame.Core
 {
@@ -25,11 +27,19 @@ namespace DungeonGame.Core
         public event Action OnLobbyJoined;
         public event Action OnLobbyLeft;
         public event Action<List<Lobby>> OnLobbyListReceived;
+        /// <summary>Fired when joining a Steam lobby but the game cannot connect (e.g. wrong transport). Passes a short reason for the UI.</summary>
+        public event Action<string> OnSteamJoinFailed;
 
         private const string HostSteamIdKey = "HostSteamId";
         private const string GameNameKey = "GameName";
         private const string GameNameValue = "DungeonGame";
         private const string LobbyNameKey = "LobbyName";
+
+        [Tooltip("Scene to load when hosting via Steam (e.g. Town). Must match LobbyMenuController's game scene.")]
+        [SerializeField] private string gameSceneName = "Town";
+
+        private bool _pendingHostAfterLobbyCreated;
+        private ulong _pendingClientConnectHostId; // non-zero = defer StartClient to next frame
 
         private void Awake()
         {
@@ -60,6 +70,73 @@ namespace DungeonGame.Core
             SteamFriends.OnGameLobbyJoinRequested -= HandleGameLobbyJoinRequested;
         }
 
+        private void Update()
+        {
+            var nm = NetworkManager.Singleton;
+            if (nm == null || nm.IsListening) return;
+
+            if (_pendingHostAfterLobbyCreated && CurrentLobby.Id != 0)
+            {
+                _pendingHostAfterLobbyCreated = false;
+                try
+                {
+                    var fp = nm.gameObject.GetComponent<FacepunchTransport>();
+                    if (fp != null)
+                    {
+                        nm.NetworkConfig.NetworkTransport = fp;
+                        Debug.Log("[SteamLobby] Using FacepunchTransport for host (Steam relay).");
+                    }
+                    else
+                    {
+                        if (nm.NetworkConfig.NetworkTransport is UnityTransport utp)
+                        {
+                            ushort port = utp.ConnectionData.Port;
+                            if (port == 0) port = 7777;
+                            utp.SetConnectionData("0.0.0.0", port, "0.0.0.0");
+                        }
+                    }
+                    nm.StartHost();
+
+                    if (nm.IsServer && nm.SceneManager != null && !string.IsNullOrEmpty(gameSceneName))
+                    {
+                        nm.SceneManager.LoadScene(gameSceneName, LoadSceneMode.Single);
+                        Debug.Log($"[SteamLobby] Loaded game scene: {gameSceneName}");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Debug.LogException(ex);
+                }
+                return;
+            }
+
+            if (_pendingClientConnectHostId != 0 && InLobby)
+            {
+                ulong hostId = _pendingClientConnectHostId;
+                _pendingClientConnectHostId = 0;
+                try
+                {
+                    if (SetTargetSteamId(hostId))
+                    {
+                        nm.StartClient();
+                        Debug.Log($"[SteamLobby] Connecting to host Steam ID {hostId}");
+                    }
+                    else
+                    {
+                        OnSteamJoinFailed?.Invoke("Could not set target Steam ID. Add FacepunchTransport to NetworkManager.");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Debug.LogException(ex);
+                    string msg = hostId == SteamClient.SteamId
+                        ? "Cannot connect to yourself. For local testing, use two different Steam accounts (e.g. ParrelSync) or two PCs."
+                        : "Steam relay connection failed. Try again or use direct IP join.";
+                    OnSteamJoinFailed?.Invoke(msg);
+                }
+            }
+        }
+
         // --- Public API ---
 
         /// <summary>Create a lobby and start as Host. If publicLobby is true, the lobby appears in the public lobby list (for matchmaking boards).</summary>
@@ -86,9 +163,9 @@ namespace DungeonGame.Core
             CurrentLobby.SetGameServer(SteamClient.SteamId);
             InLobby = true;
 
-            var nm = NetworkManager.Singleton;
-            if (nm != null && !nm.IsListening)
-                nm.StartHost();
+            // Defer StartHost to next frame so it runs on main thread (async continuation may be on a worker thread).
+            // SteamNetworkingSockets.CreateRelaySocket throws "Invalid Socket" when called off the main thread.
+            _pendingHostAfterLobbyCreated = true;
 
             Debug.Log($"[SteamLobby] Created lobby {CurrentLobby.Id} — hosting as {SteamClient.Name}" + (publicLobby ? " (public)" : " (friends only)"));
             OnLobbyCreated?.Invoke();
@@ -110,6 +187,7 @@ namespace DungeonGame.Core
             {
                 CurrentLobby.Leave();
                 InLobby = false;
+                _pendingClientConnectHostId = 0;
             }
 
             var nm = NetworkManager.Singleton;
@@ -173,12 +251,33 @@ namespace DungeonGame.Core
 
             if (NetworkManager.Singleton != null && !NetworkManager.Singleton.IsListening)
             {
+                ulong hostId = 0;
                 var hostIdStr = lobby.GetData(HostSteamIdKey);
-                if (ulong.TryParse(hostIdStr, out ulong hostId))
+                if (!string.IsNullOrEmpty(hostIdStr) && ulong.TryParse(hostIdStr, out hostId))
+                    { }
+                else if (lobby.Owner.Id > 0)
+                    hostId = lobby.Owner.Id;
+
+                if (hostId == 0)
                 {
-                    SetTargetSteamId(hostId);
-                    NetworkManager.Singleton.StartClient();
-                    Debug.Log($"[SteamLobby] Joined lobby {lobby.Id}, connecting to host {hostId}");
+                    Debug.LogError("[SteamLobby] Could not get host Steam ID from lobby.");
+                    OnSteamJoinFailed?.Invoke("Could not get host Steam ID from lobby.");
+                }
+                else
+                {
+                    var nm = NetworkManager.Singleton;
+                    var fp = nm.gameObject.GetComponent<FacepunchTransport>();
+                    if (fp == null)
+                    {
+                        Debug.LogError("[SteamLobby] Add FacepunchTransport to the NetworkManager to join via Steam lobby.");
+                        OnSteamJoinFailed?.Invoke("Add FacepunchTransport to the NetworkManager GameObject in MainMenu to join via Steam lobby.");
+                    }
+                    else
+                    {
+                        nm.NetworkConfig.NetworkTransport = fp;
+                        _pendingClientConnectHostId = hostId;
+                        Debug.Log("[SteamLobby] Joined lobby, deferring client connect to next frame.");
+                    }
                 }
             }
 
@@ -205,23 +304,35 @@ namespace DungeonGame.Core
 
         /// <summary>
         /// Set the target Steam ID on the FacepunchTransport so the client knows who to connect to.
+        /// Returns true if the transport accepted the Steam ID (e.g. FacepunchTransport).
         /// </summary>
-        private static void SetTargetSteamId(ulong steamId)
+        private static bool SetTargetSteamId(ulong steamId)
         {
             var nm = NetworkManager.Singleton;
-            if (nm == null) return;
+            if (nm == null) return false;
 
             var transport = nm.NetworkConfig.NetworkTransport;
-            var targetField = transport.GetType().GetField("targetSteamId");
+            if (transport is FacepunchTransport fp)
+            {
+                fp.targetSteamId = steamId;
+                Debug.Log($"[SteamLobby] Set FacepunchTransport.targetSteamId = {steamId}");
+                return true;
+            }
+
+            var targetField = transport.GetType().GetField("targetSteamId", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
             if (targetField != null)
             {
                 targetField.SetValue(transport, steamId);
+                return true;
             }
-            else
+            var prop = transport.GetType().GetProperty("targetSteamId", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
+            if (prop != null && prop.CanWrite)
             {
-                var prop = transport.GetType().GetProperty("targetSteamId");
-                if (prop != null) prop.SetValue(transport, steamId);
+                prop.SetValue(transport, steamId);
+                return true;
             }
+            Debug.LogWarning("[SteamLobby] Current transport has no targetSteamId (use FacepunchTransport for Steam lobby join).");
+            return false;
         }
     }
 }

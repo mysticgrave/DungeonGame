@@ -17,7 +17,7 @@ MonoBehaviour:
   description: Melee fighter with high HP.
   baseMaxHp: 12
   baseMoveSpeed: 5
-  baseSprintSpeed: 7.5
+  baseSprintSpeed: 8
   defaultWeapon: {fileID: 11400000, guid: 32e7ce62d2fa787429d244be0850b0d0, type: 2}
   icon: {fileID: 0}
   preferredWeaponType: melee

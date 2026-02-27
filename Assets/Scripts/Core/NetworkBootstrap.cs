@@ -96,12 +96,23 @@ namespace DungeonGame.Core
             utp.SetConnectionData(address, port);
         }
 
+        private void ApplyTransportForHost()
+        {
+            if (nm == null) return;
+            var utp = nm.NetworkConfig.NetworkTransport as UnityTransport;
+            if (utp == null) return;
+            utp.SetConnectionData("0.0.0.0", port, "0.0.0.0");
+            // Read back to verify (ConnectionData is a struct; SetConnectionData already sets it)
+            var data = utp.ConnectionData;
+            Debug.Log($"[Net] Host transport: listen {data.ServerListenAddress ?? "(null)"}:{data.Port} (Address={data.Address})");
+        }
+
         public void StartHost()
         {
             if (nm == null) return;
             if (nm.IsListening) return;
 
-            ApplyTransport();
+            ApplyTransportForHost();
             nm.StartHost();
             Debug.Log("[Net] Started Host");
         }

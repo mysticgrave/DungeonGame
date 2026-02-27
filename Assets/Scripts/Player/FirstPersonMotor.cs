@@ -92,6 +92,17 @@ namespace DungeonGame.Player
             return Keyboard.current != null && Keyboard.current.leftShiftKey.isPressed;
         }
 
+        /// <summary>
+        /// Raw move input: x = strafe (-1 left, +1 right), y = forward (-1 back, +1 forward).
+        /// </summary>
+        public Vector2 GetMoveInput()
+        {
+            if (Keyboard.current == null) return Vector2.zero;
+            var v = ReadMove();
+            if (v.sqrMagnitude > 1f) v.Normalize();
+            return v;
+        }
+
         private static Vector2 ReadMove()
         {
             float x = 0f;

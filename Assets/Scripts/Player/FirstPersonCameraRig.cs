@@ -21,7 +21,12 @@ namespace DungeonGame.Player
         [SerializeField] private float fov = 70f;
 
         [Header("FPS")]
+        [Tooltip("Height of the camera above the player root (feet).")]
         [SerializeField] private float eyeHeight = 1.65f;
+        [Tooltip("Forward/back offset in player's look direction. Negative = pull camera back (closer to head).")]
+        [SerializeField] private float forwardOffset = 0f;
+        [Tooltip("Left/right offset. Positive = right, negative = left.")]
+        [SerializeField] private float rightOffset = 0f;
         [SerializeField] private float lookSensitivity = 0.12f;
         [SerializeField] private float minPitch = -80f;
         [SerializeField] private float maxPitch = 80f;
@@ -34,11 +39,14 @@ namespace DungeonGame.Player
         [Header("Hide own body in first-person")]
         [Tooltip("Layer name used to hide the local player's body from their camera (create in Tags & Layers if missing).")]
         [SerializeField] private string localPlayerCullLayerName = "PlayerLocalCull";
+        [Tooltip("Layer for FPS arms (ensure camera renders it). Create in Tags & Layers.")]
+        [SerializeField] private string fpsArmsLayerName = "FPSArms";
         [Tooltip("Body/mesh to put on the cull layer so you don't see inside it. If null, uses RagdollRoot or the first SkinnedMeshRenderer's transform.")]
         [SerializeField] private Transform bodyToHideFromSelf;
 
         private Camera cam;
         private int _cullLayer = -1;
+        private readonly List<Camera> _disabledSceneCameras = new();
         private Transform _bodyRoot;
         private const int DefaultLayer = 0;
         private float yaw;
@@ -51,6 +59,12 @@ namespace DungeonGame.Player
         private RagdollColliderSwitch ragdollSwitch;
         private DungeonGame.UI.CrosshairUI crosshair;
         private readonly List<AudioListener> _disabledListeners = new List<AudioListener>();
+
+        /// <summary>Current look pitch in degrees. Used by UpperBodyLookSync to rotate spine/head for other players.</summary>
+        public float Pitch => pitch;
+
+        /// <summary>Runtime camera created for the local player. Null until OnNetworkSpawn completes. Use this instead of Camera.main so FPS arms attach to the correct camera.</summary>
+        public Camera Camera => cam;
 
         public override void OnNetworkSpawn()
         {
@@ -100,6 +114,7 @@ namespace DungeonGame.Player
             go.name = "LocalPlayerCamera";
             DontDestroyOnLoad(go);
             cam.tag = "MainCamera";
+            DisableOtherMainCameras(cam);
             cam.clearFlags = CameraClearFlags.Skybox;
             cam.backgroundColor = Color.black;
             cam.farClipPlane = farClipPlane;
@@ -135,6 +150,11 @@ namespace DungeonGame.Player
 
                 SetBodyVisibleToSelf(true);
                 ReenableDisabledAudioListeners();
+                foreach (var c in _disabledSceneCameras)
+                {
+                    if (c != null) c.gameObject.SetActive(true);
+                }
+                _disabledSceneCameras.Clear();
                 if (cam != null) Destroy(cam.gameObject);
             }
             base.OnNetworkDespawn();
@@ -176,7 +196,14 @@ namespace DungeonGame.Player
             if (!followMode)
             {
                 var rot = Quaternion.Euler(pitch, yaw, 0f);
-                var pos = transform.position + Vector3.up * eyeHeight;
+                Vector3 fwd = transform.forward;
+                fwd.y = 0f;
+                if (fwd.sqrMagnitude < 0.01f) fwd = Vector3.forward;
+                else fwd.Normalize();
+                Vector3 right = transform.right;
+                right.y = 0f;
+                if (right.sqrMagnitude > 0.01f) right.Normalize();
+                var pos = transform.position + Vector3.up * eyeHeight + fwd * forwardOffset + right * rightOffset;
                 cam.transform.SetPositionAndRotation(pos, rot);
             }
             else
@@ -249,24 +276,70 @@ namespace DungeonGame.Player
         private void SetupHideOwnBody()
         {
             _cullLayer = LayerMask.NameToLayer(localPlayerCullLayerName);
-            if (_cullLayer < 0) return;
+            if (_cullLayer < 0)
+            {
+                Debug.LogWarning($"[FirstPersonCameraRig] Layer \"{localPlayerCullLayerName}\" not found. Create it in Edit → Project Settings → Tags and Layers. Body will not be hidden from local camera.", this);
+                return;
+            }
 
             cam.cullingMask &= ~(1 << _cullLayer);
 
-            _bodyRoot = bodyToHideFromSelf != null ? bodyToHideFromSelf : (ragdollSwitch != null && ragdollSwitch.RagdollRoot != null ? ragdollSwitch.RagdollRoot : null);
-            if (_bodyRoot == null)
+            int fpsArmsLayer = LayerMask.NameToLayer(fpsArmsLayerName);
+            if (fpsArmsLayer >= 0)
+                cam.cullingMask |= (1 << fpsArmsLayer);
+
+            // Prefer explicit assignment; otherwise move ALL SkinnedMeshRenderers (the visible body).
+            // RagdollRoot often doesn't contain the mesh—it's just bones—so we target renderers directly.
+            if (bodyToHideFromSelf != null)
             {
-                var smr = GetComponentInChildren<SkinnedMeshRenderer>(true);
-                if (smr != null) _bodyRoot = smr.transform;
-                else _bodyRoot = transform;
+                SetBodyVisibleToSelf(false);
+                return;
             }
-            SetBodyVisibleToSelf(false);
+
+            // Move every body mesh to the cull layer so we don't miss any (body, hair, armor, etc.).
+            int count = 0;
+            foreach (var smr in GetComponentsInChildren<SkinnedMeshRenderer>(true))
+            {
+                SetLayerRecursively(smr.transform, _cullLayer);
+                count++;
+            }
+            foreach (var mr in GetComponentsInChildren<MeshRenderer>(true))
+            {
+                SetLayerRecursively(mr.transform, _cullLayer);
+                count++;
+            }
+            if (count == 0)
+            {
+                _bodyRoot = transform;
+                SetLayerRecursively(_bodyRoot, _cullLayer);
+            }
         }
 
         private void SetBodyVisibleToSelf(bool visible)
         {
-            if (_bodyRoot == null || _cullLayer < 0) return;
-            SetLayerRecursively(_bodyRoot, visible ? DefaultLayer : _cullLayer);
+            if (_cullLayer < 0) return;
+            int layer = visible ? DefaultLayer : _cullLayer;
+            if (bodyToHideFromSelf != null)
+            {
+                SetLayerRecursively(bodyToHideFromSelf, layer);
+                return;
+            }
+            foreach (var smr in GetComponentsInChildren<SkinnedMeshRenderer>(true))
+                SetLayerRecursively(smr.transform, layer);
+            foreach (var mr in GetComponentsInChildren<MeshRenderer>(true))
+                SetLayerRecursively(mr.transform, layer);
+        }
+
+        private void DisableOtherMainCameras(Camera keepThis)
+        {
+            foreach (var c in Object.FindObjectsByType<Camera>(FindObjectsSortMode.None))
+            {
+                if (c != keepThis && c.CompareTag("MainCamera") && c.gameObject.activeSelf)
+                {
+                    c.gameObject.SetActive(false);
+                    _disabledSceneCameras.Add(c);
+                }
+            }
         }
 
         private static void SetLayerRecursively(Transform t, int layer)

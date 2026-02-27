@@ -4,6 +4,17 @@ Use **PlayerLocomotionAnimator** plus one **Float** parameter in your Animator C
 
 ---
 
+## Synty AC_Polygon controllers
+
+For **Synty Animation Base Locomotion** (AC_Polygon_Masculine etc.):
+
+- **Speed Param Name**: `MoveSpeed`.
+- **IsGrounded** and **IsJumping** are driven automatically. Ensure these Animator params exist.
+- **Apply Root Motion**: OFF.
+- **Note (walk blend)**: If the character looks like it’s floating, adjust the character child’s local Y position so its feet align with the CharacterController bottom. Try small steps (e.g. −0.1 to −0.2) or inspect the rig’s pivot (pelvis vs feet).
+
+---
+
 ## 0. Apply Root Motion — turn it OFF
 
 If your character **drifts, walks away from the camera, or looks offset**, the Animator is probably moving the root. With **CharacterController** movement you must **disable Apply Root Motion**:

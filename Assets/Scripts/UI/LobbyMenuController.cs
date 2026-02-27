@@ -71,6 +71,7 @@ namespace DungeonGame.UI
                 SteamLobbyManager.Instance.OnLobbyCreated += OnHostLobbyCreated;
                 SteamLobbyManager.Instance.OnLobbyJoined += OnClientJoinedLobby;
                 SteamLobbyManager.Instance.OnLobbyLeft += OnLobbyLeft;
+                SteamLobbyManager.Instance.OnSteamJoinFailed += OnSteamJoinFailed;
             }
 #endif
         }
@@ -88,6 +89,7 @@ namespace DungeonGame.UI
                 SteamLobbyManager.Instance.OnLobbyCreated -= OnHostLobbyCreated;
                 SteamLobbyManager.Instance.OnLobbyJoined -= OnClientJoinedLobby;
                 SteamLobbyManager.Instance.OnLobbyLeft -= OnLobbyLeft;
+                SteamLobbyManager.Instance.OnSteamJoinFailed -= OnSteamJoinFailed;
             }
 #endif
         }
@@ -169,6 +171,12 @@ namespace DungeonGame.UI
             if (connectingStatusText != null) connectingStatusText.text = "Connecting to host...";
         }
 
+        private void OnSteamJoinFailed(string reason)
+        {
+            ShowPanel(connectingPanel);
+            if (connectingStatusText != null) connectingStatusText.text = reason + " Click Cancel to go back.";
+        }
+
         private void OnLobbyLeft()
         {
             ShowPanel(titlePanel != null ? titlePanel : joinPanel);
@@ -180,7 +188,7 @@ namespace DungeonGame.UI
             if (_nm == null || _nm.IsListening) return;
 
             ushort port = ParsePort(null, defaultPort);
-            SetTransportData("127.0.0.1", port);
+            SetTransportDataForHost(port);
 
             _nm.OnClientConnectedCallback += OnClientConnected;
             _nm.OnClientDisconnectCallback += OnClientDisconnected;
@@ -228,6 +236,17 @@ namespace DungeonGame.UI
             if (_nm == null) return;
             var utp = _nm.NetworkConfig.NetworkTransport as UnityTransport;
             if (utp != null) utp.SetConnectionData(address, port);
+        }
+
+        private void SetTransportDataForHost(ushort port)
+        {
+            if (_nm == null) _nm = NetworkManager.Singleton;
+            if (_nm == null) return;
+            var utp = _nm.NetworkConfig.NetworkTransport as UnityTransport;
+            if (utp == null) return;
+            utp.SetConnectionData("0.0.0.0", port, "0.0.0.0");
+            var data = utp.ConnectionData;
+            Debug.Log($"[Lobby] Host transport: listen {data.ServerListenAddress ?? "(null)"}:{data.Port} (Address={data.Address})");
         }
 
         private static ushort ParsePort(InputField field, ushort fallback)
