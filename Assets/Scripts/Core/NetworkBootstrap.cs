@@ -1,3 +1,5 @@
+using System;
+using System.Reflection;
 using Unity.Netcode;
 using Unity.Netcode.Transports.UTP;
 using UnityEngine;
@@ -25,11 +27,15 @@ namespace DungeonGame.Core
         [SerializeField] private GameObject playerPrefab;
 
         [Header("Connection")]
-        [Tooltip("Address for client to connect to (UnityTransport).")]
+        [Tooltip("Address for client to connect to (UnityTransport). Host should usually bind 0.0.0.0 for LAN.")]
         [SerializeField] private string address = "127.0.0.1";
 
         [Tooltip("Port for host/server to listen on and clients to connect to.")]
         [SerializeField] private ushort port = 7777;
+
+        [Header("Steam / Facepunch Transport (optional)")]
+        [Tooltip("If using FacepunchTransport, set this to the host's SteamId before starting client.")]
+        [SerializeField] private ulong hostSteamId;
 
         private NetworkManager nm;
 
@@ -86,14 +92,93 @@ namespace DungeonGame.Core
             return manager;
         }
 
-        private void ApplyTransport()
+        private void ApplyTransportForStart(bool asHost)
         {
             if (nm == null) return;
+            var t = nm.NetworkConfig.NetworkTransport;
+            if (t == null) return;
 
-            var utp = nm.NetworkConfig.NetworkTransport as UnityTransport;
-            if (utp == null) return;
+            // Unity Transport (LAN/IP)
+            if (t is UnityTransport utp)
+            {
+                // Host should bind to all interfaces for LAN.
+                var bindAddr = asHost ? "0.0.0.0" : address;
+                utp.SetConnectionData(bindAddr, port);
+                Debug.Log($"[Net] Using UnityTransport: {(asHost ? "bind" : "connect")}={bindAddr}:{port}");
+                return;
+            }
 
-            utp.SetConnectionData(address, port);
+            // Facepunch/Steam transport: try to configure host SteamId via reflection if provided.
+            var typeName = t.GetType().FullName ?? t.GetType().Name;
+            if (typeName.IndexOf("Facepunch", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                typeName.IndexOf("Steam", StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                if (!asHost && hostSteamId != 0)
+                {
+                    TrySetSteamTarget(t, hostSteamId);
+                }
+
+                Debug.Log($"[Net] Using transport: {typeName}");
+                return;
+            }
+
+            Debug.Log($"[Net] Using transport: {typeName} (no bootstrap config applied)");
+        }
+
+        private void LogTransportInfo()
+        {
+            if (nm == null) return;
+            var t = nm.NetworkConfig.NetworkTransport;
+            if (t == null)
+            {
+                Debug.LogWarning("[Net] NetworkManager has no transport assigned.");
+                return;
+            }
+
+            Debug.Log($"[Net] Transport assigned: {t.GetType().FullName}");
+
+            // Common misconfig: UnityTransport component present but not assigned.
+            var utp = nm.GetComponent<UnityTransport>();
+            if (utp != null && t is not UnityTransport)
+            {
+                Debug.LogWarning("[Net] UnityTransport component is on NetworkManager but not assigned as active transport. " +
+                                 "If you are using Facepunch/Steam transport, remove/disable UnityTransport to avoid confusion.");
+            }
+        }
+
+        private static void TrySetSteamTarget(object transport, ulong steamId)
+        {
+            try
+            {
+                var type = transport.GetType();
+
+                // Try common property names.
+                foreach (var name in new[] { "TargetSteamId", "targetSteamId", "SteamId", "steamId", "HostSteamId", "hostSteamId" })
+                {
+                    var prop = type.GetProperty(name, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+                    if (prop != null && prop.CanWrite && (prop.PropertyType == typeof(ulong) || prop.PropertyType == typeof(long)))
+                    {
+                        prop.SetValue(transport, prop.PropertyType == typeof(long) ? (long)steamId : steamId);
+                        Debug.Log($"[Net] Set {type.Name}.{name} = {steamId}");
+                        return;
+                    }
+
+                    var field = type.GetField(name, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+                    if (field != null && (field.FieldType == typeof(ulong) || field.FieldType == typeof(long)))
+                    {
+                        field.SetValue(transport, field.FieldType == typeof(long) ? (long)steamId : steamId);
+                        Debug.Log($"[Net] Set {type.Name}.{name} = {steamId}");
+                        return;
+                    }
+                }
+
+                Debug.LogWarning($"[Net] Could not set Steam target on transport {type.FullName}. " +
+                                 "Configure the host SteamId/Lobby in your transport-specific flow.");
+            }
+            catch (Exception ex)
+            {
+                Debug.LogWarning($"[Net] Failed to set Steam target: {ex.Message}");
+            }
         }
 
         private void ApplyTransportForHost()
@@ -122,7 +207,7 @@ namespace DungeonGame.Core
             if (nm == null) return;
             if (nm.IsListening) return;
 
-            ApplyTransport();
+            ApplyTransportForStart(asHost: false);
             nm.StartClient();
             Debug.Log("[Net] Started Client");
         }
