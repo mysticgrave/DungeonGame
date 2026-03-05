@@ -31,25 +31,15 @@ Now left-click uses that config. If you use **classes** (ClassDefinition) or **M
 
 ---
 
-## 3. Sword as a separate object (dual display: FPS arms + hand bone)
+## 3. Sword as a separate object (third-person hand bone)
 
-The **sword model** is only for display. The actual hit is done by **WeaponController** with an overlap sphere (no need for the sword collider to touch the enemy). The game uses a **dual display** so the local player sees the sword in their FPS arms, while other players see it on the character’s hand.
-
-### FPS arms (local player)
-
-1. Create layer **`FPSArms`** in **Tags & Layers** (Edit → Project Settings → Tags and Layers).
-2. Create an **FPS arms prefab** (hands/forearms mesh; placeholder capsule/cube is fine for testing).
-3. Add a child empty named **`WeaponMount`** where the sword will attach. Put the prefab on the **FPSArms** layer.
-4. On the **Player** prefab, add **FPSArmsController** and assign your FPS arms prefab to **Fps Arms Prefab**.
-5. The camera is created at runtime, so the arms are instantiated as a child of the camera when the player spawns.
+The **sword model** is only for display. The actual hit is done by **WeaponController** with an overlap sphere (no need for the sword collider to touch the enemy). The game uses a **third-person hand bone** so the local player sees the sword in their character’s hand.
 
 ### Weapon visual (WeaponController)
 
 1. Add your **sword mesh** as a child of the Player (e.g. `Player > Sword`). Assign this transform to **Weapon Controller → Weapon Visual**.
-2. Assign the **right-hand bone** on your character rig (e.g. `Armature/Hips/Spine/Chest/UpperArm/ LowerArm/Hand`) to **Weapon Controller → Weapon Bone Attach**.
-3. WeaponController will parent the weapon visual to:
-   - **FPSArmsController.FPSWeaponMount** for the owner (in front of their view).
-   - **Weapon Bone Attach** for other players (on the hand in third-person).
+2. Assign the **right-hand bone** on your character rig (e.g. `Armature/Hips/Spine/Chest/UpperArm/LowerArm/Hand`) to **Weapon Controller → Weapon Bone Attach**.
+3. WeaponController parents the weapon visual to **Weapon Bone Attach** so the sword appears in the character's hand in third-person view.
 
 ### Attack origin (optional)
 
@@ -120,8 +110,7 @@ Add **UpperBodyLookSync** to the Player prefab and assign the **Spine** or **Che
 
 | Step | What to do |
 |------|------------|
-| Layers | Create `FPSArms` and `PlayerLocalCull` in Tags & Layers. |
-| FPS arms | Create FPS arms prefab with `WeaponMount` child; add FPSArmsController to Player and assign the prefab. |
+| Layers | Create `PlayerLocalCull` in Tags & Layers (for third-person local culling if needed). |
 | Config | Create WeaponConfig asset, set Attack Type = Melee, damage/range/cooldown/hit radius. |
 | Player | Assign config to Weapon Controller Config Fallback. Assign Weapon Visual (sword) and Weapon Bone Attach (hand bone). |
 | Upper body | Add UpperBodyLookSync, assign Spine/Chest bone. |

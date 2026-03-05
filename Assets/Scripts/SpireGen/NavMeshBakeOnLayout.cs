@@ -1,5 +1,6 @@
 using System;
 using DungeonGame.SpireGen;
+using DungeonGame.UI;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.AI;
@@ -93,6 +94,13 @@ namespace DungeonGame.SpireGen
             var tri = NavMesh.CalculateTriangulation();
             Debug.Log($"[NavMesh] Rebuilt navmesh (tris={tri.indices?.Length ?? 0}), layer '{IgnoreNavMeshLayerName}' excluded.");
             OnNavMeshBuilt?.Invoke(this);
+            NotifyDungeonReadyClientRpc();
+        }
+
+        [ClientRpc]
+        private void NotifyDungeonReadyClientRpc()
+        {
+            LoadingScreenManager.Instance?.FadeOutAndHide();
         }
     }
 }

@@ -11,6 +11,10 @@ namespace DungeonGame.Combat
     public class NetworkHealth : NetworkBehaviour, IDamageable
     {
         [SerializeField] private int maxHp = 2;
+        [Tooltip("If true, despawn this object when HP reaches 0. If false, object stays (e.g. enemy corpses remain as ragdoll).")]
+        [SerializeField] private bool despawnOnDeath = true;
+        [Tooltip("Seconds to wait before despawning on death. Only used when despawnOnDeath is true. 0 = instant despawn.")]
+        [Min(0f)] [SerializeField] private float despawnDelayOnDeath;
 
         public int MaxHp => maxHp;
         public int Hp => hpNet.Value;
@@ -62,15 +66,24 @@ namespace DungeonGame.Combat
             hpNet.Value = Mathf.Max(0, hpNet.Value - amount);
             OnDamaged?.Invoke(amount);
 
-            if (hpNet.Value <= 0)
+            if (hpNet.Value <= 0 && despawnOnDeath)
             {
-                // Default: despawn if this is on a NetworkObject.
                 var no = GetComponent<NetworkObject>();
                 if (no != null && no.IsSpawned)
                 {
-                    no.Despawn(true);
+                    if (despawnDelayOnDeath > 0f)
+                        Invoke(nameof(DespawnSelf), despawnDelayOnDeath);
+                    else
+                        no.Despawn(true);
                 }
             }
+        }
+
+        private void DespawnSelf()
+        {
+            var no = GetComponent<NetworkObject>();
+            if (no != null && no.IsSpawned)
+                no.Despawn(true);
         }
 
         [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]

@@ -6,7 +6,6 @@ TagManager:
   tags:
   - PlayerSpawn
   - IgnoreNavMesh
-  - FPSArms
   - PlayerLocalCull
   layers:
   - Default
@@ -17,7 +16,7 @@ TagManager:
   - UI
   - PlayerLocalCull
   - IgnoreNavMesh
-  - FPSArms
+  - 
   - 
   - 
   - 

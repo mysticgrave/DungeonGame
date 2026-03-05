@@ -10,6 +10,8 @@ namespace DungeonGame.Core
     /// Dropped packets can cause the client to never receive the host's NetworkObject spawn (so host is invisible)
     /// or the client's own player spawn (so client can't move). Attach to the same GameObject as NetworkManager
     /// or run from NetworkBootstrap; runs once when the transport is available.
+    /// NOTE: This only affects UnityTransport (direct IP). FacepunchTransport uses Steam relay and has its own
+    /// receive limits (ConnectionManager.Receive max 256). The 512 here is for UTP only — Steam has no 512 cap.
     /// </summary>
     public class UnityTransportQueueFix : MonoBehaviour
     {
@@ -63,7 +65,7 @@ namespace DungeonGame.Core
                 {
                     field.SetValue(transport, queueSize);
                     _applied = true;
-                    Debug.Log($"[Transport] Set {name} = {queueSize}");
+                    Debug.Log($"[Transport] UnityTransport (direct IP): {name} = {queueSize}. Steam uses FacepunchTransport separately.");
                     return;
                 }
 
@@ -72,7 +74,7 @@ namespace DungeonGame.Core
                 {
                     prop.SetValue(transport, queueSize);
                     _applied = true;
-                    Debug.Log($"[Transport] Set {name} = {queueSize}");
+                    Debug.Log($"[Transport] UnityTransport (direct IP): {name} = {queueSize}. Steam uses FacepunchTransport separately.");
                     return;
                 }
             }

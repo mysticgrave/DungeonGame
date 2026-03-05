@@ -1,3 +1,4 @@
+using DungeonGame.UI;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -6,7 +7,7 @@ namespace DungeonGame.Player
 {
     /// <summary>
     /// Drives the character Animator for locomotion: sets a "Speed" float (0 = idle, ~0.5 = walk, 1 = run).
-    /// Uses move input from FirstPersonMotor when available so animation starts/stops with key press; otherwise falls back to velocity.
+    /// Uses move input from ThirdPersonMotor when available so animation starts/stops with key press; otherwise falls back to velocity.
     /// Disable Apply Root Motion on the Animator to prevent the character drifting or walking away from the camera.
     /// </summary>
     [RequireComponent(typeof(CharacterController))]
@@ -16,10 +17,10 @@ namespace DungeonGame.Player
         [Tooltip("Optional. Leave empty — Animator is auto-found on this object, children, or parent.")]
         [SerializeField] private Animator animator;
 
-        [Tooltip("Walk speed (match FirstPersonMotor).")]
-        [SerializeField] private float walkSpeed = 5f;
-        [Tooltip("Sprint speed (match FirstPersonMotor).")]
-        [SerializeField] private float sprintSpeed = 7.5f;
+        [Tooltip("Walk speed (match ThirdPersonMotor).")]
+        [SerializeField] private float walkSpeed = 5.5f;
+        [Tooltip("Sprint speed (match ThirdPersonMotor).")]
+        [SerializeField] private float sprintSpeed = 8f;
 
         [Tooltip("Animator parameter name for movement speed. Synty uses 'MoveSpeed'.")]
         [SerializeField] private string speedParamName = "MoveSpeed";
@@ -41,7 +42,7 @@ namespace DungeonGame.Player
         [SerializeField] private string strafeDirectionXParamName = "StrafeDirectionX";
         [Tooltip("Animator Float for strafe Z (-1 back, +1 forward). Synty: StrafeDirectionZ")]
         [SerializeField] private string strafeDirectionZParamName = "StrafeDirectionZ";
-        [Tooltip("Animator Float for strafe mode. FPS: use 1. Synty: IsStrafing")]
+        [Tooltip("Animator Float for strafe mode. Synty: IsStrafing")]
         [SerializeField] private string isStrafingParamName = "IsStrafing";
         [Tooltip("Animator Bool. Synty: IsStopped")]
         [SerializeField] private string isStoppedParamName = "IsStopped";
@@ -71,11 +72,11 @@ namespace DungeonGame.Player
         [SerializeField] private string isStartingParamName = "IsStarting";
         [Tooltip("Degrees/sec yaw to count as turning in place. ~25 = gentle look-around.")]
         [SerializeField] private float turnInPlaceThreshold = 25f;
-        [Tooltip("Mouse sensitivity for turn detection. Match FirstPersonCameraRig.lookSensitivity.")]
+        [Tooltip("Mouse sensitivity for turn detection. Match LocalPlayerCameraRig.lookSensitivity.")]
         [SerializeField] private float lookSensitivityForTurn = 0.12f;
 
         private CharacterController _cc;
-        private FirstPersonMotor _motor;
+        private ThirdPersonMotor _motor;
         private PlayerBodyStateMachine _bodyState;
         private int _speedParamId;
         private int _isGroundedParamId;
@@ -124,7 +125,7 @@ namespace DungeonGame.Player
         private void Awake()
         {
             _cc = GetComponent<CharacterController>();
-            _motor = GetComponent<FirstPersonMotor>();
+            _motor = GetComponent<ThirdPersonMotor>();
             _bodyState = GetComponent<PlayerBodyStateMachine>();
             CacheAnimator();
             _speedParamId = Animator.StringToHash(speedParamName);
@@ -176,8 +177,10 @@ namespace DungeonGame.Player
 
             if (!_speedParamValid.Value) return;
 
-            bool grounded = _cc.isGrounded;
-            bool jumping = !grounded && _cc.velocity.y > 0.1f;
+            // Remote players: CharacterController.isGrounded/velocity are unreliable (position from NetworkTransform).
+            // Assume grounded so locomotion/fall animations don't get stuck.
+            bool grounded = IsOwner ? _cc.isGrounded : true;
+            bool jumping = IsOwner && !grounded && _cc.velocity.y > 0.1f;
 
             if (_isGroundedParamId != 0)
             {
@@ -190,8 +193,8 @@ namespace DungeonGame.Player
                 if (_hasIsJumpingParam.Value) animator.SetBool(_isJumpingParamId, jumping);
             }
 
-            // Only drive locomotion when we can move (Standing). Stunned/Frozen/Ragdoll → idle.
-            if (_bodyState != null && _bodyState.IsMovementDisabled)
+            // Only drive locomotion when we can move (Standing). Stunned/Frozen/Ragdoll/Paused → idle.
+            if (PauseMenuController.IsPaused || (_bodyState != null && _bodyState.IsMovementDisabled))
             {
                 _smoothedMoveSpeed = 0f;
                 _smoothedStrafeX = 0f;

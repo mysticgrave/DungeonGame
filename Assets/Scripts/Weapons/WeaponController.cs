@@ -1,5 +1,7 @@
 using DungeonGame.Combat;
 using DungeonGame.Classes;
+using DungeonGame.UI;
+using DungeonGame.Enemies;
 using DungeonGame.Meta;
 using DungeonGame.Player;
 using Unity.Netcode;
@@ -11,7 +13,7 @@ namespace DungeonGame.Weapons
     /// <summary>
     /// Server-authoritative weapon. Config comes from the player's class (ClassDefinition.defaultWeapon)
     /// or from the equipped unlock (MetaProgression). Attack origin: leave empty to auto-use the camera.
-    /// Teammates: ragdoll on hit (no health damage). Enemies: take damage. Owners see the weapon on FPS arms.
+    /// Teammates: ragdoll on hit (no health damage). Enemies: take damage.
     /// </summary>
     [RequireComponent(typeof(NetworkObject))]
     public class WeaponController : NetworkBehaviour
@@ -44,8 +46,13 @@ namespace DungeonGame.Weapons
         [Tooltip("Ragdoll duration when hitting a teammate (seconds).")]
         [SerializeField] private float teammateKnockDuration = 3f;
 
+        [Header("Enemy knock (on damage)")]
+        [Tooltip("When hitting an enemy, ragdoll them in the attack direction. Forward = dir * this; Up = vertical boost.")]
+        [SerializeField] private float enemyKnockForward = 8f;
+        [SerializeField] private float enemyKnockUp = 3f;
+
         [Header("Animation")]
-        [Tooltip("Animator that drives the player body or FPS arms. Assign the one with the attack trigger.")]
+        [Tooltip("Animator that drives the player. Assign the one with the attack trigger.")]
         [SerializeField] private Animator animator;
         [Tooltip("Trigger parameter name in the Animator (e.g. attack_sword_01 or Sword_Attack_1).")]
         [SerializeField] private string attackTriggerName = "attack_sword_01";
@@ -93,6 +100,7 @@ namespace DungeonGame.Weapons
             if (!_resolvedConfig) TryResolveConfig();
             if (!_resolvedAnimator) TryResolveAnimator();
 
+            if (PauseMenuController.IsPaused) return;
             if (Mouse.current == null || !Mouse.current.leftButton.wasPressedThisFrame) return;
             if (Time.time < _nextAttackTime) return;
 
@@ -129,9 +137,7 @@ namespace DungeonGame.Weapons
         {
             if (_resolvedOrigin && attackOrigin != null) return;
             if (attackOrigin != null) { _resolvedOrigin = true; return; }
-            var cam = GetComponentInChildren<Camera>();
-            if (cam != null) { attackOrigin = cam.transform; _resolvedOrigin = true; return; }
-            if (Camera.main != null) { attackOrigin = Camera.main.transform; _resolvedOrigin = true; return; }
+            // Third-person: use character transform so attacks originate from player, not camera behind.
             attackOrigin = transform;
             _resolvedOrigin = true;
         }
@@ -170,17 +176,7 @@ namespace DungeonGame.Weapons
             Transform visual = ResolveWeaponVisual();
             if (visual == null) return;
 
-            Transform target = null;
-            if (IsOwner)
-            {
-                var fps = GetComponent<FPSArmsController>();
-                if (fps != null && fps.FPSWeaponMount != null)
-                    target = fps.FPSWeaponMount;
-            }
-            else if (weaponBoneAttach != null)
-            {
-                target = weaponBoneAttach;
-            }
+            Transform target = weaponBoneAttach;
 
             if (target != null && visual.parent != target)
             {
@@ -282,7 +278,19 @@ namespace DungeonGame.Weapons
             var health = col.GetComponentInParent<NetworkHealth>();
             if (health == null) return;
             if (no != null && no.IsPlayerObject) return;
+
+            Vector3 enemyImpulse = attackDir * enemyKnockForward + Vector3.up * enemyKnockUp;
+            var enemyAi = col.GetComponentInParent<EnemyAI>();
+
             health.TakeDamage(damage);
+
+            if (enemyAi != null && (enemyAi.Config == null || enemyAi.Config.canBeRagdolled))
+            {
+                if (health.Hp <= 0)
+                    enemyAi.ApplyHitImpulse(enemyImpulse);
+                else
+                    enemyAi.Ragdoll(enemyImpulse);
+            }
         }
 
         private void PerformRanged(WeaponConfig c)

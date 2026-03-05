@@ -1,3 +1,4 @@
+using Unity.Netcode;
 using UnityEngine;
 
 namespace DungeonGame.Player
@@ -6,6 +7,8 @@ namespace DungeonGame.Player
     /// When Standing: tracks fall time and sets Animator "IsFalling" for a fall animation.
     /// On landing after a long enough fall, triggers ragdoll (no damage — ragdoll instead of fall damage).
     /// Add a Bool parameter "IsFalling" to your Animator and a Fall state that plays while true.
+    /// Remote players: CharacterController.isGrounded is unreliable (position from NetworkTransform),
+    /// so we assume grounded and never play fall animation for them.
     /// </summary>
     [RequireComponent(typeof(CharacterController))]
     public class PlayerFallDetection : MonoBehaviour
@@ -44,6 +47,17 @@ namespace DungeonGame.Player
 
         private void Update()
         {
+            // Remote players: CC.isGrounded is unreliable (position synced by NetworkTransform).
+            // Assume grounded so we never stick them in fall animation.
+            var netObj = GetComponent<NetworkObject>();
+            if (netObj != null && !netObj.IsOwner)
+            {
+                SetFallingBool(false);
+                _fallStartTime = -1f;
+                _wasGrounded = true;
+                return;
+            }
+
             if (stateMachine != null && stateMachine.IsMovementDisabled)
             {
                 SetFallingBool(false);

@@ -1,3 +1,4 @@
+using DungeonGame.UI;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -48,7 +49,8 @@ namespace DungeonGame.Core
 
             if (clientId == _nm.LocalClientId)
             {
-                Debug.Log("[Disconnect] Lost connection to host — returning to main menu.");
+                var reason = _nm.DisconnectReason ?? "(no reason given)";
+                Debug.Log($"[Disconnect] Lost connection to host — returning to main menu. Reason: {reason}");
                 ReturnToMainMenu();
             }
         }
@@ -63,11 +65,18 @@ namespace DungeonGame.Core
 
         private void ReturnToMainMenu()
         {
-            if (_nm != null && _nm.IsListening)
-                _nm.Shutdown();
-
             var activeScene = SceneManager.GetActiveScene().name;
             if (activeScene == mainMenuSceneName) return;
+
+            LoadingScreenManager.Instance?.ShowWithMessage("Returning to main menu...", showCancelButton: false);
+
+#if !DISABLESTEAMWORKS
+            if (SteamLobbyManager.Instance != null)
+                SteamLobbyManager.Instance.LeaveLobby();
+            else
+#endif
+            if (_nm != null && _nm.IsListening)
+                _nm.Shutdown();
 
             SceneManager.LoadScene(mainMenuSceneName);
         }

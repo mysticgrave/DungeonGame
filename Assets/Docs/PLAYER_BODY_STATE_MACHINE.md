@@ -7,7 +7,7 @@ The player uses a **body state machine** for status effects: Standing, Ragdoll, 
 | State      | Behavior |
 |-----------|----------|
 | **Standing** | Normal movement, camera, and input. |
-| **Ragdoll**  | Physics ragdoll, third-person follow camera, timer then auto-recovery. |
+| **Ragdoll**  | Physics ragdoll, camera follows body (hips), timer then auto-recovery. |
 | **Stunned**  | Movement disabled (same component list as ragdoll). Auto-returns to Standing after `defaultStunnedSeconds` (or custom duration). |
 | **Frozen**   | Same as Stunned; duration controlled by `defaultFrozenSeconds`. |
 

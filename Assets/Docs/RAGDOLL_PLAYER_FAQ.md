@@ -7,7 +7,7 @@ Use **RagdollColliderSwitch** so the root capsule and ragdoll bone colliders nev
 - **Standing:** Root **CapsuleCollider** enabled (so you don’t fall through the floor); all ragdoll bone colliders **disabled** and bone Rigidbodies **kinematic**. Animator on.
 - **Ragdoll (knocked):** Root CapsuleCollider **disabled**; ragdoll bone colliders **enabled** and bone Rigidbodies **non-kinematic**. Impulse is applied to the ragdoll root (e.g. Hips). Animator off.
 
-**Setup:** Add `RagdollColliderSwitch` to the player root. Assign **Ragdoll Root** to the Hips (or parent of all ragdoll bones). Optionally assign **Animator**. `KnockableCapsule` will call `SetRagdoll(impulse)` on knock and `SetStanding()` + `SnapRootToRagdoll()` on recovery. The camera rig uses **Follow Target When Knocked** (auto-set from Ragdoll Root when present) so the camera follows the body (Hips) instead of the root while ragdolling.
+**Setup:** Add `RagdollColliderSwitch` to the player root. Assign **Ragdoll Root** to the Hips (or parent of all ragdoll bones). Optionally assign **Animator**. `KnockableCapsule` will call `SetRagdoll(impulse)` on knock and `SetStanding()` + `SnapRootToRagdoll()` on recovery. The camera follows the ragdoll body (hips) when knocked so it stays with the character.
 
 ---
 

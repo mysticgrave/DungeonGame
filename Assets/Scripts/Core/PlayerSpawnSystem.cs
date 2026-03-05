@@ -61,9 +61,17 @@ namespace DungeonGame.Core
             if (cachedSpawns.Count == 0)
                 CacheSpawnPoints();
 
-            if (!nm.ConnectedClients.TryGetValue(clientId, out var client)) return;
+            if (!nm.ConnectedClients.TryGetValue(clientId, out var client))
+            {
+                Debug.LogWarning($"[Spawn] OnClientConnected({clientId}): client not in ConnectedClients yet.");
+                return;
+            }
             var player = client.PlayerObject;
-            if (player == null) return;
+            if (player == null)
+            {
+                Debug.LogWarning($"[Spawn] OnClientConnected({clientId}): PlayerObject is null. Has player prefab? NetworkConfig.PlayerPrefab={(nm.NetworkConfig?.PlayerPrefab != null ? nm.NetworkConfig.PlayerPrefab.name : "null")}");
+                return;
+            }
 
             Vector3 pos;
             Quaternion rot;

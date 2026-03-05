@@ -34,6 +34,8 @@ namespace DungeonGame.Enemies
         [Tooltip("Can this enemy be ragdolled by player knockback?")]
         public bool canBeRagdolled = true;
         public float ragdollDuration = 2f;
+        [Tooltip("Divide knockback impulse by this. Heavier enemies (e.g. 3) resist more. Default 1.")]
+        [Min(0.1f)] public float ragdollResistance = 1f;
 
         [Header("Status Effects")]
         [Tooltip("Innate immunities — this enemy ignores these status effects.")]

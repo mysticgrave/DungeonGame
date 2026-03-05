@@ -20,7 +20,7 @@ Player must have:
 - enable CapsuleCollider + Rigidbody physics
 - recover after a short duration
 
-Assign `disableWhileKnocked` with movement scripts (e.g. ThirdPersonMotor / later FPS motor).
+Assign `disableWhileKnocked` with movement scripts (e.g. ThirdPersonMotor).
 
 ## Bomb prefab
 Create `Assets/Prefabs/KnockBomb.prefab`:

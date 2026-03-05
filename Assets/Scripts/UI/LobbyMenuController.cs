@@ -41,9 +41,16 @@ namespace DungeonGame.UI
         private NetworkManager _nm;
         private bool _useSteam;
 
+        private void Awake()
+        {
+            EnsureCursorVisible();
+        }
+
         private void Start()
         {
+            EnsureCursorVisible();
             ShowPanel(titlePanel);
+            LoadingScreenManager.OnCancelRequested += OnCancelConnect;
 
 #if !DISABLESTEAMWORKS
             _useSteam = SteamManager.Initialized;
@@ -78,6 +85,7 @@ namespace DungeonGame.UI
 
         private void OnDestroy()
         {
+            LoadingScreenManager.OnCancelRequested -= OnCancelConnect;
             if (_nm != null)
             {
                 _nm.OnClientConnectedCallback -= OnClientConnected;
@@ -99,12 +107,11 @@ namespace DungeonGame.UI
         /// <summary>Host & Play: create lobby and load Town immediately. Town is the lobby.</summary>
         public void HostAndPlay()
         {
+            ShowLoadingScreen("Creating lobby...");
 #if !DISABLESTEAMWORKS
             if (_useSteam)
             {
                 SteamLobbyManager.Instance?.HostLobby(maxPlayers, publicLobby: true);
-                if (connectingStatusText != null) connectingStatusText.text = "Creating lobby...";
-                ShowPanel(connectingPanel);
                 return;
             }
 #endif
@@ -145,8 +152,7 @@ namespace DungeonGame.UI
             _nm.OnClientDisconnectCallback += OnClientDisconnected;
             _nm.StartClient();
 
-            ShowPanel(connectingPanel);
-            if (connectingStatusText != null) connectingStatusText.text = $"Connecting to {address}:{port}...";
+            ShowLoadingScreen($"Connecting to {address}:{port}...");
         }
 
         private void OnCancelConnect()
@@ -156,6 +162,8 @@ namespace DungeonGame.UI
                 SteamLobbyManager.Instance?.LeaveLobby();
 #endif
             ShutdownAndReturn();
+            // Ensure title panel is shown (OnLobbyLeft may fire async or order can vary)
+            ShowPanel(titlePanel != null ? titlePanel : (joinPanel != null ? joinPanel : connectingPanel));
         }
 
         // --- Steam / Host flow ---
@@ -167,18 +175,20 @@ namespace DungeonGame.UI
 
         private void OnClientJoinedLobby()
         {
-            ShowPanel(connectingPanel);
-            if (connectingStatusText != null) connectingStatusText.text = "Connecting to host...";
+            Debug.Log("[Lobby] OnClientJoinedLobby: Showing loading screen 'Connecting to host...'");
+            ShowLoadingScreen("Connecting to host...");
         }
 
         private void OnSteamJoinFailed(string reason)
         {
+            HideLoadingScreen();
             ShowPanel(connectingPanel);
             if (connectingStatusText != null) connectingStatusText.text = reason + " Click Cancel to go back.";
         }
 
         private void OnLobbyLeft()
         {
+            HideLoadingScreen();
             ShowPanel(titlePanel != null ? titlePanel : joinPanel);
         }
 
@@ -213,11 +223,28 @@ namespace DungeonGame.UI
                 _nm.OnClientDisconnectCallback -= OnClientDisconnected;
                 if (_nm.IsListening) _nm.Shutdown();
             }
+            HideLoadingScreen();
             ShowPanel(titlePanel != null ? titlePanel : joinPanel);
+        }
+
+        private void ShowLoadingScreen(string message)
+        {
+            if (titlePanel != null) titlePanel.SetActive(false);
+            if (joinPanel != null) joinPanel.SetActive(false);
+            if (connectingPanel != null) connectingPanel.SetActive(false);
+            LoadingScreenManager.Instance?.ShowWithMessage(message, showCancelButton: true);
+        }
+
+        private void HideLoadingScreen()
+        {
+            LoadingScreenManager.Instance?.Hide();
         }
 
         private void OnClientConnected(ulong clientId)
         {
+            var nm = _nm != null ? _nm : NetworkManager.Singleton;
+            var isLocal = nm != null && clientId == nm.LocalClientId;
+            Debug.Log($"[Lobby] OnClientConnected: clientId={clientId} isLocal={isLocal} IsServer={nm?.IsServer} IsClient={nm?.IsClient}");
             // Nothing to do here for the client — the host's NetworkManager.SceneManager
             // automatically syncs the client into the correct scene. Loading it manually
             // would destroy all synced NetworkObjects and break everything.
@@ -226,7 +253,10 @@ namespace DungeonGame.UI
         private void OnClientDisconnected(ulong clientId)
         {
             if (_nm == null) return;
-            if (!_nm.IsServer && clientId == _nm.LocalClientId)
+            var isLocal = clientId == _nm.LocalClientId;
+            var reason = _nm.DisconnectReason ?? "(none)";
+            Debug.Log($"[Lobby] OnClientDisconnected: clientId={clientId} isLocal={isLocal} Reason={reason}");
+            if (!_nm.IsServer && isLocal)
                 ShutdownAndReturn();
         }
 
@@ -256,8 +286,16 @@ namespace DungeonGame.UI
             return fallback;
         }
 
+        private void EnsureCursorVisible()
+        {
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+        }
+
         private void ShowPanel(GameObject panel)
         {
+            if (panel == null)
+                panel = titlePanel != null ? titlePanel : joinPanel;
             if (titlePanel != null) titlePanel.SetActive(panel == titlePanel);
             if (joinPanel != null) joinPanel.SetActive(panel == joinPanel);
             if (connectingPanel != null) connectingPanel.SetActive(panel == connectingPanel);

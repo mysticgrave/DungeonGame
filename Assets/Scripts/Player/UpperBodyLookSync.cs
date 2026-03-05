@@ -5,7 +5,7 @@ namespace DungeonGame.Player
 {
     /// <summary>
     /// Syncs camera pitch to the Spine (or Chest) bone so other players see the upper body tilting when you look up/down.
-    /// Owner reads pitch from FirstPersonCameraRig; all clients apply it to the spine bone.
+    /// Owner reads pitch from LocalPlayerCameraRig; all clients apply it to the spine bone.
     /// Skip when ragdolling/knocked (spine is driven by physics).
     /// Adds pitch ON TOP of the Animator's pose to avoid twisting the base skeleton.
     /// </summary>
@@ -36,14 +36,14 @@ namespace DungeonGame.Player
             NetworkVariableReadPermission.Everyone,
             NetworkVariableWritePermission.Owner);
 
-        private FirstPersonCameraRig _cameraRig;
+        private LocalPlayerCameraRig _cameraRig;
         private RagdollColliderSwitch _ragdollSwitch;
         private KnockableCapsule _knock;
 
         public override void OnNetworkSpawn()
         {
             base.OnNetworkSpawn();
-            _cameraRig = GetComponent<FirstPersonCameraRig>();
+            _cameraRig = GetComponent<LocalPlayerCameraRig>();
             _ragdollSwitch = GetComponent<RagdollColliderSwitch>();
             _knock = GetComponent<KnockableCapsule>();
         }

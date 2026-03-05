@@ -39,7 +39,20 @@ namespace DungeonGame.Core
         [SerializeField] private string gameSceneName = "Town";
 
         private bool _pendingHostAfterLobbyCreated;
-        private ulong _pendingClientConnectHostId; // non-zero = defer StartClient to next frame
+        private ulong _pendingClientConnectHostId;
+        private int _pendingClientConnectFramesRemaining = 15; // Frames to wait before StartClient (Steam relay + host scene stability)
+        private bool _checkedLaunchCommandLine;
+
+        private System.Collections.IEnumerator DeferredLoadGameScene()
+        {
+            yield return null; // Wait one frame so StartHost is fully ready
+            var nm = NetworkManager.Singleton;
+            if (nm != null && nm.IsServer && nm.SceneManager != null && !string.IsNullOrEmpty(gameSceneName))
+            {
+                nm.SceneManager.LoadScene(gameSceneName, LoadSceneMode.Single);
+                Debug.Log($"[SteamLobby] Loaded game scene: {gameSceneName}");
+            }
+        }
 
         private void Awake()
         {
@@ -73,6 +86,14 @@ namespace DungeonGame.Core
         private void Update()
         {
             var nm = NetworkManager.Singleton;
+
+            // Check command line once: when game is launched by Steam via "Join Game" invite
+            if (!_checkedLaunchCommandLine && SteamManager.Initialized)
+            {
+                _checkedLaunchCommandLine = true;
+                TryJoinLobbyFromCommandLine();
+            }
+
             if (nm == null || nm.IsListening) return;
 
             if (_pendingHostAfterLobbyCreated && CurrentLobby.Id != 0)
@@ -95,12 +116,34 @@ namespace DungeonGame.Core
                             utp.SetConnectionData("0.0.0.0", port, "0.0.0.0");
                         }
                     }
+                    var hostConfigHash = nm.NetworkConfig.GetConfig(false);
+                    Debug.Log($"[SteamLobby] HOST ConfigHash={hostConfigHash} — must match client.");
+
+                    // ForceSamePrefabs causes NGO to hash-check the NetworkPrefabs list before
+                    // connection approval runs. Any mismatch (stale GUIDs, editor vs build, etc.)
+                    // causes an immediate ClosedByPeer/App_Min disconnect. Disable it — both sides
+                    // ship the same build so the check adds no safety value.
+                    nm.NetworkConfig.ForceSamePrefabs = false;
+
+                    // Disable ConnectionApproval — with a custom transport the
+                    // ConnectionRequestMessage may not arrive before the approval timeout,
+                    // causing spurious disconnects. The callback is still set as a safety net
+                    // in case it's toggled on in the inspector.
+                    nm.NetworkConfig.ConnectionApproval = false;
+                    nm.ConnectionApprovalCallback = (request, response) =>
+                    {
+                        Debug.Log($"[SteamLobby] Approving connection from clientId={request.ClientNetworkId}");
+                        response.Approved = true;
+                        response.CreatePlayerObject = true;
+                    };
+
                     nm.StartHost();
 
+                    // Defer Town load by one frame so StartHost is fully processed before scene change.
+                    // Helps clients that connect quickly get correct scene sync.
                     if (nm.IsServer && nm.SceneManager != null && !string.IsNullOrEmpty(gameSceneName))
                     {
-                        nm.SceneManager.LoadScene(gameSceneName, LoadSceneMode.Single);
-                        Debug.Log($"[SteamLobby] Loaded game scene: {gameSceneName}");
+                        Instance.StartCoroutine(DeferredLoadGameScene());
                     }
                 }
                 catch (Exception ex)
@@ -112,17 +155,30 @@ namespace DungeonGame.Core
 
             if (_pendingClientConnectHostId != 0 && InLobby)
             {
+                if (_pendingClientConnectFramesRemaining > 0)
+                {
+                    _pendingClientConnectFramesRemaining--;
+                    if (_pendingClientConnectFramesRemaining == 0)
+                        Debug.Log("[SteamLobby] Defer complete, starting client connect now.");
+                    return;
+                }
                 ulong hostId = _pendingClientConnectHostId;
                 _pendingClientConnectHostId = 0;
                 try
                 {
                     if (SetTargetSteamId(hostId))
                     {
+                        // Must match host — disable so editor/build GUID differences don't block connections.
+                        nm.NetworkConfig.ForceSamePrefabs = false;
+                        var clientConfigHash = nm.NetworkConfig.GetConfig(false);
+                        Debug.Log($"[SteamLobby] CLIENT ConfigHash={clientConfigHash} — must match host.");
+                        Debug.Log($"[SteamLobby] Calling StartClient (host Steam ID {hostId})...");
                         nm.StartClient();
-                        Debug.Log($"[SteamLobby] Connecting to host Steam ID {hostId}");
+                        Debug.Log("[SteamLobby] StartClient returned; waiting for transport/Netcode connection.");
                     }
                     else
                     {
+                        Debug.LogError("[SteamLobby] SetTargetSteamId failed.");
                         OnSteamJoinFailed?.Invoke("Could not set target Steam ID. Add FacepunchTransport to NetworkManager.");
                     }
                 }
@@ -187,8 +243,10 @@ namespace DungeonGame.Core
             {
                 CurrentLobby.Leave();
                 InLobby = false;
-                _pendingClientConnectHostId = 0;
             }
+            _pendingHostAfterLobbyCreated = false;
+            _pendingClientConnectHostId = 0;
+            _pendingClientConnectFramesRemaining = 0;
 
             var nm = NetworkManager.Singleton;
             if (nm != null && nm.IsListening)
@@ -203,6 +261,24 @@ namespace DungeonGame.Core
         {
             if (!InLobby) return;
             SteamFriends.OpenGameInviteOverlay(CurrentLobby.Id);
+        }
+
+        private void TryJoinLobbyFromCommandLine()
+        {
+            if (InLobby || NetworkManager.Singleton?.IsListening == true) return;
+
+            var cmd = Steamworks.SteamApps.CommandLine;
+            if (string.IsNullOrWhiteSpace(cmd)) return;
+
+            // Parse +connect_lobby <id> (Steam passes this when game is launched via "Join Game" invite)
+            var match = System.Text.RegularExpressions.Regex.Match(cmd, @"[+\s]connect_lobby\s+(\d+)", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+            if (!match.Success) return;
+
+            if (ulong.TryParse(match.Groups[1].Value, out ulong lobbyId) && lobbyId != 0)
+            {
+                Debug.Log($"[SteamLobby] Joining lobby {lobbyId} from launch command line.");
+                JoinLobby((SteamId)lobbyId);
+            }
         }
 
         /// <summary>Request a list of public/friends lobbies for this game.</summary>
@@ -248,20 +324,33 @@ namespace DungeonGame.Core
         {
             CurrentLobby = lobby;
             InLobby = true;
+            Debug.Log($"[SteamLobby] HandleLobbyEntered: lobby={lobby.Id}, owner={lobby.Owner.Id}, members={lobby.MemberCount}, nm.IsListening={NetworkManager.Singleton?.IsListening}");
 
             if (NetworkManager.Singleton != null && !NetworkManager.Singleton.IsListening)
             {
-                ulong hostId = 0;
-                var hostIdStr = lobby.GetData(HostSteamIdKey);
-                if (!string.IsNullOrEmpty(hostIdStr) && ulong.TryParse(hostIdStr, out hostId))
-                    { }
-                else if (lobby.Owner.Id > 0)
-                    hostId = lobby.Owner.Id;
+                // Prefer lobby owner (creator) — authoritative. Lobby data can be stale/wrong.
+                ulong hostId = lobby.Owner.Id > 0 ? lobby.Owner.Id : 0;
+                if (hostId > 0)
+                    Debug.Log($"[SteamLobby] Using lobby owner as host ID: {hostId}");
+                else
+                {
+                    var hostIdStr = lobby.GetData(HostSteamIdKey);
+                    if (!string.IsNullOrEmpty(hostIdStr) && ulong.TryParse(hostIdStr, out hostId))
+                        Debug.Log($"[SteamLobby] Got host ID from lobby data (owner missing): {hostId}");
+                }
+
+                // "Are we the host?" = lobby owner (creator). Owner is authoritative; lobby data can be stale.
+                if (lobby.Owner.Id > 0 && lobby.Owner.Id == SteamClient.SteamId)
+                {
+                    Debug.Log("[SteamLobby] We are the lobby owner (host); skipping client connect.");
+                    return; // Don't fire OnLobbyJoined — host shouldn't see "Connecting to host..."
+                }
 
                 if (hostId == 0)
                 {
                     Debug.LogError("[SteamLobby] Could not get host Steam ID from lobby.");
                     OnSteamJoinFailed?.Invoke("Could not get host Steam ID from lobby.");
+                    return;
                 }
                 else
                 {
@@ -276,9 +365,14 @@ namespace DungeonGame.Core
                     {
                         nm.NetworkConfig.NetworkTransport = fp;
                         _pendingClientConnectHostId = hostId;
-                        Debug.Log("[SteamLobby] Joined lobby, deferring client connect to next frame.");
+                        _pendingClientConnectFramesRemaining = 15; // Steam relay propagation + host scene stability
+                        Debug.Log($"[SteamLobby] Joined lobby as client, will StartClient in {_pendingClientConnectFramesRemaining} frames (host Steam ID: {hostId}).");
                     }
                 }
+            }
+            else
+            {
+                Debug.Log("[SteamLobby] HandleLobbyEntered: skipping client connect (IsListening or no NM).");
             }
 
             OnLobbyJoined?.Invoke();

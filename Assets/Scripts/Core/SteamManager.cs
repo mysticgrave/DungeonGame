@@ -15,10 +15,13 @@ namespace DungeonGame.Core
 
         public static bool Initialized { get; private set; }
 
+        private bool _isDuplicate;
+
         private void Awake()
         {
             if (Initialized)
             {
+                _isDuplicate = true; // Mark so OnDestroy doesn't shut down Steam
                 Destroy(gameObject);
                 return;
             }
@@ -28,6 +31,7 @@ namespace DungeonGame.Core
             try
             {
                 Steamworks.SteamClient.Init(appId, false);
+                Steamworks.SteamNetworkingUtils.InitRelayNetworkAccess();
                 Initialized = true;
                 Debug.Log($"[Steam] Initialized — logged in as: {Steamworks.SteamClient.Name} (ID: {Steamworks.SteamClient.SteamId})");
             }
@@ -55,6 +59,7 @@ namespace DungeonGame.Core
 
         private void OnDestroy()
         {
+            if (_isDuplicate) return; // Duplicate destroying self — don't shut down Steam
             if (Initialized)
             {
                 Steamworks.SteamClient.Shutdown();

@@ -140,10 +140,18 @@ namespace DungeonGame.Enemies
 
             float dur = config != null ? config.ragdollDuration : 2f;
             _sm.TransitionTo(EnemyState.Ragdoll, dur);
+            ApplyHitImpulse(impulse);
+        }
 
+        /// <summary>Apply impulse to ragdoll hips. Use when already ragdolling (e.g. on death).</summary>
+        public void ApplyHitImpulse(Vector3 impulse)
+        {
+            if (!IsServer) return;
+            float resist = config != null ? config.ragdollResistance : 1f;
+            Vector3 scaled = impulse / Mathf.Max(0.1f, resist);
             var hipsRb = GetRagdollHips();
             if (hipsRb != null)
-                hipsRb.AddForce(impulse, ForceMode.Impulse);
+                hipsRb.AddForce(scaled, ForceMode.Impulse);
         }
 
         public void Stun(float duration)

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using DungeonGame.UI;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -34,12 +35,24 @@ namespace DungeonGame.Player
         [SerializeField] private float minPitch = -70f;
         [SerializeField] private float maxPitch = 70f;
 
+        [Header("Collision")]
+        [Tooltip("Layers to collide against (walls, environment). Exclude Ignore Raycast in the inspector if needed.")]
+        [SerializeField] private LayerMask collisionLayers = -1;
+        [Tooltip("Minimum distance from target so the camera never enters the player.")]
+        [SerializeField] private float minDistance = 0.5f;
+        [Tooltip("Sphere radius for collision check; prevents camera from clipping through thin geometry.")]
+        [SerializeField] private float collisionRadius = 0.15f;
+        [Tooltip("Push camera this far from hit surface to avoid near-clip z-fighting.")]
+        [SerializeField] private float hitPadding = 0.1f;
+
         private Camera cam;
         private float yaw;
         private float pitch;
         private readonly List<AudioListener> _disabledListeners = new List<AudioListener>();
+        private RagdollColliderSwitch _ragdollSwitch;
 
         public float Yaw => yaw;
+        public float Pitch => pitch;
         public Transform CameraTransform => cam != null ? cam.transform : null;
 
         public override void OnNetworkSpawn()
@@ -53,6 +66,7 @@ namespace DungeonGame.Player
             }
 
             if (followTarget == null) followTarget = transform;
+            _ragdollSwitch = GetComponent<RagdollColliderSwitch>();
 
             GameObject go;
             if (cameraPrefab != null)
@@ -113,6 +127,7 @@ namespace DungeonGame.Player
         {
             if (!IsOwner) return;
             if (cam == null) return;
+            if (PauseMenuController.IsPaused) return;
 
             if (Mouse.current != null)
             {
@@ -122,15 +137,42 @@ namespace DungeonGame.Player
                 pitch = Mathf.Clamp(pitch, minPitch, maxPitch);
             }
 
-            // Build camera transform
+            // Build camera transform. When ragdolling, follow the ragdoll body (hips) so the camera stays with the flying character.
             var rot = Quaternion.Euler(pitch, yaw, 0f);
-            var targetPos = followTarget.position + Vector3.up * height;
+            Vector3 targetBase = (_ragdollSwitch != null && _ragdollSwitch.IsRagdoll)
+                ? _ragdollSwitch.GetRagdollWorldPosition()
+                : followTarget.position;
+            var targetPos = targetBase + Vector3.up * height;
 
             // Shoulder camera: offset to the right in camera space.
             var right = rot * Vector3.right;
-            var camPos = targetPos - (rot * Vector3.forward) * distance + right * shoulderOffset;
+            var desiredPos = targetPos - (rot * Vector3.forward) * distance + right * shoulderOffset;
 
-            cam.transform.SetPositionAndRotation(camPos, rot);
+            // Collision: prevent camera from clipping through walls
+            var dir = desiredPos - targetPos;
+            var dist = dir.magnitude;
+            if (dist > 0.001f)
+            {
+                dir /= dist;
+                var rayDist = Mathf.Max(0f, dist - minDistance);
+                if (rayDist > 0f)
+                {
+                    var hits = Physics.SphereCastAll(targetPos, collisionRadius, dir, rayDist, collisionLayers, QueryTriggerInteraction.Ignore);
+                    float closestNonPlayer = float.MaxValue;
+                    foreach (var hit in hits)
+                    {
+                        if (!IsPlayerCollider(hit.collider) && hit.distance < closestNonPlayer)
+                            closestNonPlayer = hit.distance;
+                    }
+                    if (closestNonPlayer < float.MaxValue)
+                    {
+                        var safeDist = Mathf.Max(minDistance, closestNonPlayer - hitPadding);
+                        desiredPos = targetPos + dir * safeDist;
+                    }
+                }
+            }
+
+            cam.transform.SetPositionAndRotation(desiredPos, rot);
         }
 
         private void ApplySceneBackground()
@@ -186,6 +228,14 @@ namespace DungeonGame.Player
                 if (listener != null) listener.enabled = true;
             }
             _disabledListeners.Clear();
+        }
+
+        private bool IsPlayerCollider(Collider c)
+        {
+            if (c == null || followTarget == null) return false;
+            var root = followTarget.root;
+            var hitRoot = c.transform.root;
+            return hitRoot == root || c.transform.IsChildOf(root) || root.IsChildOf(c.transform);
         }
 
         private static void EnsureURPCameraData(Camera camera)

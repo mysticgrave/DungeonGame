@@ -38,14 +38,22 @@ namespace DungeonGame.Enemies
         private NavMeshAgent _agent;
         private Animator _animator;
         private float _stateTimer;
+        private bool _hasSpeedParam;
 
         private static readonly int AnimSpeed = Animator.StringToHash("Speed");
-        private static readonly int AnimDead = Animator.StringToHash("Dead");
 
         private void Awake()
         {
             _agent = GetComponent<NavMeshAgent>();
             _animator = GetComponentInChildren<Animator>(true);
+            _hasSpeedParam = _animator != null && HasParameter(_animator, AnimSpeed);
+        }
+
+        private static bool HasParameter(Animator anim, int hash)
+        {
+            foreach (var p in anim.parameters)
+                if (p.nameHash == hash) return true;
+            return false;
         }
 
         public void TransitionTo(EnemyState newState, float duration = -1f)
@@ -73,7 +81,7 @@ namespace DungeonGame.Enemies
                 }
             }
 
-            if (_animator != null && _agent != null)
+            if (_hasSpeedParam && _animator != null && _agent != null)
             {
                 float speed = _agent.enabled && _agent.hasPath ? _agent.velocity.magnitude : 0f;
                 _animator.SetFloat(AnimSpeed, speed);
@@ -82,6 +90,8 @@ namespace DungeonGame.Enemies
 
         private void OnTimerExpired()
         {
+            if (Current == EnemyState.Dead) return; // Dead never recovers
+
             switch (Current)
             {
                 case EnemyState.Ragdoll:
@@ -122,8 +132,7 @@ namespace DungeonGame.Enemies
 
                 case EnemyState.Dead:
                     EnableNavAgent(false);
-                    if (_animator != null)
-                        _animator.SetBool(AnimDead, true);
+                    EnableRagdoll(true);
                     break;
             }
         }
@@ -167,7 +176,12 @@ namespace DungeonGame.Enemies
 
             foreach (var col in cols)
             {
-                if (col.gameObject == gameObject) continue;
+                if (col.gameObject == gameObject)
+                {
+                    // Root collider: disable when ragdoll (bone colliders handle physics), enable when standing.
+                    col.enabled = !enable;
+                    continue;
+                }
                 col.enabled = enable;
             }
 

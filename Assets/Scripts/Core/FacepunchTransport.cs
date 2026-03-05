@@ -1,6 +1,7 @@
 #if !DISABLESTEAMWORKS
 using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using Steamworks;
 using Steamworks.Data;
 using Unity.Netcode;
@@ -11,7 +12,7 @@ namespace DungeonGame.Core
     /// <summary>
     /// NGO NetworkTransport using Facepunch.Steamworks (Steam Networking Sockets).
     /// All traffic goes through Steam's relay — no port forwarding needed.
-    /// 
+    ///
     /// Setup:
     ///   1. Install Facepunch.Steamworks DLLs in Assets/Plugins/
     ///   2. Add this component to the NetworkManager GameObject
@@ -37,7 +38,10 @@ namespace DungeonGame.Core
             public ArraySegment<byte> Payload;
         }
 
-        public override void Initialize(NetworkManager networkManager = null) { }
+        public override void Initialize(NetworkManager networkManager = null)
+        {
+            SteamNetworkingUtils.InitRelayNetworkAccess();
+        }
 
         public override bool StartServer()
         {
@@ -68,7 +72,11 @@ namespace DungeonGame.Core
             _client?.Disconnect();
             _client = null;
             _eventQueue.Clear();
+#if UNITY_EDITOR
+            Debug.Log($"[FacepunchTransport] Shutdown.\nCall stack:\n{Environment.StackTrace}");
+#else
             Debug.Log("[FacepunchTransport] Shutdown.");
+#endif
         }
 
         public override void Send(ulong clientId, ArraySegment<byte> payload, NetworkDelivery delivery)
@@ -83,12 +91,22 @@ namespace DungeonGame.Core
             }
             else if (_client != null)
             {
-                _client.Send(data, sendType);
+                var result = _client.Connection.SendMessage(data, sendType);
+                if (result != Result.OK)
+                    Debug.LogWarning($"[FacepunchTransport] CLIENT Send failed: {result} (bytes={data.Length}, delivery={delivery})");
             }
         }
 
         public override NetworkEvent PollEvent(out ulong clientId, out ArraySegment<byte> payload, out float receiveTime)
         {
+            // CRITICAL: Pump Steam callbacks BEFORE receiving messages.
+            // NGO calls PollEvent during EarlyUpdate, but SteamManager.Update()
+            // (which calls RunCallbacks) runs later in Update. Without this,
+            // Steam's internal packet routing hasn't processed incoming data yet
+            // and ReceiveMessagesOnPollGroup/Connection returns 0 messages.
+            if (SteamClient.IsValid)
+                SteamClient.RunCallbacks();
+
             _server?.Poll();
             _client?.Poll();
 
@@ -109,6 +127,7 @@ namespace DungeonGame.Core
 
         public override void DisconnectRemoteClient(ulong clientId)
         {
+            Debug.Log($"[FacepunchTransport] SERVER: DisconnectRemoteClient(clientId={clientId}) — Netcode requested disconnect.");
             _server?.DisconnectClient(clientId);
         }
 
@@ -165,7 +184,14 @@ namespace DungeonGame.Core
 
             public void Poll()
             {
-                Receive(256);
+                try
+                {
+                    Receive(256);
+                }
+                catch (Exception ex)
+                {
+                    Debug.LogError($"[FacepunchTransport] Server.Poll error: {ex}");
+                }
             }
 
             public void SendToClient(ulong clientId, byte[] data, SendType sendType)
@@ -187,11 +213,12 @@ namespace DungeonGame.Core
 
             public override void OnConnecting(Connection connection, ConnectionInfo info)
             {
-                connection.Accept();
+                base.OnConnecting(connection, info);
             }
 
             public override void OnConnected(Connection connection, ConnectionInfo info)
             {
+                base.OnConnected(connection, info); // Required: base registers connection for message routing (Facepunch #467, #529)
                 ulong clientId = _nextClientId++;
                 _connToClient[connection.Id] = clientId;
                 _clientToConn[clientId] = connection;
@@ -201,6 +228,7 @@ namespace DungeonGame.Core
 
             public override void OnDisconnected(Connection connection, ConnectionInfo info)
             {
+                base.OnDisconnected(connection, info);
                 if (_connToClient.TryGetValue(connection.Id, out ulong clientId))
                 {
                     _connToClient.Remove(connection.Id);
@@ -212,9 +240,15 @@ namespace DungeonGame.Core
 
             public override void OnMessage(Connection connection, NetIdentity identity, IntPtr data, int size, long messageNum, long recvTime, int channel)
             {
-                if (!_connToClient.TryGetValue(connection.Id, out ulong clientId)) return;
+                base.OnMessage(connection, identity, data, size, messageNum, recvTime, channel); // Required for message pipeline
+                if (!_connToClient.TryGetValue(connection.Id, out ulong clientId))
+                {
+                    Debug.LogWarning($"[FacepunchTransport] SERVER: OnMessage from unknown connection {connection.Id}, size={size} — dropped.");
+                    return;
+                }
+                Debug.Log($"[FacepunchTransport] SERVER: Received message from client {clientId}, size={size}.");
                 byte[] managed = new byte[size];
-                System.Runtime.InteropServices.Marshal.Copy(data, managed, 0, size);
+                Marshal.Copy(data, managed, 0, size);
                 Transport?.EnqueueEvent(NetworkEvent.Data, clientId, managed);
             }
         }
@@ -227,12 +261,14 @@ namespace DungeonGame.Core
 
             public void Poll()
             {
-                Receive(256);
-            }
-
-            public void Send(byte[] data, SendType sendType)
-            {
-                Connection.SendMessage(data, sendType);
+                try
+                {
+                    Receive(256);
+                }
+                catch (Exception ex)
+                {
+                    Debug.LogError($"[FacepunchTransport] Client.Poll error: {ex}");
+                }
             }
 
             public void Disconnect()
@@ -242,25 +278,29 @@ namespace DungeonGame.Core
 
             public override void OnConnected(ConnectionInfo info)
             {
+                base.OnConnected(info);
                 Transport?.EnqueueEvent(NetworkEvent.Connect, Transport.ServerClientId);
-                Debug.Log("[FacepunchTransport] Connected to host.");
+                Debug.Log("[FacepunchTransport] CLIENT: Connected to host (Steam relay). Netcode will process Connect next.");
             }
 
             public override void OnDisconnected(ConnectionInfo info)
             {
+                base.OnDisconnected(info);
                 Transport?.EnqueueEvent(NetworkEvent.Disconnect, Transport.ServerClientId);
-                Debug.Log("[FacepunchTransport] Disconnected from host.");
+                Debug.Log($"[FacepunchTransport] CLIENT: Disconnected from host. State={info.State} EndReason={info.EndReason}");
             }
 
             public override void OnConnecting(ConnectionInfo info)
             {
-                Debug.Log("[FacepunchTransport] Connecting...");
+                base.OnConnecting(info);
+                Debug.Log("[FacepunchTransport] CLIENT: Connecting via Steam relay...");
             }
 
             public override void OnMessage(IntPtr data, int size, long messageNum, long recvTime, int channel)
             {
+                base.OnMessage(data, size, messageNum, recvTime, channel);
                 byte[] managed = new byte[size];
-                System.Runtime.InteropServices.Marshal.Copy(data, managed, 0, size);
+                Marshal.Copy(data, managed, 0, size);
                 Transport?.EnqueueEvent(NetworkEvent.Data, Transport.ServerClientId, managed);
             }
         }

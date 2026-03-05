@@ -22,7 +22,7 @@ If your character **drifts, walks away from the camera, or looks offset**, the A
 1. Select your **Player** (or the GameObject that has the **Animator**).
 2. In the **Animator** component, **uncheck** **Apply Root Motion**.
 
-Movement is driven only by **FirstPersonMotor** (CharacterController). The Animator should only play Idle/Walk/Run for visuals, not move the character.
+Movement is driven only by **ThirdPersonMotor** (CharacterController). The Animator should only play Idle/Walk/Run for visuals, not move the character.
 
 ---
 
@@ -31,7 +31,7 @@ Movement is driven only by **FirstPersonMotor** (CharacterController). The Anima
 1. Select your **Player** prefab (root).
 2. **Add Component** → **Player Locomotion Animator** (`DungeonGame.Player.PlayerLocomotionAnimator`).
 3. Leave **Animator** empty to auto-find the one on your character, or drag the Animator from a child.
-4. Set **Walk Speed** and **Sprint Speed** to match your **FirstPersonMotor** (default 5 and 7.5). These are used to normalize the **Speed** parameter (0 = idle, ~0.67 at walk, 1 at sprint).
+4. Set **Walk Speed** and **Sprint Speed** to match your **ThirdPersonMotor** (default 5.5 and 8). These are used to normalize the **Speed** parameter (0 = idle, ~0.67 at walk, 1 at sprint).
 5. **Speed Param Name** should be `Speed` (default). This must match the parameter you add in the Animator Controller.
 6. **Use Input For Speed** (default on): Speed is driven by key press so animation starts/stops with input; turn off to use velocity (slight delay).
 
@@ -115,7 +115,7 @@ If your walk feels too early/late, change **Walk → Idle** and **Idle → Walk*
 
 ## 6. Quick check
 
-- **Player** root has **Player Locomotion Animator** (and **FirstPersonMotor**).
+- **Player** root has **Player Locomotion Animator** (and **ThirdPersonMotor**).
 - **Animator Controller** has a **Speed** (Float) parameter and three states: **Idle**, **Walk**, **Run**.
 - Transitions use **Speed** with the conditions above and **Has Exit Time** off.
 

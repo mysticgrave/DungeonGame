@@ -10,6 +10,12 @@ namespace DungeonGame.UI
     {
         [SerializeField] private string firstSceneName = "Town";
 
+        private void Awake()
+        {
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+        }
+
         /// <summary>
         /// Loads the first game scene (e.g. Town). Call from Play button's On Click.
         /// </summary>

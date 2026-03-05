@@ -138,13 +138,15 @@ namespace DungeonGame.Enemies
                     continue;
                 }
 
-                // Clean up dead references and queue respawns.
+                // Clean up dead/destroyed references and queue respawns.
                 for (int i = pt.alive.Count - 1; i >= 0; i--)
                 {
-                    if (pt.alive[i] == null)
+                    var go = pt.alive[i];
+                    bool isGone = go == null;
+                    bool isDead = !isGone && IsEnemyDead(go);
+                    if (isGone || isDead)
                     {
                         pt.alive.RemoveAt(i);
-
                         if (pt.CanRespawn)
                         {
                             pt.pendingRespawnTimers.Add(pt.respawnDelay);
@@ -229,6 +231,16 @@ namespace DungeonGame.Enemies
                 return true;
             }
 
+            return false;
+        }
+
+        private static bool IsEnemyDead(GameObject go)
+        {
+            if (go == null) return true;
+            var health = go.GetComponent<NetworkHealth>();
+            if (health != null && health.Hp <= 0) return true;
+            var sm = go.GetComponent<EnemyStateMachine>();
+            if (sm != null && sm.IsDead) return true;
             return false;
         }
 

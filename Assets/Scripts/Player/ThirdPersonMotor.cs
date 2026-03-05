@@ -1,3 +1,4 @@
+using DungeonGame.UI;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -57,9 +58,10 @@ namespace DungeonGame.Player
             if (!IsOwner) return;
             if (Keyboard.current == null) return;
 
-            var move = ReadMove();
-            bool sprint = Keyboard.current.leftShiftKey.isPressed;
-            bool jumpPressed = Keyboard.current.spaceKey.wasPressedThisFrame;
+            bool paused = PauseMenuController.IsPaused;
+            var move = paused ? Vector2.zero : ReadMove();
+            bool sprint = !paused && Keyboard.current.leftShiftKey.isPressed;
+            bool jumpPressed = !paused && Keyboard.current.spaceKey.wasPressedThisFrame;
 
             float speed = sprint ? sprintSpeed : moveSpeed;
 
@@ -83,12 +85,13 @@ namespace DungeonGame.Player
             }
 
             Vector3 planar = (forward * move.y + right * move.x);
-            if (planar.sqrMagnitude > 1f) planar.Normalize();
+            if (paused) planar = Vector3.zero;
+            else if (planar.sqrMagnitude > 1f) planar.Normalize();
 
-            // Rotation feel:
+            // Rotation feel (skip when paused — no input)
             // - Default: face camera yaw (New World-ish) even while idle.
             // - When moving, still uses movement direction, but that direction is camera-relative.
-            if (faceCameraYaw && cameraRig != null)
+            if (!paused && faceCameraYaw && cameraRig != null)
             {
                 var targetRot = Quaternion.Euler(0f, cameraRig.Yaw, 0f);
                 lookYawRoot.rotation = Quaternion.RotateTowards(
@@ -96,7 +99,7 @@ namespace DungeonGame.Player
                     targetRot,
                     yawDegreesPerSecond * Time.deltaTime);
             }
-            else if (planar.sqrMagnitude > 0.0001f)
+            else if (!paused && planar.sqrMagnitude > 0.0001f)
             {
                 var targetRot = Quaternion.LookRotation(planar, Vector3.up);
                 lookYawRoot.rotation = Quaternion.RotateTowards(
@@ -121,7 +124,8 @@ namespace DungeonGame.Player
             Vector3 velocity = planar * speed;
             velocity.y = verticalVel;
 
-            cc.Move(velocity * Time.deltaTime);
+            if (cc.enabled)
+                cc.Move(velocity * Time.deltaTime);
         }
 
         private static Vector2 ReadMove()
@@ -135,6 +139,29 @@ namespace DungeonGame.Player
             if (Keyboard.current.wKey.isPressed) y += 1f;
 
             var v = new Vector2(x, y);
+            if (v.sqrMagnitude > 1f) v.Normalize();
+            return v;
+        }
+
+        public float GetMoveInputMagnitude()
+        {
+            if (PauseMenuController.IsPaused) return 0f;
+            if (Keyboard.current == null) return 0f;
+            var move = ReadMove();
+            return Mathf.Clamp01(move.magnitude);
+        }
+
+        public bool IsSprinting()
+        {
+            if (PauseMenuController.IsPaused) return false;
+            return Keyboard.current != null && Keyboard.current.leftShiftKey.isPressed;
+        }
+
+        public Vector2 GetMoveInput()
+        {
+            if (PauseMenuController.IsPaused) return Vector2.zero;
+            if (Keyboard.current == null) return Vector2.zero;
+            var v = ReadMove();
             if (v.sqrMagnitude > 1f) v.Normalize();
             return v;
         }

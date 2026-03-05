@@ -23,18 +23,18 @@ MonoBehaviour:
   attacks:
   - attackName: Lunge
     type: 0
-    damage: 0
-    range: 0
-    cooldown: 0
-    lungeSpeedMultiplier: 0
-    lungeDuration: 0
+    damage: 1
+    range: 2.3
+    cooldown: 2.5
+    lungeSpeedMultiplier: 2
+    lungeDuration: 0.35
     projectilePrefab: {fileID: 0}
-    projectileSpeed: 0
-    aoeRadius: 0
+    projectileSpeed: 15
+    aoeRadius: 3
     appliesEffect: 8
-    effectDuration: 0
+    effectDuration: 3
     effectImpulseForce: 20
-    animTrigger: 
+    animTrigger: Attack 
   canBeRagdolled: 1
   ragdollDuration: 2
   immunities: 

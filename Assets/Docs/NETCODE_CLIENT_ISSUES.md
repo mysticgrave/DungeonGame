@@ -33,6 +33,6 @@ The project uses **UnityTransportQueueFix**: it runs from **NetworkBootstrap** a
 
 - **Player prefab** is assigned in NetworkManager → **Player Prefab**.
 - **Player prefab** is also in **Network Prefabs** (add it to the list if it’s not there).
-- Player prefab has **NetworkObject** and **NetworkTransform**; **FirstPersonMotor** only runs when `IsOwner`, so the client must own their spawned player.
+- Player prefab has **NetworkObject** and **NetworkTransform**; **ThirdPersonMotor** only runs when `IsOwner`, so the client must own their spawned player.
 
 After increasing the queue size, rebuild and test again. The "Receive queue is full" warning and the missing player / invisible host issues should go away.
