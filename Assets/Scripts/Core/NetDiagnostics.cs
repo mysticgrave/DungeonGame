@@ -34,13 +34,15 @@ namespace DungeonGame.Core
 
         private void OnClientConnected(ulong clientId)
         {
-            Debug.Log($"[NetDiag] Connected clientId={clientId} IsHost={nm.IsHost} IsServer={nm.IsServer} IsClient={nm.IsClient} ConfigHash={nm.NetworkConfig?.GetConfig(false)?.ConfigHash}");
+            var hash = nm.NetworkConfig != null ? nm.NetworkConfig.GetConfig(false).ConfigHash : 0UL;
+            Debug.Log($"[NetDiag] Connected clientId={clientId} IsHost={nm.IsHost} IsServer={nm.IsServer} IsClient={nm.IsClient} ConfigHash={hash}");
         }
 
         private void OnClientDisconnected(ulong clientId)
         {
             var reason = nm.DisconnectReason;
-            Debug.LogWarning($"[NetDiag] Disconnected clientId={clientId} IsHost={nm.IsHost} IsServer={nm.IsServer} IsClient={nm.IsClient} Reason='{reason}' ConfigHash={nm.NetworkConfig?.GetConfig(false)?.ConfigHash}");
+            var hash = nm.NetworkConfig != null ? nm.NetworkConfig.GetConfig(false).ConfigHash : 0UL;
+            Debug.LogWarning($"[NetDiag] Disconnected clientId={clientId} IsHost={nm.IsHost} IsServer={nm.IsServer} IsClient={nm.IsClient} Reason='{reason}' ConfigHash={hash}");
         }
     }
 }
