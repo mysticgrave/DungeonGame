@@ -6,8 +6,8 @@ using UnityEngine.InputSystem;
 namespace DungeonGame.Player
 {
     /// <summary>
-    /// Local player interaction: look at a WallTorch and press E to light it.
-    /// MVP: no inventory cost, no extinguish.
+    /// Local player interaction: look at a WallTorch and press F to light it.
+    /// F = interact key (E reserved for future skills).
     /// </summary>
     public class TorchInteractor : NetworkBehaviour
     {
@@ -32,7 +32,7 @@ namespace DungeonGame.Player
             if (!IsOwner) return;
             if (Keyboard.current == null) return;
 
-            if (!Keyboard.current.eKey.wasPressedThisFrame) return;
+            if (!Keyboard.current.fKey.wasPressedThisFrame) return;
 
             var camT = rig != null ? rig.CameraTransform : null;
             if (camT == null) return;

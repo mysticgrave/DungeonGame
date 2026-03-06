@@ -9,8 +9,15 @@ namespace DungeonGame.Weapons
         Magic
     }
 
+    public enum ItemGrip
+    {
+        OneHanded,
+        TwoHanded
+    }
+
     /// <summary>
-    /// ScriptableObject defining a weapon's stats. Create in ScriptableObjects/Weapons/.
+    /// ScriptableObject defining an item/weapon's stats and hand system properties.
+    /// Create in ScriptableObjects/Weapons/.
     /// </summary>
     [CreateAssetMenu(fileName = "NewWeapon", menuName = "DungeonGame/Weapon Config", order = 1)]
     public class WeaponConfig : ScriptableObject
@@ -20,6 +27,20 @@ namespace DungeonGame.Weapons
 
         public string displayName = "Sword";
         public WeaponAttackType attackType = WeaponAttackType.Melee;
+
+        [Header("Hand System")]
+        [Tooltip("OneHanded = occupies one hand. TwoHanded = occupies both hands.")]
+        public ItemGrip grip = ItemGrip.OneHanded;
+
+        [Header("World Item")]
+        [Tooltip("Prefab spawned in world when dropped. Must have WorldItem + NetworkObject + Rigidbody.")]
+        public GameObject worldPrefab;
+        [Tooltip("Visual-only prefab parented to hand bone when held.")]
+        public GameObject heldVisualPrefab;
+        [Tooltip("Local position offset when parented to hand bone.")]
+        public Vector3 heldPositionOffset;
+        [Tooltip("Local euler rotation offset when parented to hand bone.")]
+        public Vector3 heldRotationOffset;
 
         [Header("Damage")]
         [Min(1)] public int damage = 2;
@@ -33,6 +54,21 @@ namespace DungeonGame.Weapons
         [Header("Ranged / Magic (raycast)")]
         [Tooltip("Layers to hit. -1 = everything.")]
         public LayerMask hitLayers = -1;
+
+        [Header("Animation (Hand System)")]
+        [Tooltip("Animator trigger for primary attack/use.")]
+        public string primaryAttackTrigger = "attack_sword_01";
+        [Tooltip("Animator trigger for secondary action (two-handed RMB).")]
+        public string secondaryActionTrigger;
+        [Tooltip("If true, disable SwordArm/SwordHand layers during attack (for two-handed full-body anims).")]
+        public bool useFullBodyAttack;
+
+        [Header("Throw")]
+        public bool canBeThrown = true;
+        [Min(1f)] public float throwForce = 12f;
+        [Range(0f, 45f)] public float throwUpAngle = 15f;
+        [Tooltip("Damage dealt on impact after being thrown. 0 = no damage.")]
+        [Min(0)] public int throwDamage;
 
         [Header("Unlock (meta)")]
         [Tooltip("Gold cost to unlock this weapon in town. 0 = already unlocked / starter.")]

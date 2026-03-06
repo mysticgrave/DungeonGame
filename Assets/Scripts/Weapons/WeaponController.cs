@@ -1,7 +1,6 @@
-using DungeonGame.Combat;
 using DungeonGame.Classes;
+using DungeonGame.Items;
 using DungeonGame.UI;
-using DungeonGame.Enemies;
 using DungeonGame.Meta;
 using DungeonGame.Player;
 using Unity.Netcode;
@@ -11,9 +10,9 @@ using UnityEngine.InputSystem;
 namespace DungeonGame.Weapons
 {
     /// <summary>
-    /// Server-authoritative weapon. Config comes from the player's class (ClassDefinition.defaultWeapon)
-    /// or from the equipped unlock (MetaProgression). Attack origin: leave empty to auto-use the camera.
-    /// Teammates: ragdoll on hit (no health damage). Enemies: take damage.
+    /// Legacy server-authoritative weapon controller. When a HandSystem component is present,
+    /// this component defers all input and visual handling to it. Without HandSystem, it
+    /// preserves the original single-weapon behavior for backward compatibility.
     /// </summary>
     [RequireComponent(typeof(NetworkObject))]
     public class WeaponController : NetworkBehaviour
@@ -64,23 +63,47 @@ namespace DungeonGame.Weapons
         private bool _resolvedOrigin;
         private bool _resolvedAnimator;
         private int _attackTriggerId;
-        private bool? _hasAttackTrigger; // null = not checked, true/false = cached
+        private bool? _hasAttackTrigger;
+        private bool _handSystemPresent;
 
         public WeaponConfig Config => _config != null ? _config : configFallback;
+
+        /// <summary>Attack origin transform, resolved lazily. Used by HandSystem.</summary>
+        public Transform AttackOrigin
+        {
+            get
+            {
+                TryResolveAttackOrigin();
+                return attackOrigin;
+            }
+        }
+
+        /// <summary>Knock settings from inspector, used by HandSystem for shared attack logic.</summary>
+        public KnockSettings GetKnockSettings() => new KnockSettings
+        {
+            TeammateKnockForward = teammateKnockForward,
+            TeammateKnockUp = teammateKnockUp,
+            TeammateKnockDuration = teammateKnockDuration,
+            EnemyKnockForward = enemyKnockForward,
+            EnemyKnockUp = enemyKnockUp,
+        };
 
         public override void OnNetworkSpawn()
         {
             base.OnNetworkSpawn();
+            _handSystemPresent = GetComponent<HandSystem>() != null;
             _attackTriggerId = Animator.StringToHash(attackTriggerName);
             TryResolveAttackOrigin();
             TryResolveConfig();
             TryResolveAnimator();
-            TryParentWeaponVisual();
+
+            if (!_handSystemPresent)
+                TryParentWeaponVisual();
         }
 
         public override void OnNetworkDespawn()
         {
-            if (_weaponVisualInstance != null)
+            if (!_handSystemPresent && _weaponVisualInstance != null)
             {
                 Destroy(_weaponVisualInstance.gameObject);
                 _weaponVisualInstance = null;
@@ -90,12 +113,15 @@ namespace DungeonGame.Weapons
 
         private void LateUpdate()
         {
-            TryParentWeaponVisual();
+            if (!_handSystemPresent)
+                TryParentWeaponVisual();
         }
 
         private void Update()
         {
             if (!IsOwner) return;
+            if (_handSystemPresent) return;
+
             TryResolveAttackOrigin();
             if (!_resolvedConfig) TryResolveConfig();
             if (!_resolvedAnimator) TryResolveAnimator();
@@ -126,7 +152,7 @@ namespace DungeonGame.Weapons
                 Debug.LogWarning($"[WeaponController] Animator has no trigger '{attackTriggerName}'. Add it in the Animator (Parameters → Trigger) and ensure transitions use it.", this);
         }
 
-        private static bool HasTriggerParameter(Animator anim, int hash)
+        public static bool HasTriggerParameter(Animator anim, int hash)
         {
             foreach (var p in anim.parameters)
                 if (p.type == AnimatorControllerParameterType.Trigger && p.nameHash == hash) return true;
@@ -137,7 +163,6 @@ namespace DungeonGame.Weapons
         {
             if (_resolvedOrigin && attackOrigin != null) return;
             if (attackOrigin != null) { _resolvedOrigin = true; return; }
-            // Third-person: use character transform so attacks originate from player, not camera behind.
             attackOrigin = transform;
             _resolvedOrigin = true;
         }
@@ -211,116 +236,16 @@ namespace DungeonGame.Weapons
 
             if (attackOrigin == null) attackOrigin = transform;
 
+            var knock = GetKnockSettings();
+
             if (c == null)
             {
-                PerformDefaultMelee();
+                ItemAttackExecutor.PerformDefaultMelee(attackOrigin, defaultDamage, defaultRange,
+                    defaultHitRadius, NetworkObject, knock);
                 return;
             }
 
-            switch (c.attackType)
-            {
-                case WeaponAttackType.Melee:
-                    PerformMelee(c);
-                    break;
-                case WeaponAttackType.Ranged:
-                    PerformRanged(c);
-                    break;
-                case WeaponAttackType.Magic:
-                    PerformMagic(c);
-                    break;
-                default:
-                    PerformMelee(c);
-                    break;
-            }
-        }
-
-        private void PerformDefaultMelee()
-        {
-            Transform originT = attackOrigin != null ? attackOrigin : transform;
-            Vector3 pos = originT.position;
-            Vector3 dir = originT.forward;
-            dir.y = 0f;
-            if (dir.sqrMagnitude < 0.01f) dir = Vector3.forward;
-            dir.Normalize();
-            Vector3 center = pos + dir * (defaultRange * 0.5f);
-            var hits = Physics.OverlapSphere(center, defaultHitRadius, ~0, QueryTriggerInteraction.Ignore);
-            foreach (var col in hits)
-                ProcessMeleeHit(col, dir, defaultDamage);
-        }
-
-        private void PerformMelee(WeaponConfig c)
-        {
-            Vector3 pos = attackOrigin.position;
-            Vector3 dir = attackOrigin.forward;
-            dir.y = 0;
-            if (dir.sqrMagnitude < 0.01f) dir = Vector3.forward;
-            dir.Normalize();
-
-            var hits = Physics.OverlapSphere(pos + dir * c.range * 0.5f, c.hitRadius, ~0, QueryTriggerInteraction.Ignore);
-            foreach (var col in hits)
-                ProcessMeleeHit(col, dir, c.damage);
-        }
-
-        private void ProcessMeleeHit(Collider col, Vector3 attackDir, int damage)
-        {
-            var no = col.GetComponentInParent<NetworkObject>();
-            if (no != null && no.NetworkObjectId == NetworkObject.NetworkObjectId)
-                return;
-
-            var knock = col.GetComponentInParent<KnockableCapsule>();
-            if (knock != null && no != null && no.IsPlayerObject)
-            {
-                Vector3 impulse = attackDir * teammateKnockForward + Vector3.up * teammateKnockUp;
-                knock.KnockFromServer(impulse, teammateKnockDuration);
-                return;
-            }
-
-            var health = col.GetComponentInParent<NetworkHealth>();
-            if (health == null) return;
-            if (no != null && no.IsPlayerObject) return;
-
-            Vector3 enemyImpulse = attackDir * enemyKnockForward + Vector3.up * enemyKnockUp;
-            var enemyAi = col.GetComponentInParent<EnemyAI>();
-
-            health.TakeDamage(damage);
-
-            if (enemyAi != null && (enemyAi.Config == null || enemyAi.Config.canBeRagdolled))
-            {
-                if (health.Hp <= 0)
-                    enemyAi.ApplyHitImpulse(enemyImpulse);
-                else
-                    enemyAi.Ragdoll(enemyImpulse);
-            }
-        }
-
-        private void PerformRanged(WeaponConfig c)
-        {
-            Vector3 origin = attackOrigin.position;
-            Vector3 dir = attackOrigin.forward;
-            if (dir.sqrMagnitude < 0.01f) dir = Vector3.forward;
-            dir.Normalize();
-
-            if (!Physics.Raycast(origin, dir, out var hit, c.range, c.hitLayers, QueryTriggerInteraction.Ignore))
-                return;
-            var damageable = hit.collider.GetComponentInParent<NetworkHealth>();
-            if (damageable == null) return;
-            if (damageable.NetworkObject != null && damageable.NetworkObject.IsPlayerObject) return;
-            damageable.TakeDamage(c.damage);
-        }
-
-        private void PerformMagic(WeaponConfig c)
-        {
-            Vector3 origin = attackOrigin.position;
-            Vector3 dir = attackOrigin.forward;
-            if (dir.sqrMagnitude < 0.01f) dir = Vector3.forward;
-            dir.Normalize();
-
-            if (!Physics.Raycast(origin, dir, out var hit, c.range, c.hitLayers, QueryTriggerInteraction.Ignore))
-                return;
-            var damageable = hit.collider.GetComponentInParent<NetworkHealth>();
-            if (damageable == null) return;
-            if (damageable.NetworkObject != null && damageable.NetworkObject.IsPlayerObject) return;
-            damageable.TakeDamage(c.damage);
+            ItemAttackExecutor.ExecuteAttack(attackOrigin, c, NetworkObject, knock);
         }
     }
 }

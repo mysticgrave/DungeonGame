@@ -23,6 +23,12 @@ namespace DungeonGame.Player
         /// <summary>True when Base Layer is in an attack state. Ragdoll disables animator so this becomes false.</summary>
         public bool IsAttacking { get; private set; }
 
+        // When true, keep arm/hand layers suppressed (two-handed items use full body)
+        private bool _forceTwoHandedMode;
+
+        /// <summary>Call from HandSystem to suppress arm/hand override layers for two-handed items.</summary>
+        public void SetTwoHandedMode(bool value) => _forceTwoHandedMode = value;
+
         private static readonly int[] AttackStateHashes =
         {
             Animator.StringToHash("A_Attack_LightCombo01A_Sword"),
@@ -41,9 +47,9 @@ namespace DungeonGame.Player
         {
             if (!TryResolve()) return;
 
-            bool isAttacking = IsAttacking;
-            float armWeight = isAttacking ? 0f : swordArmWeightIdle;
-            float handWeight = isAttacking ? 0f : swordHandWeightIdle;
+            bool suppress = IsAttacking || _forceTwoHandedMode;
+            float armWeight = suppress ? 0f : swordArmWeightIdle;
+            float handWeight = suppress ? 0f : swordHandWeightIdle;
 
             if (_swordArmLayer >= 0)
                 animator.SetLayerWeight(_swordArmLayer, armWeight);
