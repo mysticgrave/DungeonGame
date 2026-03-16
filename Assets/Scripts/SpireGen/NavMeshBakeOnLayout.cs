@@ -100,7 +100,8 @@ namespace DungeonGame.SpireGen
         [ClientRpc]
         private void NotifyDungeonReadyClientRpc()
         {
-            LoadingScreenManager.Instance?.FadeOutAndHide();
+            // Loading screen is now hidden by DungeonPlayerSpawner after repositioning,
+            // so clients wait until players are positioned before revealing the scene.
         }
     }
 }

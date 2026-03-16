@@ -43,7 +43,7 @@ RenderSettings:
 LightmapSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 13
-  m_BakeOnSceneLoad: 0
+  m_BakeOnSceneLoad: 1
   m_GISettings:
     serializedVersion: 2
     m_BounceScale: 1
@@ -536,7 +536,7 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   dungeonSceneName: Spire_Slice
   pick3Controller: {fileID: 0}
-  townPlayController: {fileID: 0}
+  townPlayController: {fileID: 1478455675}
 --- !u!1 &277208421
 GameObject:
   m_ObjectHideFlags: 0
@@ -1921,6 +1921,75 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 180, z: 0}
+--- !u!1001 &841645028
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 1631607032641582, guid: f2f18c7ed719c36448aaa0d7d9acbe0e, type: 3}
+      propertyPath: m_Name
+      value: SM_Wep_Sword_01
+      objectReference: {fileID: 0}
+    - target: {fileID: 4561571508225656, guid: f2f18c7ed719c36448aaa0d7d9acbe0e, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -30.69191
+      objectReference: {fileID: 0}
+    - target: {fileID: 4561571508225656, guid: f2f18c7ed719c36448aaa0d7d9acbe0e, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -0.36875212
+      objectReference: {fileID: 0}
+    - target: {fileID: 4561571508225656, guid: f2f18c7ed719c36448aaa0d7d9acbe0e, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 16.678251
+      objectReference: {fileID: 0}
+    - target: {fileID: 4561571508225656, guid: f2f18c7ed719c36448aaa0d7d9acbe0e, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4561571508225656, guid: f2f18c7ed719c36448aaa0d7d9acbe0e, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4561571508225656, guid: f2f18c7ed719c36448aaa0d7d9acbe0e, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4561571508225656, guid: f2f18c7ed719c36448aaa0d7d9acbe0e, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4561571508225656, guid: f2f18c7ed719c36448aaa0d7d9acbe0e, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4561571508225656, guid: f2f18c7ed719c36448aaa0d7d9acbe0e, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4561571508225656, guid: f2f18c7ed719c36448aaa0d7d9acbe0e, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2343533631052546212, guid: f2f18c7ed719c36448aaa0d7d9acbe0e, type: 3}
+      propertyPath: GlobalObjectIdHash
+      value: 427440682
+      objectReference: {fileID: 0}
+    - target: {fileID: 2343533631052546212, guid: f2f18c7ed719c36448aaa0d7d9acbe0e, type: 3}
+      propertyPath: SceneMigrationSynchronization
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2343533631052546212, guid: f2f18c7ed719c36448aaa0d7d9acbe0e, type: 3}
+      propertyPath: InScenePlacedSourceGlobalObjectIdHash
+      value: 3952581703
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: f2f18c7ed719c36448aaa0d7d9acbe0e, type: 3}
 --- !u!1 &860622276
 GameObject:
   m_ObjectHideFlags: 0
@@ -2480,6 +2549,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DungeonGame.Items.ItemRegistry
   items:
   - {fileID: 11400000, guid: 11b0876faf2c630498cf77cd3ba9afb8, type: 2}
+  - {fileID: 11400000, guid: 1fbac4b00106fe44db51e625d0aa20e8, type: 2}
 --- !u!4 &1335431344
 Transform:
   m_ObjectHideFlags: 0
@@ -2925,6 +2995,52 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 20c71e137db022748a429d1ed94f2cb2, type: 3}
+--- !u!1 &1478455674
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1478455676}
+  - component: {fileID: 1478455675}
+  m_Layer: 0
+  m_Name: TownPlayController
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1478455675
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1478455674}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f10ff215dc4d20f439f0b22c7041569f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DungeonGame.UI.TownPlayController
+  dungeonSceneName: Spire_Slice
+  loadingScreen: {fileID: 1376267387}
+--- !u!4 &1478455676
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1478455674}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -40.41674, y: 1.00168, z: 0.35215}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1484982343
 GameObject:
   m_ObjectHideFlags: 1
@@ -4009,8 +4125,10 @@ SceneRoots:
   - {fileID: 860622278}
   - {fileID: 1484982345}
   - {fileID: 50320851}
-  - {fileID: 1376267388}
   - {fileID: 304480785}
   - {fileID: 1455191706}
   - {fileID: 1335431344}
   - {fileID: 187133939}
+  - {fileID: 1478455676}
+  - {fileID: 1376267388}
+  - {fileID: 841645028}

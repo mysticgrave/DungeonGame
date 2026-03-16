@@ -14,12 +14,17 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DungeonGame.Weapons.ItemConfig
   weaponId: Uranium Cube
   displayName: Uranium Cube
+  icon: {fileID: 0}
   attackType: 0
   grip: 0
   worldPrefab: {fileID: 1841840035136554888, guid: 20c71e137db022748a429d1ed94f2cb2, type: 3}
-  heldVisualPrefab: {fileID: 1841840035136554888, guid: 20c71e137db022748a429d1ed94f2cb2, type: 3}
-  heldPositionOffset: {x: 0, y: 0, z: 0}
+  heldVisualPrefab: {fileID: 1841840035136554888, guid: f0c10505659c9b94e905a4536d9b5483, type: 3}
+  heldPositionOffset: {x: 17, y: 0.3, z: -4.5}
   heldRotationOffset: {x: 0, y: 0, z: 0}
+  heldScale: {x: 50, y: 50, z: 50}
+  leftHeldPositionOffset: {x: 0, y: 0, z: 0}
+  leftHeldRotationOffset: {x: 0, y: 0, z: 0}
+  leftHeldScale: {x: 50, y: 50, z: 50}
   damage: 2
   range: 2.5
   cooldown: 0.6

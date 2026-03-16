@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using DungeonGame.Core;
+using DungeonGame.Run;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -129,10 +130,39 @@ namespace DungeonGame.SpireGen
             _generateCoroutine = StartCoroutine(GenerateCoroutine(seed));
         }
 
+        /// <summary>
+        /// Overwrite generation parameters from a DungeonConfig.
+        /// Called at the start of generation. If cfg is null, inspector values are kept (backward compat).
+        /// </summary>
+        private void ApplyConfig(DungeonConfig cfg)
+        {
+            if (cfg == null) return;
+
+            roomPrefabs = cfg.roomPrefabs;
+            mainPathRooms = cfg.mainPathRooms;
+            branches = cfg.branches;
+            branchLengthMin = cfg.branchLengthMin;
+            branchLengthMax = cfg.branchLengthMax;
+            loopAttempts = cfg.loopAttempts;
+            landmarkEvery = cfg.landmarkEvery;
+            socketType = cfg.socketType;
+            socketSize = cfg.socketSize;
+            startRoom = cfg.startRoom;
+            bossRoom = cfg.bossRoom;
+            minRoomsBeforeBoss = cfg.minRoomsBeforeBoss;
+
+            Debug.Log($"[SpireGen] Applied DungeonConfig: {cfg.displayName} ({cfg.dungeonId})");
+        }
+
         private IEnumerator GenerateCoroutine(int seed)
         {
             IsGenerating = true;
             FreezeAllPlayers(true);
+
+            // Apply dungeon config from SpireRunState (if set), overwriting inspector defaults.
+            var runState = FindFirstObjectByType<SpireRunState>();
+            if (runState != null)
+                ApplyConfig(runState.ActiveDungeonConfig);
 
             rng = spireSeed.CreateRandom("layout");
             ClearExistingGeneratedRooms();

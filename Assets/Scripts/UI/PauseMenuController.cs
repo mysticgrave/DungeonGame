@@ -129,6 +129,17 @@ namespace DungeonGame.UI
         {
             Resume(); // close pause menu and re-lock cursor
 
+            // Show dungeon selection UI if available
+            var selectUI = DungeonSelectUI.Instance;
+            if (selectUI != null)
+            {
+                selectUI.OnDungeonSelected -= OnDungeonChosenFromMenu;
+                selectUI.OnDungeonSelected += OnDungeonChosenFromMenu;
+                selectUI.Show();
+                return;
+            }
+
+            // Fallback: enter directly with no config
             var townPlay = FindFirstObjectByType<TownPlayController>();
             if (townPlay != null)
             {
@@ -138,6 +149,18 @@ namespace DungeonGame.UI
             {
                 Debug.LogWarning("[PauseMenu] No TownPlayController found in scene.");
             }
+        }
+
+        private void OnDungeonChosenFromMenu(DungeonGame.Run.DungeonConfig config)
+        {
+            if (DungeonSelectUI.Instance != null)
+                DungeonSelectUI.Instance.OnDungeonSelected -= OnDungeonChosenFromMenu;
+
+            var townPlay = FindFirstObjectByType<TownPlayController>();
+            if (townPlay != null)
+                townPlay.EnterDungeon(config);
+            else
+                Debug.LogWarning("[PauseMenu] No TownPlayController found in scene.");
         }
 
         private void OnSettingsClicked()

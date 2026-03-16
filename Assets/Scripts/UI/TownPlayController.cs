@@ -1,3 +1,4 @@
+using DungeonGame.Run;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -22,9 +23,10 @@ namespace DungeonGame.UI
         public void LoadDungeonScene() => EnterDungeon();
 
         /// <summary>
-        /// Loads the dungeon scene. Host-only. Wire this to your Play / Enter Dungeon button's On Click.
+        /// Loads the dungeon scene. Host-only.
+        /// Optionally pass a DungeonConfig to set on SpireRunState before loading.
         /// </summary>
-        public void EnterDungeon()
+        public void EnterDungeon(DungeonConfig config = null)
         {
             var nm = NetworkManager.Singleton;
             if (nm == null)
@@ -45,7 +47,14 @@ namespace DungeonGame.UI
                 return;
             }
 
-            if (SceneManager.GetActiveScene().name == dungeonSceneName)
+            // Set config on SpireRunState so the generator can read it
+            var runState = FindFirstObjectByType<SpireRunState>();
+            if (runState != null)
+                runState.SetDungeonConfig(config);
+
+            string scene = config != null ? config.sceneName : dungeonSceneName;
+
+            if (SceneManager.GetActiveScene().name == scene)
             {
                 Debug.Log("[TownPlay] Already in dungeon.");
                 return;
@@ -55,8 +64,8 @@ namespace DungeonGame.UI
             if (loader != null)
                 loader.Show();
 
-            Debug.Log($"[TownPlay] Loading dungeon: {dungeonSceneName}");
-            nm.SceneManager.LoadScene(dungeonSceneName, LoadSceneMode.Single);
+            Debug.Log($"[TownPlay] Loading dungeon: {scene}" + (config != null ? $" (config: {config.displayName})" : ""));
+            nm.SceneManager.LoadScene(scene, LoadSceneMode.Single);
         }
     }
 }

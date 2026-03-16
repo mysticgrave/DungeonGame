@@ -40,10 +40,22 @@ namespace DungeonGame.Weapons
         public GameObject worldPrefab;
         [Tooltip("Visual-only prefab parented to hand bone when held.")]
         public GameObject heldVisualPrefab;
-        [Tooltip("Local position offset when parented to hand bone.")]
+
+        [Header("Right Hand Held Transform")]
+        [Tooltip("Local position offset when held in right hand.")]
         public Vector3 heldPositionOffset;
-        [Tooltip("Local euler rotation offset when parented to hand bone.")]
+        [Tooltip("Local euler rotation offset when held in right hand.")]
         public Vector3 heldRotationOffset;
+        [Tooltip("Local scale when held in right hand. Defaults to (1,1,1).")]
+        public Vector3 heldScale = Vector3.one;
+
+        [Header("Left Hand Held Transform")]
+        [Tooltip("Local position offset when held in left hand. If zero, uses right hand values.")]
+        public Vector3 leftHeldPositionOffset;
+        [Tooltip("Local euler rotation offset when held in left hand. If zero, uses right hand values.")]
+        public Vector3 leftHeldRotationOffset;
+        [Tooltip("Local scale when held in left hand. If zero, uses right hand values.")]
+        public Vector3 leftHeldScale;
 
         [Header("Damage")]
         [Min(1)] public int damage = 2;

@@ -20,7 +20,10 @@ In `Spire_Slice` scene, on your `Spire` generator object:
 
 This rebuilds the navmesh after the layout spawns.
 
-**Builds / runtime:** NavMesh baking at runtime needs mesh read access. If you see "Source mesh X does not allow read access" in the player build, enable **Read/Write** on that mesh. **Fast fix for many assets:** run **Tools → DungeonGame → Enable Read/Write on All Model Meshes** once; it finds all FBX/OBJ/etc. in Assets and sets Read/Write, then reimports (progress bar, can cancel).
+**Builds / runtime:** NavMesh baking at runtime needs mesh read access. If you see "Source mesh X does not allow read access" in the player build:
+- **Synty assets (SM_Bld_Wall_*, etc.):** Run **Tools → DungeonGame → Enable Read/Write on Synty Models Only** — faster, targets dungeon/prop meshes.
+- **All models:** Run **Tools → DungeonGame → Enable Read/Write on All Model Meshes** — processes Assets + Packages. Let it finish (don't cancel); reimport can take several minutes.
+- **Single mesh:** Select the FBX in Project, Inspector → Model tab → enable **Read/Write Enabled**.
 
 ## Spawning
 ### Recommended (procedural): EnemySpawnPoint markers

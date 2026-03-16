@@ -42,12 +42,34 @@ namespace DungeonGame.Run
             NetworkVariableReadPermission.Everyone,
             NetworkVariableWritePermission.Server);
 
+        // ─── Dungeon Config ─────────────────────────────────────────
+
+        private readonly NetworkVariable<int> DungeonConfigIndexNet = new(-1,
+            NetworkVariableReadPermission.Everyone,
+            NetworkVariableWritePermission.Server);
+
+        /// <summary>The DungeonConfig selected for the current run, or null if none (use legacy defaults).</summary>
+        public DungeonConfig ActiveDungeonConfig =>
+            DungeonConfigIndexNet.Value >= 0 ? DungeonRegistry.GetByIndex(DungeonConfigIndexNet.Value) : null;
+
+        /// <summary>Scene name from the active config, or fallback "Spire_Slice".</summary>
+        public string DungeonSceneName =>
+            ActiveDungeonConfig != null ? ActiveDungeonConfig.sceneName : "Spire_Slice";
+
+        /// <summary>Server: set the dungeon config for the next run. Call before loading the dungeon scene.</summary>
+        public void SetDungeonConfig(DungeonConfig config)
+        {
+            if (!IsServer) return;
+            DungeonConfigIndexNet.Value = config != null ? DungeonRegistry.IndexOf(config) : -1;
+        }
+
         public override void OnNetworkSpawn()
         {
             base.OnNetworkSpawn();
 
             FloorNet.OnValueChanged += (_, _) => OnChanged?.Invoke();
             HighestUnlockedSegmentNet.OnValueChanged += (_, _) => OnChanged?.Invoke();
+            DungeonConfigIndexNet.OnValueChanged += (_, _) => OnChanged?.Invoke();
 
             OnChanged?.Invoke();
         }
@@ -56,6 +78,7 @@ namespace DungeonGame.Run
         {
             FloorNet.OnValueChanged -= (_, _) => { };
             HighestUnlockedSegmentNet.OnValueChanged -= (_, _) => { };
+            DungeonConfigIndexNet.OnValueChanged -= (_, _) => { };
             base.OnNetworkDespawn();
         }
 
@@ -97,6 +120,7 @@ namespace DungeonGame.Run
             // Wipe run state so the next Spire entry is a fresh run (fail/evac/victory = run over).
             FloorNet.Value = 0;
             HighestUnlockedSegmentNet.Value = 0;
+            DungeonConfigIndexNet.Value = -1;
             _activeModifierIds.Clear();
 
             if (NetworkManager.Singleton != null && NetworkManager.Singleton.SceneManager != null

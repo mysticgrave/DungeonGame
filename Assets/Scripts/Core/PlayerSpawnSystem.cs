@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Unity.Netcode;
@@ -58,20 +59,38 @@ namespace DungeonGame.Core
             var nm = NetworkManager.Singleton;
             if (nm == null || !nm.IsServer) return;
 
+            StartCoroutine(PositionClientWhenReady(clientId));
+        }
+
+        private IEnumerator PositionClientWhenReady(ulong clientId)
+        {
+            var nm = NetworkManager.Singleton;
+
+            // Wait up to 5 seconds for PlayerObject to become available
+            // (Netcode may not have spawned the player prefab yet when OnClientConnectedCallback fires)
+            float timeout = 5f;
+            float elapsed = 0f;
+            NetworkClient client = null;
+
+            while (elapsed < timeout)
+            {
+                if (nm == null || !nm.IsServer) yield break;
+                if (nm.ConnectedClients.TryGetValue(clientId, out client) && client.PlayerObject != null)
+                    break;
+                elapsed += Time.deltaTime;
+                yield return null;
+            }
+
+            if (client?.PlayerObject == null)
+            {
+                Debug.LogWarning($"[Spawn] Timed out waiting for PlayerObject for client {clientId}.");
+                yield break;
+            }
+
+            var player = client.PlayerObject;
+
             if (cachedSpawns.Count == 0)
                 CacheSpawnPoints();
-
-            if (!nm.ConnectedClients.TryGetValue(clientId, out var client))
-            {
-                Debug.LogWarning($"[Spawn] OnClientConnected({clientId}): client not in ConnectedClients yet.");
-                return;
-            }
-            var player = client.PlayerObject;
-            if (player == null)
-            {
-                Debug.LogWarning($"[Spawn] OnClientConnected({clientId}): PlayerObject is null. Has player prefab? NetworkConfig.PlayerPrefab={(nm.NetworkConfig?.PlayerPrefab != null ? nm.NetworkConfig.PlayerPrefab.name : "null")}");
-                return;
-            }
 
             Vector3 pos;
             Quaternion rot;

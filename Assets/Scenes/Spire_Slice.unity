@@ -281,6 +281,7 @@ MonoBehaviour:
   statusText: {fileID: 0}
   loadingMessage: Loading...
   fadeOutDuration: 1.5
+  dungeonSceneName: Spire_Slice
 --- !u!4 &481247400
 Transform:
   m_ObjectHideFlags: 0
@@ -594,6 +595,7 @@ MonoBehaviour:
   playerPrefab: {fileID: 0}
   address: 127.0.0.1
   port: 7777
+  hostSteamId: 0
 --- !u!4 &1163264298
 Transform:
   m_ObjectHideFlags: 0
@@ -716,9 +718,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DungeonGame.UI.PauseMenuController
   panel: {fileID: 0}
   resumeButton: {fileID: 0}
+  enterDungeonButton: {fileID: 0}
+  backToTownButton: {fileID: 0}
   settingsButton: {fileID: 0}
   quitButton: {fileID: 0}
   mainMenuSceneName: MainMenu
+  townSceneName: Town
+  dungeonSceneName: Spire_Slice
   allowedScenes:
   - Town
   - Spire_Slice

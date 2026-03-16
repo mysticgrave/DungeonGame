@@ -5372,8 +5372,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 46e9329a2d1843442bd9eb166dd9e313, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DungeonGame.Core.HostSceneHotkeys
-  townSceneName: Town
-  spireSceneName: Spire_Layer
 --- !u!114 &915182015
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5592,6 +5590,8 @@ GameObject:
   - component: {fileID: 966236739}
   - component: {fileID: 966236738}
   - component: {fileID: 966236737}
+  - component: {fileID: 966236740}
+  - component: {fileID: 966236741}
   m_Layer: 0
   m_Name: Bootstrap
   m_TagString: Untagged
@@ -5644,6 +5644,32 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &966236740
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 966236736}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5a0f879601b560c4ca0e7303c881b378, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DungeonGame.Run.DungeonRegistry
+  dungeons:
+  - {fileID: 11400000, guid: f5c9402949b449c4db4a7a69e7fca318, type: 2}
+--- !u!114 &966236741
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 966236736}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4ea1e719307b76344b8cceb24457d305, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DungeonGame.UI.DungeonSelectUI
 --- !u!1001 &968283114
 PrefabInstance:
   m_ObjectHideFlags: 0

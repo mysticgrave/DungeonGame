@@ -1,3 +1,4 @@
+using DungeonGame.Run;
 using DungeonGame.UI;
 using Unity.Netcode;
 using UnityEngine;
@@ -10,8 +11,8 @@ namespace DungeonGame.Interaction
     /// Place on any GameObject with a collider in the Town scene.
     /// Host-only: only the server/host player can interact.
     ///
-    /// If a Pick3Controller reference is assigned, the modifier-pick UI is shown first;
-    /// otherwise the dungeon loads immediately via TownPlayController.
+    /// Flow: Interact → DungeonSelectUI (pick dungeon) → optional Pick3 → TownPlayController.EnterDungeon(config).
+    /// Falls back to direct entry if DungeonSelectUI is not in the scene.
     /// </summary>
     public class DungeonBoard : NetworkBehaviour, IInteractable
     {
@@ -39,6 +40,9 @@ namespace DungeonGame.Interaction
             // Can't enter if already in dungeon
             if (SceneManager.GetActiveScene().name == dungeonSceneName) return false;
 
+            // Don't show prompt if selection UI is already open
+            if (DungeonSelectUI.Instance != null && DungeonSelectUI.Instance.IsVisible) return false;
+
             return true;
         }
 
@@ -46,10 +50,38 @@ namespace DungeonGame.Interaction
         {
             if (!IsServer) return;
 
+            // Show dungeon selection UI if available
+            var selectUI = DungeonSelectUI.Instance;
+            if (selectUI != null)
+            {
+                selectUI.OnDungeonSelected -= OnDungeonChosen;
+                selectUI.OnDungeonSelected += OnDungeonChosen;
+                selectUI.Show();
+                return;
+            }
+
+            // Fallback: no selection UI, go directly
+            EnterWithConfig(null);
+        }
+
+        private void OnDungeonChosen(DungeonConfig config)
+        {
+            if (DungeonSelectUI.Instance != null)
+                DungeonSelectUI.Instance.OnDungeonSelected -= OnDungeonChosen;
+
+            EnterWithConfig(config);
+        }
+
+        private void EnterWithConfig(DungeonConfig config)
+        {
             // Show Pick3 if assigned
             if (pick3Controller != null)
             {
-                // Unlock cursor for the pick UI
+                // Store the chosen config on SpireRunState before Pick3
+                var runState = FindFirstObjectByType<SpireRunState>();
+                if (runState != null)
+                    runState.SetDungeonConfig(config);
+
                 Cursor.lockState = CursorLockMode.None;
                 Cursor.visible = true;
                 pick3Controller.Show();
@@ -63,7 +95,7 @@ namespace DungeonGame.Interaction
 
             if (play != null)
             {
-                play.EnterDungeon();
+                play.EnterDungeon(config);
             }
             else
             {
@@ -72,9 +104,14 @@ namespace DungeonGame.Interaction
                 var nm = NetworkManager.Singleton;
                 if (nm != null && nm.IsServer && nm.SceneManager != null)
                 {
+                    var runState = FindFirstObjectByType<SpireRunState>();
+                    if (runState != null)
+                        runState.SetDungeonConfig(config);
+
+                    string scene = config != null ? config.sceneName : dungeonSceneName;
                     var loader = LoadingScreenManager.Instance;
                     if (loader != null) loader.Show();
-                    nm.SceneManager.LoadScene(dungeonSceneName, LoadSceneMode.Single);
+                    nm.SceneManager.LoadScene(scene, LoadSceneMode.Single);
                 }
             }
         }

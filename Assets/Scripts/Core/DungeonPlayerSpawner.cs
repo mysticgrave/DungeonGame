@@ -1,6 +1,9 @@
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using DungeonGame.Items;
 using DungeonGame.SpireGen;
+using DungeonGame.UI;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -55,14 +58,35 @@ namespace DungeonGame.Core
         private void OnClientConnectedDuringGen(ulong clientId)
         {
             if (!SpireLayoutGenerator.IsGenerating) return;
+            StartCoroutine(FreezeClientWhenReady(clientId));
+        }
 
+        private IEnumerator FreezeClientWhenReady(ulong clientId)
+        {
             var nm = NetworkManager.Singleton;
-            if (nm == null || !nm.IsServer) return;
-            if (!nm.ConnectedClients.TryGetValue(clientId, out var client)) return;
-            var player = client.PlayerObject;
-            if (player == null) return;
+            float timeout = 5f;
+            float elapsed = 0f;
+            NetworkClient client = null;
 
-            var cc = player.GetComponent<CharacterController>();
+            while (elapsed < timeout)
+            {
+                if (nm == null || !nm.IsServer) yield break;
+                if (nm.ConnectedClients.TryGetValue(clientId, out client) && client.PlayerObject != null)
+                    break;
+                elapsed += Time.deltaTime;
+                yield return null;
+            }
+
+            if (client?.PlayerObject == null)
+            {
+                Debug.LogWarning($"[DungeonSpawn] Timed out waiting for PlayerObject for client {clientId} during generation.");
+                yield break;
+            }
+
+            // Only freeze if still generating
+            if (!SpireLayoutGenerator.IsGenerating) yield break;
+
+            var cc = client.PlayerObject.GetComponent<CharacterController>();
             if (cc != null) cc.enabled = false;
             Debug.Log($"[DungeonSpawn] Client {clientId} connected during generation — frozen until layout finishes.");
         }
@@ -107,11 +131,34 @@ namespace DungeonGame.Core
                 SnapPlayerToGround(player.transform);
 
                 if (cc != null) cc.enabled = true;
+
+                // Clear inventory and re-equip starting weapon from MetaProgression
+                var handSystem = player.GetComponent<HandSystem>();
+                if (handSystem != null)
+                {
+                    handSystem.ServerClearHands();
+                    handSystem.ReequipStartingWeaponClientRpc();
+                }
+
                 index++;
             }
 
             _repositioned = true;
             Debug.Log($"[DungeonSpawn] Repositioned {index} player(s) to dungeon spawn points.");
+
+            // Hide loading screen now that players are positioned and ready
+            var loader = LoadingScreenManager.Instance;
+            if (loader != null && loader.IsVisible)
+                loader.FadeOutAndHide();
+            HideLoadingScreenClientRpc();
+        }
+
+        [Rpc(SendTo.ClientsAndHost)]
+        private void HideLoadingScreenClientRpc()
+        {
+            var loader = LoadingScreenManager.Instance;
+            if (loader != null && loader.IsVisible)
+                loader.FadeOutAndHide();
         }
 
         private List<Transform> GetSpawnPointsInScene()

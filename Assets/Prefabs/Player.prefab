@@ -309,8 +309,8 @@ MonoBehaviour:
   height: 1.6
   shoulderOffset: 0.6
   lookSensitivity: 0.12
-  minPitch: -20
-  maxPitch: 60
+  minPitch: -80
+  maxPitch: 70
   collisionLayers:
     serializedVersion: 2
     m_Bits: 4294967295
@@ -599,7 +599,7 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   leftHandBone: {fileID: 8447590334032253364}
   rightHandBone: {fileID: 8447558985347523184}
-  pickupRange: 12
+  pickupRange: 9
   pickupRadius: 0
   pickupLayers:
     serializedVersion: 2
@@ -688,7 +688,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DungeonGame.Player.PlayerInteractor
   ShowTopMostFoldoutHeaderGroup: 1
-  interactRange: 4
+  interactRange: 8
   mask:
     serializedVersion: 2
     m_Bits: 4294967295

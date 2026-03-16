@@ -86,6 +86,9 @@ namespace DungeonGame.UI
         {
             if (_handSystem == null) return;
 
+            // Hide during loading screens (OnGUI draws over Canvas elements)
+            if (LoadingScreenManager.Instance != null && LoadingScreenManager.Instance.IsVisible) return;
+
             EnsureStyles();
 
             float totalWidth = slotSize * 2f + slotSpacing;

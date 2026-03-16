@@ -378,8 +378,28 @@ namespace DungeonGame.Items
             if (meta == null) return;
 
             string equippedId = meta.GetEquippedWeaponId();
+
+            // If no weapon equipped, auto-unlock and equip the first free weapon from ItemRegistry
+            if (string.IsNullOrEmpty(equippedId) || !meta.IsWeaponUnlocked(equippedId))
+            {
+                var allItems = ItemRegistry.GetAll();
+                if (allItems != null)
+                {
+                    foreach (var item in allItems)
+                    {
+                        if (item != null && item.unlockCostGold == 0 && item.attackType != WeaponAttackType.None)
+                        {
+                            meta.UnlockWeapon(item.weaponId, 0);
+                            meta.SetEquippedWeaponId(item.weaponId);
+                            equippedId = item.weaponId;
+                            Debug.Log($"[HandSystem] Auto-equipped free starter weapon: {item.displayName}");
+                            break;
+                        }
+                    }
+                }
+            }
+
             if (string.IsNullOrEmpty(equippedId)) return;
-            if (!meta.IsWeaponUnlocked(equippedId)) return;
 
             RequestSpawnWeaponServerRpc(equippedId);
         }
@@ -511,6 +531,30 @@ namespace DungeonGame.Items
                 : config.primaryAttackTrigger;
             if (!string.IsNullOrEmpty(triggerName))
                 PlayAnimClientRpc(Animator.StringToHash(triggerName));
+        }
+
+        /// <summary>
+        /// Server-only: clears both hands without dropping WorldItems.
+        /// Used when entering a dungeon to reset inventory.
+        /// </summary>
+        public void ServerClearHands()
+        {
+            if (!IsServer) return;
+            _leftItemIndex.Value = -1;
+            _rightItemIndex.Value = -1;
+            _leftWorldItemNetId.Value = 0;
+            _rightWorldItemNetId.Value = 0;
+        }
+
+        /// <summary>
+        /// Server calls this to tell the owning client to re-request their
+        /// MetaProgression starting weapon after inventory has been cleared.
+        /// </summary>
+        [Rpc(SendTo.Owner)]
+        public void ReequipStartingWeaponClientRpc()
+        {
+            _metaWeaponRequested = false;
+            RequestMetaWeapon();
         }
 
         [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Owner)]
@@ -656,26 +700,50 @@ namespace DungeonGame.Items
             if (itemIndex < 0) return;
 
             var config = ItemRegistry.GetByIndex(itemIndex);
-            if (config == null) return;
+            if (config == null)
+            {
+                Debug.LogWarning($"[HandSystem] UpdateVisual({hand}): itemIndex={itemIndex} but ItemRegistry returned null. Is the item registered?");
+                return;
+            }
 
             // For two-handed items, only show visual on right hand bone
             if (config.grip == ItemGrip.TwoHanded && hand == Hand.Left) return;
 
             var prefab = config.heldVisualPrefab;
-            if (prefab == null) return;
+            if (prefab == null)
+            {
+                Debug.LogWarning($"[HandSystem] UpdateVisual({hand}): '{config.displayName}' has no heldVisualPrefab assigned.");
+                return;
+            }
 
             Transform bone = hand == Hand.Left ? leftHandBone : rightHandBone;
-            if (bone == null) return;
+            if (bone == null)
+            {
+                Debug.LogWarning($"[HandSystem] UpdateVisual({hand}): {hand} hand bone is not assigned on the player prefab.");
+                return;
+            }
+
+            // Use per-hand offsets; left falls back to right if left fields are zero
+            bool useLeft = hand == Hand.Left;
+            var pos = useLeft && config.leftHeldPositionOffset != Vector3.zero
+                ? config.leftHeldPositionOffset : config.heldPositionOffset;
+            var rot = useLeft && config.leftHeldRotationOffset != Vector3.zero
+                ? config.leftHeldRotationOffset : config.heldRotationOffset;
+            var scl = useLeft && config.leftHeldScale != Vector3.zero
+                ? config.leftHeldScale
+                : (config.heldScale == Vector3.zero ? Vector3.one : config.heldScale);
 
             var instance = Instantiate(prefab, bone).transform;
-            instance.localPosition = config.heldPositionOffset;
-            instance.localRotation = Quaternion.Euler(config.heldRotationOffset);
-            instance.localScale = Vector3.one;
+            instance.localPosition = pos;
+            instance.localRotation = Quaternion.Euler(rot);
+            instance.localScale = scl;
 
             if (hand == Hand.Left)
                 _leftVisualInstance = instance;
             else
                 _rightVisualInstance = instance;
+
+            Debug.Log($"[HandSystem] UpdateVisual({hand}): Spawned '{config.displayName}' visual on {bone.name}");
         }
 
         private void DestroyVisual(Hand hand)

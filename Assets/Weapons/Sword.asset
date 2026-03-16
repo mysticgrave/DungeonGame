@@ -14,7 +14,17 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DungeonGame.Weapons.WeaponConfig
   weaponId: sword
   displayName: Sword
+  icon: {fileID: 0}
   attackType: 0
+  grip: 0
+  worldPrefab: {fileID: 1631607032641582, guid: f2f18c7ed719c36448aaa0d7d9acbe0e, type: 3}
+  heldVisualPrefab: {fileID: 0}
+  heldPositionOffset: {x: 0, y: 0, z: 0}
+  heldRotationOffset: {x: 0, y: 0, z: 0}
+  heldScale: {x: 1, y: 1, z: 1}
+  leftHeldPositionOffset: {x: 0, y: 0, z: 0}
+  leftHeldRotationOffset: {x: 0, y: 0, z: 0}
+  leftHeldScale: {x: 0, y: 0, z: 0}
   damage: 2
   range: 2.5
   cooldown: 0.6
@@ -22,4 +32,11 @@ MonoBehaviour:
   hitLayers:
     serializedVersion: 2
     m_Bits: 0
+  primaryAttackTrigger: attack_sword_01
+  secondaryActionTrigger: 
+  useFullBodyAttack: 0
+  canBeThrown: 1
+  throwForce: 12
+  throwUpAngle: 15
+  throwDamage: 0
   unlockCostGold: 0

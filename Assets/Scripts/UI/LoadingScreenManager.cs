@@ -56,7 +56,8 @@ namespace DungeonGame.UI
         {
             SubscribeToSceneEvents();
             SceneManager.sceneLoaded += OnUnitySceneLoaded;
-            NavMeshBakeOnLayout.OnNavMeshBuilt += OnDungeonNavMeshBuilt;
+            // Loading screen is now hidden by DungeonPlayerSpawner after player repositioning.
+            // NavMeshBakeOnLayout.OnNavMeshBuilt += OnDungeonNavMeshBuilt;
         }
 
         private void OnEnable()
@@ -81,7 +82,7 @@ namespace DungeonGame.UI
         private void OnDisable()
         {
             SceneManager.sceneLoaded -= OnUnitySceneLoaded;
-            NavMeshBakeOnLayout.OnNavMeshBuilt -= OnDungeonNavMeshBuilt;
+            // NavMeshBakeOnLayout.OnNavMeshBuilt -= OnDungeonNavMeshBuilt;
             var nm = NetworkManager.Singleton;
             if (nm != null && nm.SceneManager != null)
                 nm.SceneManager.OnSceneEvent -= HandleSceneEvent;
@@ -147,7 +148,10 @@ namespace DungeonGame.UI
                 case SceneEventType.LoadEventCompleted:
                 case SceneEventType.SynchronizeComplete:
                     string sceneName = sceneEvent.SceneName;
-                    if (!string.IsNullOrEmpty(sceneName) && sceneName == dungeonSceneName)
+                    // SynchronizeComplete may not have SceneName populated; fall back to active scene
+                    if (string.IsNullOrEmpty(sceneName))
+                        sceneName = SceneManager.GetActiveScene().name;
+                    if (sceneName == dungeonSceneName)
                     {
                         _waitingForDungeonGen = true;
                         _dungeonWaitStarted = Time.realtimeSinceStartup;
@@ -184,6 +188,9 @@ namespace DungeonGame.UI
                 statusText.text = message;
             if (_cancelButton != null) _cancelButton.gameObject.SetActive(showCancelButton);
         }
+
+        /// <summary>True while the loading screen is showing (including during fade-out).</summary>
+        public bool IsVisible => panel != null && panel.activeSelf;
 
         /// <summary>Instantly hide the loading screen.</summary>
         public void Hide()

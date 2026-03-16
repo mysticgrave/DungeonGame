@@ -122,6 +122,7 @@ namespace DungeonGame.Player
         {
             if (_currentTarget == null || string.IsNullOrEmpty(_currentPrompt)) return;
             if (Event.current.type != EventType.Repaint) return;
+            if (LoadingScreenManager.Instance != null && LoadingScreenManager.Instance.IsVisible) return;
 
             EnsureStyles();
 
