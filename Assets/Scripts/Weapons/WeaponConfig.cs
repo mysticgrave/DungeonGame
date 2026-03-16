@@ -26,6 +26,8 @@ namespace DungeonGame.Weapons
         public string weaponId = "sword";
 
         public string displayName = "Sword";
+        [Tooltip("Icon shown in the hand-slot HUD. Optional.")]
+        public Sprite icon;
         public WeaponAttackType attackType = WeaponAttackType.Melee;
 
         [Header("Hand System")]

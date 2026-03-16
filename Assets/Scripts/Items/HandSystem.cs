@@ -30,8 +30,11 @@ namespace DungeonGame.Items
         [SerializeField] private float dropForwardOffset = 1f;
         [SerializeField] private float dropUpOffset = 0.5f;
 
+        [Header("Debug")]
+        [SerializeField] private bool debugLog;
+
         // --- Networked state (server-authoritative) ---
-        // Item identity as WeaponRegistry index. -1 = empty.
+        // Item identity as ItemRegistry index. -1 = empty.
         private readonly NetworkVariable<int> _leftItemIndex = new(-1,
             NetworkVariableReadPermission.Everyone,
             NetworkVariableWritePermission.Server);
@@ -70,16 +73,19 @@ namespace DungeonGame.Items
             get
             {
                 if (_leftItemIndex.Value < 0) return false;
-                var config = WeaponRegistry.GetByIndex(_leftItemIndex.Value);
+                var config = ItemRegistry.GetByIndex(_leftItemIndex.Value);
                 return config != null && config.grip == ItemGrip.TwoHanded;
             }
         }
 
         public WeaponConfig LeftItem =>
-            _leftItemIndex.Value >= 0 ? WeaponRegistry.GetByIndex(_leftItemIndex.Value) : null;
+            _leftItemIndex.Value >= 0 ? ItemRegistry.GetByIndex(_leftItemIndex.Value) : null;
 
         public WeaponConfig RightItem =>
-            _rightItemIndex.Value >= 0 ? WeaponRegistry.GetByIndex(_rightItemIndex.Value) : null;
+            _rightItemIndex.Value >= 0 ? ItemRegistry.GetByIndex(_rightItemIndex.Value) : null;
+
+        /// <summary>Fired on all clients when either hand changes. Args: this HandSystem.</summary>
+        public event System.Action<HandSystem> OnHandsChanged;
 
         // ────────────────────── Lifecycle ──────────────────────
 
@@ -100,6 +106,9 @@ namespace DungeonGame.Items
             UpdateVisual(Hand.Left, _leftItemIndex.Value);
             UpdateVisual(Hand.Right, _rightItemIndex.Value);
             UpdateTwoHandedMode();
+
+            if (ItemRegistry.Instance == null)
+                Debug.LogWarning("[HandSystem] ItemRegistry not found! Add an ItemRegistry component to a scene GameObject and populate it.", this);
 
             // Owner requests their MetaProgression starting weapon
             if (IsOwner && !_metaWeaponRequested)
@@ -202,15 +211,32 @@ namespace DungeonGame.Items
         private void TryPickup(Hand hand)
         {
             var camT = _cameraRig != null ? _cameraRig.CameraTransform : null;
-            if (camT == null) return;
+            if (camT == null)
+            {
+                if (debugLog) Debug.Log("[HandSystem] TryPickup: no camera transform", this);
+                return;
+            }
 
             var ray = new Ray(camT.position, camT.forward);
             if (!Physics.Raycast(ray, out var hit, pickupRange, pickupLayers, QueryTriggerInteraction.Ignore))
+            {
+                if (debugLog) Debug.Log($"[HandSystem] TryPickup: raycast missed (range={pickupRange}, layers={pickupLayers.value})", this);
                 return;
+            }
 
             var worldItem = hit.collider.GetComponentInParent<WorldItem>();
-            if (worldItem == null || worldItem.IsHeld) return;
+            if (worldItem == null)
+            {
+                if (debugLog) Debug.Log($"[HandSystem] TryPickup: hit '{hit.collider.name}' but no WorldItem on it or parents", this);
+                return;
+            }
+            if (worldItem.IsHeld)
+            {
+                if (debugLog) Debug.Log($"[HandSystem] TryPickup: '{worldItem.name}' already held", this);
+                return;
+            }
 
+            if (debugLog) Debug.Log($"[HandSystem] TryPickup: requesting '{worldItem.name}' into {hand} hand", this);
             PickupServerRpc((int)hand, worldItem.NetworkObject.NetworkObjectId);
         }
 
@@ -223,8 +249,8 @@ namespace DungeonGame.Items
             float nextTime = hand == Hand.Left ? _nextAttackTimeLeft : _nextAttackTimeRight;
             if (Time.time < nextTime) return;
 
-            var config = WeaponRegistry.GetByIndex(itemIndex);
-            if (config == null) return;
+            var config = ItemRegistry.GetByIndex(itemIndex);
+            if (config == null || config.damage <= 0) return; // non-weapon items don't attack
 
             // Set client-side cooldown
             if (hand == Hand.Left)
@@ -277,18 +303,32 @@ namespace DungeonGame.Items
         [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Owner)]
         private void PickupServerRpc(int hand, ulong worldItemNetId)
         {
-            // Validate WorldItem
             if (!NetworkManager.SpawnManager.SpawnedObjects.TryGetValue(worldItemNetId, out var itemNetObj))
+            {
+                if (debugLog) Debug.Log($"[HandSystem] PickupRpc: netId {worldItemNetId} not found", this);
                 return;
+            }
 
             var worldItem = itemNetObj.GetComponent<WorldItem>();
-            if (worldItem == null || worldItem.IsHeld) return;
+            if (worldItem == null || worldItem.IsHeld)
+            {
+                if (debugLog) Debug.Log($"[HandSystem] PickupRpc: WorldItem null or already held", this);
+                return;
+            }
 
             var config = worldItem.ItemConfig;
-            if (config == null) return;
+            if (config == null)
+            {
+                if (debugLog) Debug.Log($"[HandSystem] PickupRpc: '{worldItem.name}' has no ItemConfig", this);
+                return;
+            }
 
-            int registryIndex = WeaponRegistry.IndexOf(config);
-            if (registryIndex < 0) return;
+            int registryIndex = ItemRegistry.IndexOf(config);
+            if (registryIndex < 0)
+            {
+                Debug.LogWarning($"[HandSystem] PickupRpc: '{config.displayName}' NOT in ItemRegistry! Add it.", this);
+                return;
+            }
 
             var handSlot = (Hand)hand;
 
@@ -326,6 +366,7 @@ namespace DungeonGame.Items
             }
 
             worldItem.ServerPickup(OwnerClientId);
+            if (debugLog) Debug.Log($"[HandSystem] PickupRpc: SUCCESS '{config.displayName}' -> {(Hand)hand} (idx={registryIndex})", this);
         }
 
         [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Owner)]
@@ -343,8 +384,8 @@ namespace DungeonGame.Items
             int serverIndex = handSlot == Hand.Left ? _leftItemIndex.Value : _rightItemIndex.Value;
             if (serverIndex != expectedItemIndex || serverIndex < 0) return;
 
-            var config = WeaponRegistry.GetByIndex(serverIndex);
-            if (config == null) return;
+            var config = ItemRegistry.GetByIndex(serverIndex);
+            if (config == null || config.damage <= 0) return; // non-weapon items don't attack
 
             // Server-side cooldown
             float nextTime = handSlot == Hand.Left ? _nextAttackTimeLeft : _nextAttackTimeRight;
@@ -389,11 +430,18 @@ namespace DungeonGame.Items
         [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Owner)]
         private void RequestSpawnWeaponServerRpc(string weaponId)
         {
-            var config = WeaponRegistry.Get(weaponId);
+            // Try ItemRegistry first, fall back to WeaponRegistry for meta weapons
+            var config = ItemRegistry.Get(weaponId);
+            if (config == null)
+                config = WeaponRegistry.Get(weaponId);
             if (config == null) return;
 
-            int registryIndex = WeaponRegistry.IndexOf(config);
-            if (registryIndex < 0) return;
+            int registryIndex = ItemRegistry.IndexOf(config);
+            if (registryIndex < 0)
+            {
+                Debug.LogWarning($"[HandSystem] Meta weapon '{weaponId}' not in ItemRegistry. Add it there too.", this);
+                return;
+            }
 
             if (config.grip == ItemGrip.TwoHanded)
             {
@@ -440,7 +488,7 @@ namespace DungeonGame.Items
 
             if (itemIndex < 0) return;
 
-            var config = WeaponRegistry.GetByIndex(itemIndex);
+            var config = ItemRegistry.GetByIndex(itemIndex);
             bool isTwoHanded = config != null && config.grip == ItemGrip.TwoHanded;
 
             // Calculate drop position
@@ -514,12 +562,14 @@ namespace DungeonGame.Items
         {
             UpdateVisual(Hand.Left, cur);
             UpdateTwoHandedMode();
+            OnHandsChanged?.Invoke(this);
         }
 
         private void OnRightItemChanged(int prev, int cur)
         {
             UpdateVisual(Hand.Right, cur);
             UpdateTwoHandedMode();
+            OnHandsChanged?.Invoke(this);
         }
 
         private void UpdateVisual(Hand hand, int itemIndex)
@@ -528,7 +578,7 @@ namespace DungeonGame.Items
 
             if (itemIndex < 0) return;
 
-            var config = WeaponRegistry.GetByIndex(itemIndex);
+            var config = ItemRegistry.GetByIndex(itemIndex);
             if (config == null) return;
 
             // For two-handed items, only show visual on right hand bone
