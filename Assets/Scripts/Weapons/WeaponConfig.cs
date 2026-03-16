@@ -4,6 +4,7 @@ namespace DungeonGame.Weapons
 {
     public enum WeaponAttackType
     {
+        None,   // Non-weapon items (torches, potions, etc.) — no combat, use for light/consume/etc.
         Melee,
         Ranged,
         Magic

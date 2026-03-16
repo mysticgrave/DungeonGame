@@ -17,6 +17,12 @@ namespace DungeonGame.UI
 
         /// <summary>
         /// Loads the dungeon scene. Host-only. Wire this to your Play / Enter Dungeon button's On Click.
+        /// Alias: LoadDungeonScene for Pick3Controller compatibility.
+        /// </summary>
+        public void LoadDungeonScene() => EnterDungeon();
+
+        /// <summary>
+        /// Loads the dungeon scene. Host-only. Wire this to your Play / Enter Dungeon button's On Click.
         /// </summary>
         public void EnterDungeon()
         {

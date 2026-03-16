@@ -3,6 +3,7 @@ using DungeonGame.Combat;
 using DungeonGame.Items;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 namespace DungeonGame.UI
 {
@@ -13,9 +14,6 @@ namespace DungeonGame.UI
     /// </summary>
     public class CombatDebugHUD : NetworkBehaviour
     {
-        [Header("Toggle")]
-        [SerializeField] private KeyCode toggleKey = KeyCode.F3;
-
         private bool _visible;
         private bool _isLocalOwner;
         private GUIStyle _boxStyle;
@@ -85,8 +83,9 @@ namespace DungeonGame.UI
         private void Update()
         {
             if (!_isLocalOwner) return;
+            if (Keyboard.current == null) return;
 
-            if (Input.GetKeyDown(toggleKey))
+            if (Keyboard.current.f3Key.wasPressedThisFrame)
             {
                 _visible = !_visible;
                 ItemAttackExecutor.DebugDraw = _visible;

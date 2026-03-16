@@ -63,9 +63,15 @@ namespace DungeonGame.Items
         {
             if (_rb != null)
             {
-                _rb.isKinematic = held;
                 if (held)
-                    _rb.linearVelocity = Vector3.zero;
+                {
+                    if (!_rb.isKinematic)
+                    {
+                        _rb.linearVelocity = Vector3.zero;
+                        _rb.angularVelocity = Vector3.zero;
+                    }
+                }
+                _rb.isKinematic = held;
             }
 
             foreach (var col in _colliders)
@@ -85,8 +91,12 @@ namespace DungeonGame.Items
 
             if (_rb != null)
             {
+                if (!_rb.isKinematic)
+                {
+                    _rb.linearVelocity = Vector3.zero;
+                    _rb.angularVelocity = Vector3.zero;
+                }
                 _rb.isKinematic = true;
-                _rb.linearVelocity = Vector3.zero;
             }
         }
 

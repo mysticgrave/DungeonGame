@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using DungeonGame.Meta;
 using Unity.Netcode;
 using UnityEngine;
@@ -17,6 +19,12 @@ namespace DungeonGame.Run
 
         [Header("Scenes")]
         [SerializeField] private string townSceneName = "Town";
+
+        [Header("Pick-3 / Run Modifiers")]
+        [Tooltip("Card pool for Pick-3 before dungeon. Also used to resolve modifier IDs.")]
+        [SerializeField] private DungeonCardConfig[] cardPool = Array.Empty<DungeonCardConfig>();
+
+        private readonly List<string> _activeModifierIds = new();
 
         public int FloorsPerSegment => floorsPerSegment;
 
@@ -89,6 +97,7 @@ namespace DungeonGame.Run
             // Wipe run state so the next Spire entry is a fresh run (fail/evac/victory = run over).
             FloorNet.Value = 0;
             HighestUnlockedSegmentNet.Value = 0;
+            _activeModifierIds.Clear();
 
             if (NetworkManager.Singleton != null && NetworkManager.Singleton.SceneManager != null
                 && SceneManager.GetActiveScene().name != townSceneName)
@@ -124,6 +133,46 @@ namespace DungeonGame.Run
         {
             if (!IsServer) return;
             EndRunAndReturnToTown(RunOutcome.Evac);
+        }
+
+        // --- Pick-3 / Run modifiers ---
+
+        /// <summary>Shuffled cards from pool for Pick-3 UI. Returns up to count cards.</summary>
+        public List<DungeonCardConfig> GetShuffledPool(int count)
+        {
+            var valid = cardPool != null ? cardPool.Where(c => c != null && c.IsValid()).ToList() : new List<DungeonCardConfig>();
+            if (valid.Count == 0) return new List<DungeonCardConfig>();
+            var shuffled = valid.OrderBy(_ => UnityEngine.Random.value).Take(count).ToList();
+            return shuffled;
+        }
+
+        /// <summary>Server: set run modifiers from Pick-3 selection. Pass null to clear/skip.</summary>
+        public void SetRunModifiers(List<string> ids)
+        {
+            if (!IsServer) return;
+            _activeModifierIds.Clear();
+            if (ids != null) _activeModifierIds.AddRange(ids);
+        }
+
+        /// <summary>Active modifier cards for this run (Pick-3 + level-up picks).</summary>
+        public List<DungeonCardConfig> GetActiveCards()
+        {
+            var result = new List<DungeonCardConfig>();
+            if (cardPool == null) return result;
+            foreach (string id in _activeModifierIds)
+            {
+                var c = cardPool.FirstOrDefault(x => x != null && x.id == id);
+                if (c != null) result.Add(c);
+            }
+            return result;
+        }
+
+        /// <summary>Server: add a level-up card choice to the run.</summary>
+        public void AddLevelUpModifier(string id)
+        {
+            if (!IsServer) return;
+            if (string.IsNullOrEmpty(id)) return;
+            if (!_activeModifierIds.Contains(id)) _activeModifierIds.Add(id);
         }
     }
 }

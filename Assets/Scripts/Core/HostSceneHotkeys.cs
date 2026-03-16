@@ -1,6 +1,5 @@
 using Unity.Netcode;
 using UnityEngine;
-using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 
 namespace DungeonGame.Core
@@ -25,24 +24,8 @@ namespace DungeonGame.Core
 
         private void Update()
         {
-            if (Keyboard.current == null) return;
-
-            var nm = NetworkManager.Singleton;
-            if (nm == null || !nm.IsListening) return;
-
-            // Only host/server can initiate network scene loads.
-            if (!nm.IsServer) return;
-            if (nm.SceneManager == null) return;
-
-            if (Keyboard.current.f5Key.wasPressedThisFrame)
-            {
-                LoadNetworkScene(spireSceneName);
-            }
-
-            if (Keyboard.current.f6Key.wasPressedThisFrame)
-            {
-                LoadNetworkScene(townSceneName);
-            }
+            // F5/F6 scene hotkeys removed to avoid conflicting with other F-key bindings.
+            // Use UI or a different input scheme for scene switching.
         }
 
         private void LoadNetworkScene(string sceneName)

@@ -30,10 +30,15 @@ namespace DungeonGame.Combat
         /// </summary>
         public static event Action<Vector3, DamageInfo> OnAnyDamaged;
 
+        /// <summary>Static event fired when any NetworkHealth dies. Args: (health, killerClientId). Killer is 0 if no dealer.</summary>
+        public static event Action<NetworkHealth, ulong> OnAnyDiedStatic;
+
         private readonly NetworkVariable<int> hpNet = new(
             1,
             NetworkVariableReadPermission.Everyone,
             NetworkVariableWritePermission.Server);
+
+        private ulong _lastAttackerClientId;
 
         public override void OnNetworkSpawn()
         {
@@ -60,6 +65,7 @@ namespace DungeonGame.Combat
             if (cur <= 0)
             {
                 OnDied?.Invoke();
+                OnAnyDiedStatic?.Invoke(this, _lastAttackerClientId);
             }
         }
 
@@ -70,6 +76,7 @@ namespace DungeonGame.Combat
             if (info.Amount <= 0) return;
             if (hpNet.Value <= 0) return;
 
+            _lastAttackerClientId = info.AttackerClientId;
             hpNet.Value = Mathf.Max(0, hpNet.Value - info.Amount);
             OnDamaged?.Invoke(info);
 

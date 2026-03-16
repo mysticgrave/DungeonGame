@@ -20,6 +20,7 @@ namespace DungeonGame.UI
         [Header("UI")]
         [SerializeField] private GameObject panel;
         [SerializeField] private Button resumeButton;
+        [SerializeField] private Button enterDungeonButton;
         [SerializeField] private Button backToTownButton;
         [SerializeField] private Button settingsButton;
         [SerializeField] private Button quitButton;
@@ -48,6 +49,7 @@ namespace DungeonGame.UI
             if (panel == null) EnsureUI();
             if (panel != null) panel.SetActive(false);
             if (resumeButton != null) { resumeButton.onClick.RemoveAllListeners(); resumeButton.onClick.AddListener(Resume); }
+            if (enterDungeonButton != null) { enterDungeonButton.onClick.RemoveAllListeners(); enterDungeonButton.onClick.AddListener(OnEnterDungeonClicked); }
             if (backToTownButton != null) { backToTownButton.onClick.RemoveAllListeners(); backToTownButton.onClick.AddListener(BackToTown); }
             if (quitButton != null) { quitButton.onClick.RemoveAllListeners(); quitButton.onClick.AddListener(QuitToMainMenu); }
             if (settingsButton != null) { settingsButton.onClick.RemoveAllListeners(); settingsButton.onClick.AddListener(OnSettingsClicked); }
@@ -88,19 +90,31 @@ namespace DungeonGame.UI
         {
             if (!IsPauseAllowed()) return;
             IsPaused = true;
-            UpdateBackToTownVisibility();
+            UpdateContextualButtons();
             if (panel != null) panel.SetActive(true);
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;
         }
 
-        private void UpdateBackToTownVisibility()
+        private void UpdateContextualButtons()
         {
-            if (backToTownButton == null) return;
             var scene = SceneManager.GetActiveScene().name;
             var nm = NetworkManager.Singleton;
-            bool canShow = scene == dungeonSceneName && nm != null && nm.IsServer;
-            backToTownButton.gameObject.SetActive(canShow);
+            bool isHost = nm != null && nm.IsServer;
+
+            // "Back to Town" — only in dungeon, host only
+            if (backToTownButton != null)
+            {
+                bool canShowBack = scene == dungeonSceneName && isHost;
+                backToTownButton.gameObject.SetActive(canShowBack);
+            }
+
+            // "Enter Dungeon" — only in Town, host only
+            if (enterDungeonButton != null)
+            {
+                bool canShowEnter = scene == townSceneName && isHost;
+                enterDungeonButton.gameObject.SetActive(canShowEnter);
+            }
         }
 
         public void Resume()
@@ -109,6 +123,21 @@ namespace DungeonGame.UI
             if (panel != null) panel.SetActive(false);
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
+        }
+
+        private void OnEnterDungeonClicked()
+        {
+            Resume(); // close pause menu and re-lock cursor
+
+            var townPlay = FindFirstObjectByType<TownPlayController>();
+            if (townPlay != null)
+            {
+                townPlay.EnterDungeon();
+            }
+            else
+            {
+                Debug.LogWarning("[PauseMenu] No TownPlayController found in scene.");
+            }
         }
 
         private void OnSettingsClicked()
@@ -150,10 +179,14 @@ namespace DungeonGame.UI
             rt.offsetMin = rt.offsetMax = Vector2.zero;
             panel = panelGo;
 
-            resumeButton = CreateButton(panel.transform, "Resume", new Vector2(0.35f, 0.68f), new Vector2(0.65f, 0.82f), Resume);
-            backToTownButton = CreateButton(panel.transform, "Back to Town", new Vector2(0.35f, 0.5f), new Vector2(0.65f, 0.64f), BackToTown);
-            settingsButton = CreateButton(panel.transform, "Settings", new Vector2(0.35f, 0.32f), new Vector2(0.65f, 0.46f), OnSettingsClicked);
-            quitButton = CreateButton(panel.transform, "Quit to Main Menu", new Vector2(0.35f, 0.14f), new Vector2(0.65f, 0.28f), QuitToMainMenu);
+            // 5 buttons stacked vertically (top to bottom): Resume, Enter Dungeon, Back to Town, Settings, Quit
+            resumeButton       = CreateButton(panel.transform, "Resume",            new Vector2(0.35f, 0.78f), new Vector2(0.65f, 0.90f), Resume);
+            enterDungeonButton = CreateButton(panel.transform, "Enter Dungeon",     new Vector2(0.35f, 0.63f), new Vector2(0.65f, 0.75f), OnEnterDungeonClicked);
+            backToTownButton   = CreateButton(panel.transform, "Back to Town",      new Vector2(0.35f, 0.48f), new Vector2(0.65f, 0.60f), BackToTown);
+            settingsButton     = CreateButton(panel.transform, "Settings",          new Vector2(0.35f, 0.33f), new Vector2(0.65f, 0.45f), OnSettingsClicked);
+            quitButton         = CreateButton(panel.transform, "Quit to Main Menu", new Vector2(0.35f, 0.08f), new Vector2(0.65f, 0.20f), QuitToMainMenu);
+            // Hide contextual buttons by default
+            if (enterDungeonButton != null) enterDungeonButton.gameObject.SetActive(false);
             if (backToTownButton != null) backToTownButton.gameObject.SetActive(false);
         }
 

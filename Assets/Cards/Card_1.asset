@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fc0b66b04a0905e479c9f203bdd05b23, type: 3}
+  m_Name: Card_1
+  m_EditorClassIdentifier: Assembly-CSharp::DungeonGame.Run.DungeonCardConfig
+  id: mod_horde
+  displayName: Horde
+  description: More enemies per spawn point.
+  icon: {fileID: 0}
+  customStatLines: 
+  maxAliveMultiplier: 1
+  respawnSpeedMultiplier: 1
+  damageDealtMultiplier: 1
+  damageTakenMultiplier: 1
+  goldMultiplier: 1
+  moodSwingMultiplier: 1

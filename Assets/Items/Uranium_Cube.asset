@@ -1,0 +1,37 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 554caee0186879f40bf2c36efdc61117, type: 3}
+  m_Name: Uranium_Cube
+  m_EditorClassIdentifier: Assembly-CSharp::DungeonGame.Weapons.ItemConfig
+  weaponId: Uranium Cube
+  displayName: Uranium Cube
+  attackType: 0
+  grip: 0
+  worldPrefab: {fileID: 1841840035136554888, guid: 20c71e137db022748a429d1ed94f2cb2, type: 3}
+  heldVisualPrefab: {fileID: 1841840035136554888, guid: 20c71e137db022748a429d1ed94f2cb2, type: 3}
+  heldPositionOffset: {x: 0, y: 0, z: 0}
+  heldRotationOffset: {x: 0, y: 0, z: 0}
+  damage: 2
+  range: 2.5
+  cooldown: 0.6
+  hitRadius: 0.5
+  hitLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  primaryAttackTrigger: 
+  secondaryActionTrigger: 
+  useFullBodyAttack: 0
+  canBeThrown: 1
+  throwForce: 12
+  throwUpAngle: 15
+  throwDamage: 0
+  unlockCostGold: 0

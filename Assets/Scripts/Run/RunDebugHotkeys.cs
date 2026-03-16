@@ -1,49 +1,16 @@
-using Unity.Netcode;
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 namespace DungeonGame.Run
 {
     /// <summary>
-    /// MVP hotkeys to simulate spire progression.
-    /// 
-    /// Host-only:
-    /// - F10: +1 floor
-    /// - F11: +5 floors
-    /// - F12: Evac (knock back 1 segment) + return to Town
+    /// Placeholder for run debug hotkeys. F10/F11/F12 floor/evac removed.
+    /// Use UI or a different input scheme for progression. Can be removed from RunState prefab if unused.
     /// </summary>
     public class RunDebugHotkeys : MonoBehaviour
     {
-        private SpireRunState run;
-
-        private void Awake()
-        {
-            run = GetComponent<SpireRunState>();
-            if (run == null) run = FindFirstObjectByType<SpireRunState>();
-        }
-
         private void Update()
         {
-            if (Keyboard.current == null) return;
-
-            var nm = NetworkManager.Singleton;
-            if (nm == null || !nm.IsListening || !nm.IsServer) return;
-            if (run == null) return;
-
-            if (Keyboard.current.f10Key.wasPressedThisFrame)
-            {
-                run.AddFloorRpc(1);
-            }
-
-            if (Keyboard.current.f11Key.wasPressedThisFrame)
-            {
-                run.AddFloorRpc(5);
-            }
-
-            if (Keyboard.current.f12Key.wasPressedThisFrame)
-            {
-                run.EvacRpc();
-            }
+            // Hotkeys removed to avoid F-key conflicts.
         }
     }
 }

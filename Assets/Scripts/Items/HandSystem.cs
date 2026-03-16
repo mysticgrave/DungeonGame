@@ -23,7 +23,10 @@ namespace DungeonGame.Items
         [SerializeField] private Transform rightHandBone;
 
         [Header("Pickup")]
-        [SerializeField] private float pickupRange = 3f;
+        [Tooltip("Max distance for pickup raycast. Third-person cameras typically need 5–6 (3 is too short).")]
+        [SerializeField] private float pickupRange = 6f;
+        [Tooltip("If > 0, use SphereCast instead of Raycast. Helps with small colliders. Try 0.15–0.25 if raycast misses.")]
+        [SerializeField] private float pickupRadius = 0f;
         [SerializeField] private LayerMask pickupLayers = -1;
 
         [Header("Drop / Throw")]
@@ -31,10 +34,13 @@ namespace DungeonGame.Items
         [SerializeField] private float dropUpOffset = 0.5f;
 
         [Header("Debug")]
-        [SerializeField] private bool debugLog;
+        [Tooltip("Log pickup failures to Console. Enable to diagnose why pickup fails.")]
+        [SerializeField] private bool debugPickup = true;
+        [Tooltip("Draw pickup ray every frame when hand is empty. Cyan = ray. Enable Gizmos in Scene/Game view.")]
+        [SerializeField] private bool debugDrawRayEveryFrame = true;
 
         // --- Networked state (server-authoritative) ---
-        // Item identity as ItemRegistry index. -1 = empty.
+        // Item identity as ItemRegistry index. -1 = empty. ItemRegistry holds ALL holdable items (weapons, torches, potions, etc.).
         private readonly NetworkVariable<int> _leftItemIndex = new(-1,
             NetworkVariableReadPermission.Everyone,
             NetworkVariableWritePermission.Server);
@@ -63,6 +69,7 @@ namespace DungeonGame.Items
         private float _nextAttackTimeLeft;
         private float _nextAttackTimeRight;
         private bool _metaWeaponRequested;
+        private static bool _itemRegistryWarningLogged;
 
         // --- Computed properties ---
         public bool LeftHandEmpty => _leftItemIndex.Value < 0;
@@ -84,9 +91,6 @@ namespace DungeonGame.Items
         public WeaponConfig RightItem =>
             _rightItemIndex.Value >= 0 ? ItemRegistry.GetByIndex(_rightItemIndex.Value) : null;
 
-        /// <summary>Fired on all clients when either hand changes. Args: this HandSystem.</summary>
-        public event System.Action<HandSystem> OnHandsChanged;
-
         // ────────────────────── Lifecycle ──────────────────────
 
         public override void OnNetworkSpawn()
@@ -102,13 +106,13 @@ namespace DungeonGame.Items
             _leftItemIndex.OnValueChanged += OnLeftItemChanged;
             _rightItemIndex.OnValueChanged += OnRightItemChanged;
 
+            if (IsOwner && ItemRegistry.Instance == null)
+                Debug.LogWarning("[HandSystem] ItemRegistry not in scene! Pickup will fail. Add an empty GameObject with ItemRegistry component to Town (or first-loaded scene), and add all holdable item configs to its Items list.");
+
             // Apply current state for late joiners
             UpdateVisual(Hand.Left, _leftItemIndex.Value);
             UpdateVisual(Hand.Right, _rightItemIndex.Value);
             UpdateTwoHandedMode();
-
-            if (ItemRegistry.Instance == null)
-                Debug.LogWarning("[HandSystem] ItemRegistry not found! Add an ItemRegistry component to a scene GameObject and populate it.", this);
 
             // Owner requests their MetaProgression starting weapon
             if (IsOwner && !_metaWeaponRequested)
@@ -204,6 +208,29 @@ namespace DungeonGame.Items
                 else
                     TryUseItem(Hand.Right, false);
             }
+
+            // Debug: draw pickup ray/sphere every frame when hand empty (visible in Scene/Game view with Gizmos on)
+            if (debugDrawRayEveryFrame && (LeftHandEmpty || RightHandEmpty))
+            {
+                var camT = _cameraRig != null ? _cameraRig.CameraTransform : null;
+                if (camT != null)
+                {
+                    Vector3 origin = camT.position;
+                    Vector3 dir = camT.forward.normalized;
+                    if (dir.sqrMagnitude < 0.01f) dir = transform.forward;
+                    dir.Normalize();
+                    Debug.DrawLine(origin, origin + dir * pickupRange, Color.cyan, 0.5f);
+                    if (pickupRadius > 0.001f)
+                    {
+                        for (int i = 0; i < 8; i++)
+                        {
+                            float a = i * Mathf.PI * 0.25f;
+                            Vector3 o = origin + (camT.right * Mathf.Cos(a) + camT.up * Mathf.Sin(a)) * pickupRadius;
+                            Debug.DrawLine(o, o + dir * pickupRange, Color.green, 0.5f);
+                        }
+                    }
+                }
+            }
         }
 
         // ────────────────────── Client-side helpers ──────────────────────
@@ -213,30 +240,89 @@ namespace DungeonGame.Items
             var camT = _cameraRig != null ? _cameraRig.CameraTransform : null;
             if (camT == null)
             {
-                if (debugLog) Debug.Log("[HandSystem] TryPickup: no camera transform", this);
+                if (debugPickup) Debug.Log("[HandSystem] TryPickup: No camera transform (LocalPlayerCameraRig.CameraTransform is null)");
                 return;
             }
 
-            var ray = new Ray(camT.position, camT.forward);
-            if (!Physics.Raycast(ray, out var hit, pickupRange, pickupLayers, QueryTriggerInteraction.Ignore))
+            // Ray/SphereCast from camera center in camera look direction
+            Vector3 origin = camT.position;
+            Vector3 dir = camT.forward.normalized;
+            if (dir.sqrMagnitude < 0.01f) dir = transform.forward;
+            dir.Normalize();
+
+            RaycastHit[] hits;
+            if (pickupRadius > 0.001f)
             {
-                if (debugLog) Debug.Log($"[HandSystem] TryPickup: raycast missed (range={pickupRange}, layers={pickupLayers.value})", this);
-                return;
+                hits = Physics.SphereCastAll(origin, pickupRadius, dir, pickupRange, pickupLayers, QueryTriggerInteraction.Collide);
+            }
+            else
+            {
+                hits = Physics.RaycastAll(origin, dir, pickupRange, pickupLayers, QueryTriggerInteraction.Collide);
+            }
+            System.Array.Sort(hits, (a, b) => a.distance.CompareTo(b.distance));
+
+            if (debugPickup && (Mouse.current?.leftButton.wasPressedThisFrame == true || Mouse.current?.rightButton.wasPressedThisFrame == true))
+            {
+                Debug.DrawLine(origin, origin + dir * pickupRange, Color.yellow, 5f);
+                if (pickupRadius > 0.001f)
+                {
+                    // Draw sphere at origin and at end to visualize SphereCast
+                    for (int i = 0; i < 8; i++)
+                    {
+                        float a = i * Mathf.PI * 0.25f;
+                        Vector3 o = origin + (camT.right * Mathf.Cos(a) + camT.up * Mathf.Sin(a)) * pickupRadius;
+                        Debug.DrawLine(o, o + dir * pickupRange, Color.green, 3f);
+                    }
+                }
+                if (hits.Length == 0)
+                {
+                    var hitsAllLayers = Physics.RaycastAll(origin, dir, pickupRange, -1, QueryTriggerInteraction.Collide);
+                    Debug.Log($"[HandSystem] Raycast MISSED (0 hits). Origin={origin}, dir={dir}, range={pickupRange}, pickupLayers={pickupLayers.value}. With ALL layers: {hitsAllLayers.Length} hits. If all-layers>0: item is on excluded layer — set pickupLayers to Everything.");
+                    if (hitsAllLayers.Length > 0)
+                    {
+                        Debug.Log("[HandSystem] Hits with all layers: " + string.Join("; ", System.Array.ConvertAll(hitsAllLayers, h => $"{h.collider.name} (layer {LayerMask.LayerToName(h.collider.gameObject.layer)}, dist={h.distance:F1})")));
+                    }
+                }
+                else
+                {
+                    var hitList = string.Join("; ", System.Array.ConvertAll(hits, h =>
+                    {
+                        var wi = h.collider.GetComponentInParent<WorldItem>();
+                        return $"{h.collider.name} (layer {LayerMask.LayerToName(h.collider.gameObject.layer)}, dist={h.distance:F1}, WorldItem={wi != null})";
+                    }));
+                    Debug.Log($"[HandSystem] Raycast hit {hits.Length} object(s): {hitList}");
+                }
             }
 
-            var worldItem = hit.collider.GetComponentInParent<WorldItem>();
+            WorldItem worldItem = null;
+            foreach (var h in hits)
+            {
+                var wi = h.collider.GetComponentInParent<WorldItem>();
+                if (wi != null)
+                {
+                    worldItem = wi;
+                    break;
+                }
+                // Skip our own player (ray from behind camera hits us first)
+                var no = h.collider.GetComponentInParent<NetworkObject>();
+                if (no != null && no.NetworkObjectId == NetworkObject.NetworkObjectId)
+                    continue;
+                // Hit something else (wall, etc.) — nothing pickable beyond it
+                break;
+            }
+
             if (worldItem == null)
             {
-                if (debugLog) Debug.Log($"[HandSystem] TryPickup: hit '{hit.collider.name}' but no WorldItem on it or parents", this);
+                if (debugPickup && Mouse.current != null && (Mouse.current.leftButton.wasPressedThisFrame || Mouse.current.rightButton.wasPressedThisFrame))
+                    Debug.Log("[HandSystem] TryPickup: No WorldItem in hits. Add WorldItem to the object, or add its config to ItemRegistry.");
                 return;
             }
             if (worldItem.IsHeld)
             {
-                if (debugLog) Debug.Log($"[HandSystem] TryPickup: '{worldItem.name}' already held", this);
+                if (debugPickup) Debug.Log("[HandSystem] TryPickup: Item already held.");
                 return;
             }
 
-            if (debugLog) Debug.Log($"[HandSystem] TryPickup: requesting '{worldItem.name}' into {hand} hand", this);
             PickupServerRpc((int)hand, worldItem.NetworkObject.NetworkObjectId);
         }
 
@@ -250,7 +336,7 @@ namespace DungeonGame.Items
             if (Time.time < nextTime) return;
 
             var config = ItemRegistry.GetByIndex(itemIndex);
-            if (config == null || config.damage <= 0) return; // non-weapon items don't attack
+            if (config == null) return;
 
             // Set client-side cooldown
             if (hand == Hand.Left)
@@ -303,30 +389,31 @@ namespace DungeonGame.Items
         [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Owner)]
         private void PickupServerRpc(int hand, ulong worldItemNetId)
         {
+            // Validate WorldItem
             if (!NetworkManager.SpawnManager.SpawnedObjects.TryGetValue(worldItemNetId, out var itemNetObj))
             {
-                if (debugLog) Debug.Log($"[HandSystem] PickupRpc: netId {worldItemNetId} not found", this);
+                if (debugPickup) Debug.Log("[HandSystem] PickupServerRpc: WorldItem not found in SpawnedObjects (netId=" + worldItemNetId + "). Is it spawned?");
                 return;
             }
 
             var worldItem = itemNetObj.GetComponent<WorldItem>();
             if (worldItem == null || worldItem.IsHeld)
             {
-                if (debugLog) Debug.Log($"[HandSystem] PickupRpc: WorldItem null or already held", this);
+                if (debugPickup) Debug.Log("[HandSystem] PickupServerRpc: No WorldItem component or already held.");
                 return;
             }
 
             var config = worldItem.ItemConfig;
             if (config == null)
             {
-                if (debugLog) Debug.Log($"[HandSystem] PickupRpc: '{worldItem.name}' has no ItemConfig", this);
+                if (debugPickup) Debug.Log("[HandSystem] PickupServerRpc: WorldItem has no Item Config assigned.");
                 return;
             }
 
             int registryIndex = ItemRegistry.IndexOf(config);
             if (registryIndex < 0)
             {
-                Debug.LogWarning($"[HandSystem] PickupRpc: '{config.displayName}' NOT in ItemRegistry! Add it.", this);
+                if (debugPickup) Debug.Log("[HandSystem] PickupServerRpc: Config '" + config.name + "' (id=" + config.weaponId + ") not in ItemRegistry. Add the exact same config asset to ItemRegistry's Items list.");
                 return;
             }
 
@@ -366,7 +453,6 @@ namespace DungeonGame.Items
             }
 
             worldItem.ServerPickup(OwnerClientId);
-            if (debugLog) Debug.Log($"[HandSystem] PickupRpc: SUCCESS '{config.displayName}' -> {(Hand)hand} (idx={registryIndex})", this);
         }
 
         [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Owner)]
@@ -385,7 +471,7 @@ namespace DungeonGame.Items
             if (serverIndex != expectedItemIndex || serverIndex < 0) return;
 
             var config = ItemRegistry.GetByIndex(serverIndex);
-            if (config == null || config.damage <= 0) return; // non-weapon items don't attack
+            if (config == null) return;
 
             // Server-side cooldown
             float nextTime = handSlot == Hand.Left ? _nextAttackTimeLeft : _nextAttackTimeRight;
@@ -430,18 +516,11 @@ namespace DungeonGame.Items
         [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Owner)]
         private void RequestSpawnWeaponServerRpc(string weaponId)
         {
-            // Try ItemRegistry first, fall back to WeaponRegistry for meta weapons
             var config = ItemRegistry.Get(weaponId);
-            if (config == null)
-                config = WeaponRegistry.Get(weaponId);
             if (config == null) return;
 
             int registryIndex = ItemRegistry.IndexOf(config);
-            if (registryIndex < 0)
-            {
-                Debug.LogWarning($"[HandSystem] Meta weapon '{weaponId}' not in ItemRegistry. Add it there too.", this);
-                return;
-            }
+            if (registryIndex < 0) return;
 
             if (config.grip == ItemGrip.TwoHanded)
             {
@@ -562,14 +641,12 @@ namespace DungeonGame.Items
         {
             UpdateVisual(Hand.Left, cur);
             UpdateTwoHandedMode();
-            OnHandsChanged?.Invoke(this);
         }
 
         private void OnRightItemChanged(int prev, int cur)
         {
             UpdateVisual(Hand.Right, cur);
             UpdateTwoHandedMode();
-            OnHandsChanged?.Invoke(this);
         }
 
         private void UpdateVisual(Hand hand, int itemIndex)

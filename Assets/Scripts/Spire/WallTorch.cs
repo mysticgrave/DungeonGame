@@ -1,3 +1,4 @@
+using DungeonGame.Interaction;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -7,8 +8,9 @@ namespace DungeonGame.Spire
     /// Networked wall torch.
     /// - Server owns lit state (NetworkVariable)
     /// - Clients render VFX based on lit state
+    /// - Implements IInteractable for the general PlayerInteractor system.
     /// </summary>
-    public class WallTorch : NetworkBehaviour
+    public class WallTorch : NetworkBehaviour, IInteractable
     {
         [Header("State")]
         [SerializeField] private bool startsLit;
@@ -102,6 +104,22 @@ namespace DungeonGame.Spire
         {
             if (!IsServer) return;
             Lit.Value = lit;
+        }
+
+        // ─── IInteractable ──────────────────────────────────────────
+
+        public string InteractPrompt => "Light Torch";
+
+        public bool CanInteract(ulong clientId)
+        {
+            return !Lit.Value;
+        }
+
+        public void Interact(ulong clientId)
+        {
+            if (!IsServer) return;
+            if (!Lit.Value)
+                Lit.Value = true;
         }
     }
 }

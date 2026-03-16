@@ -3,14 +3,13 @@ using System.Reflection;
 using Unity.Netcode;
 using Unity.Netcode.Transports.UTP;
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 namespace DungeonGame.Core
 {
     /// <summary>
     /// Minimal Netcode bootstrap.
     /// - Ensures a NetworkManager + UnityTransport exist (creates one if missing).
-    /// - Lets you start Host/Client from keyboard for quick iteration.
+    /// - Auto-starts Host when autoStartHost is true.
     /// 
     /// Place in any scene. If a DontDestroyOnLoad NetworkManager already exists
     /// (e.g. came from MainMenu), it reuses that and skips creation.
@@ -61,14 +60,6 @@ namespace DungeonGame.Core
                 StartHost();
         }
 
-        private void Update()
-        {
-            if (Keyboard.current == null) return;
-
-            if (Keyboard.current.f1Key.wasPressedThisFrame) StartHost();
-            if (Keyboard.current.f2Key.wasPressedThisFrame) StartClient();
-            if (Keyboard.current.f3Key.wasPressedThisFrame) Shutdown();
-        }
 
         private NetworkManager CreateNetworkManager()
         {

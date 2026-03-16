@@ -22,6 +22,8 @@ namespace DungeonGame.Player
         public event Action OnDied;
         /// <summary>Static event fired on ALL clients when any player takes damage (for UI).</summary>
         public static event Action<ulong, DamageInfo> OnAnyPlayerDamaged;
+        /// <summary>Static event fired when any player dies.</summary>
+        public static event Action<PlayerHealth> OnAnyPlayerDied;
 
         private readonly NetworkVariable<int> hpNet = new(
             1,
@@ -53,6 +55,7 @@ namespace DungeonGame.Player
             if (hpNet.Value == 0)
             {
                 OnDied?.Invoke();
+                OnAnyPlayerDied?.Invoke(this);
                 Debug.Log($"[PlayerHealth] Player {OwnerClientId} HP=0 (downed system later)");
             }
         }

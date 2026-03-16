@@ -9,6 +9,7 @@ namespace DungeonGame.Player
     /// Local player interaction: look at a WallTorch and press F to light it.
     /// F = interact key (E reserved for future skills).
     /// </summary>
+    [System.Obsolete("Use PlayerInteractor + IInteractable instead. WallTorch now implements IInteractable.")]
     public class TorchInteractor : NetworkBehaviour
     {
         [SerializeField] private float interactRange = 3.0f;
