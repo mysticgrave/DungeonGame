@@ -50,6 +50,14 @@ sysinfo.txt
 /[Aa]ssets/_Recovery/
 /[Aa]ssets/GeneratedTextures/
 
+# Unity lighting/lightmapping baking data (large generated files)
+*.CellData.bytes
+*.CellOptionalData.bytes
+*.CellProbeOcclusionData.bytes
+*.CellBricksData.bytes
+*.CellSharedData.bytes
+*.CellSupportData.bytes
+
 # Third-party asset packs (purchased / downloaded — not needed in repo)
 /[Aa]ssets/Daniel Mistage/
 /[Aa]ssets/SoStylized/
