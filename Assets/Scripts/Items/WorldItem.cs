@@ -125,7 +125,15 @@ namespace DungeonGame.Items
 
             var health = collision.collider.GetComponentInParent<NetworkHealth>();
             if (health != null)
-                health.TakeDamage(itemConfig.throwDamage);
+            {
+                Vector3 hitPos = collision.contactCount > 0 ? collision.GetContact(0).point : transform.position;
+                var info = new DungeonGame.Combat.DamageInfo(itemConfig.throwDamage)
+                {
+                    AttackerClientId = _holderClientId.Value,
+                    HitPosition = hitPos
+                };
+                health.TakeDamage(info);
+            }
         }
     }
 }

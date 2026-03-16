@@ -33,11 +33,13 @@ namespace DungeonGame.Combat
                 _health.OnDamaged -= OnDamaged;
         }
 
-        private void OnDamaged(int amount)
+        private void OnDamaged(DamageInfo info)
         {
             if (hitSound != null)
             {
-                var from = soundEmitFrom != null ? soundEmitFrom.position : transform.position;
+                var from = info.HitPosition != Vector3.zero
+                    ? info.HitPosition
+                    : (soundEmitFrom != null ? soundEmitFrom.position : transform.position);
                 AudioSource.PlayClipAtPoint(hitSound, from);
             }
 

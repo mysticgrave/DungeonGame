@@ -51,9 +51,28 @@ namespace DungeonGame.Player
         private readonly List<AudioListener> _disabledListeners = new List<AudioListener>();
         private RagdollColliderSwitch _ragdollSwitch;
 
+        // --- Camera shake ---
+        private float _shakeIntensity;
+        private float _shakeDuration;
+        private float _shakeTimer;
+
+        /// <summary>The local player's camera rig instance. Null on non-owner clients.</summary>
+        public static LocalPlayerCameraRig Instance { get; private set; }
+
         public float Yaw => yaw;
         public float Pitch => pitch;
         public Transform CameraTransform => cam != null ? cam.transform : null;
+
+        /// <summary>Trigger camera shake. Stacks with current shake (takes the stronger).</summary>
+        public void Shake(float intensity, float duration)
+        {
+            if (intensity > _shakeIntensity || _shakeTimer <= 0f)
+            {
+                _shakeIntensity = intensity;
+                _shakeDuration = duration;
+            }
+            _shakeTimer = Mathf.Max(_shakeTimer, duration);
+        }
 
         public override void OnNetworkSpawn()
         {
@@ -64,6 +83,8 @@ namespace DungeonGame.Player
                 // No camera for non-owner.
                 return;
             }
+
+            Instance = this;
 
             if (followTarget == null) followTarget = transform;
             _ragdollSwitch = GetComponent<RagdollColliderSwitch>();
@@ -172,6 +193,20 @@ namespace DungeonGame.Player
                 }
             }
 
+            // Apply camera shake offset
+            if (_shakeTimer > 0f)
+            {
+                float t = _shakeTimer / Mathf.Max(_shakeDuration, 0.001f);
+                float currentIntensity = _shakeIntensity * t; // decay over time
+                desiredPos += Random.insideUnitSphere * currentIntensity;
+                _shakeTimer -= Time.deltaTime;
+                if (_shakeTimer <= 0f)
+                {
+                    _shakeIntensity = 0f;
+                    _shakeDuration = 0f;
+                }
+            }
+
             cam.transform.SetPositionAndRotation(desiredPos, rot);
         }
 
@@ -199,6 +234,7 @@ namespace DungeonGame.Player
 
             if (IsOwner)
             {
+                if (Instance == this) Instance = null;
                 ReenableDisabledAudioListeners();
                 if (cam != null) Destroy(cam.gameObject);
             }

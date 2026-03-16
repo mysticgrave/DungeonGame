@@ -115,12 +115,16 @@ namespace DungeonGame.Enemies
                 var playerHealth = col.GetComponentInParent<PlayerHealth>();
                 if (playerHealth != null)
                 {
-                    playerHealth.TakeDamage(atk.damage);
+                    var info = new DungeonGame.Combat.DamageInfo(atk.damage)
+                    {
+                        HitPosition = col.transform.position
+                    };
+                    playerHealth.TakeDamage(info);
                     TryApplyStatusEffect(col.transform, atk);
                 }
                 else if (damageable != null)
                 {
-                    damageable.TakeDamage(atk.damage);
+                    damageable.TakeDamage(new DungeonGame.Combat.DamageInfo(atk.damage));
                 }
             }
         }
@@ -153,7 +157,11 @@ namespace DungeonGame.Enemies
                 var playerHealth = _lungeTarget.GetComponent<PlayerHealth>();
                 if (playerHealth != null)
                 {
-                    playerHealth.TakeDamage(atk.damage);
+                    var info = new DungeonGame.Combat.DamageInfo(atk.damage)
+                    {
+                        HitPosition = _lungeTarget.position
+                    };
+                    playerHealth.TakeDamage(info);
                     TryApplyStatusEffect(_lungeTarget, atk);
                     _lungeDamageApplied = true;
                 }
