@@ -184,6 +184,17 @@ namespace DungeonGame.UI
             if (panel != null) panel.SetActive(true);
             EnsureCanvasGroup();
             if (panelCanvasGroup != null) panelCanvasGroup.alpha = 1f;
+            // Ensure fully opaque background (avoid semi-transparent overlay).
+            if (panel != null)
+            {
+                var img = panel.GetComponent<Image>();
+                if (img != null)
+                {
+                    var c = img.color;
+                    c.a = 1f;
+                    img.color = c;
+                }
+            }
             if (statusText != null && !string.IsNullOrEmpty(message))
                 statusText.text = message;
             if (_cancelButton != null) _cancelButton.gameObject.SetActive(showCancelButton);
@@ -266,7 +277,7 @@ namespace DungeonGame.UI
             var panelGo = new GameObject("Panel");
             panelGo.transform.SetParent(canvas.transform, false);
             var image = panelGo.AddComponent<Image>();
-            image.color = new Color(0.05f, 0.05f, 0.08f, 0.98f);
+            image.color = new Color(0.05f, 0.05f, 0.08f, 1f);
             var rect = panelGo.GetComponent<RectTransform>();
             rect.anchorMin = Vector2.zero;
             rect.anchorMax = Vector2.one;

@@ -16,6 +16,7 @@ namespace DungeonGame.Core
 
         private NetworkManager _nm;
         private bool _wasConnected;
+        private bool _returningToMenu; // prevent re-entrant calls
 
         private void OnEnable()
         {
@@ -25,6 +26,7 @@ namespace DungeonGame.Core
 
             _nm.OnClientDisconnectCallback += OnClientDisconnect;
             _nm.OnServerStopped += OnServerStopped;
+            _nm.OnClientStopped += OnClientStopped;
         }
 
         private void OnDisable()
@@ -32,12 +34,16 @@ namespace DungeonGame.Core
             if (_nm == null) return;
             _nm.OnClientDisconnectCallback -= OnClientDisconnect;
             _nm.OnServerStopped -= OnServerStopped;
+            _nm.OnClientStopped -= OnClientStopped;
         }
 
         private void Update()
         {
             if (_nm != null && _nm.IsListening)
+            {
                 _wasConnected = true;
+                _returningToMenu = false;
+            }
         }
 
         private void OnClientDisconnect(ulong clientId)
@@ -63,8 +69,24 @@ namespace DungeonGame.Core
             ReturnToMainMenu();
         }
 
+        /// <summary>
+        /// Fires when the local client transport disconnects (covers cases where
+        /// OnClientDisconnect doesn't fire, e.g. transport-level failures).
+        /// </summary>
+        private void OnClientStopped(bool wasHost)
+        {
+            if (!_wasConnected) return;
+            if (wasHost) return; // OnServerStopped already handles host-side
+            _wasConnected = false;
+            Debug.Log("[Disconnect] Client stopped — returning to main menu.");
+            ReturnToMainMenu();
+        }
+
         private void ReturnToMainMenu()
         {
+            if (_returningToMenu) return;
+            _returningToMenu = true;
+
             var activeScene = SceneManager.GetActiveScene().name;
             if (activeScene == mainMenuSceneName) return;
 

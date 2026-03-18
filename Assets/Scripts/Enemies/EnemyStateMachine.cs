@@ -43,9 +43,11 @@ namespace DungeonGame.Enemies
         private Animator _animator;
         private float _stateTimer;
         private bool _hasSpeedParam;
+        private bool _hasMoveSpeedParam;
         private bool _hasGroundedParam;
 
         private static readonly int AnimSpeed = Animator.StringToHash("Speed");
+        private static readonly int AnimMoveSpeed = Animator.StringToHash("MoveSpeed");
         private static readonly int AnimIsGrounded = Animator.StringToHash("IsGrounded");
 
         private void Awake()
@@ -53,6 +55,7 @@ namespace DungeonGame.Enemies
             _agent = GetComponent<NavMeshAgent>();
             _animator = GetComponentInChildren<Animator>(true);
             _hasSpeedParam = _animator != null && HasParameter(_animator, AnimSpeed);
+            _hasMoveSpeedParam = _animator != null && HasParameter(_animator, AnimMoveSpeed);
             _hasGroundedParam = _animator != null && HasParameter(_animator, AnimIsGrounded);
         }
 
@@ -88,11 +91,12 @@ namespace DungeonGame.Enemies
                 }
             }
 
-            if (_hasSpeedParam && _animator != null && _animator.runtimeAnimatorController != null
+            if ((_hasSpeedParam || _hasMoveSpeedParam) && _animator != null && _animator.runtimeAnimatorController != null
                 && _animator.isActiveAndEnabled && _agent != null)
             {
                 float speed = _agent.enabled && _agent.hasPath ? _agent.velocity.magnitude : 0f;
-                _animator.SetFloat(AnimSpeed, speed);
+                if (_hasSpeedParam) _animator.SetFloat(AnimSpeed, speed);
+                if (_hasMoveSpeedParam) _animator.SetFloat(AnimMoveSpeed, speed);
             }
 
             // Many locomotion controllers (including Synty) require IsGrounded.

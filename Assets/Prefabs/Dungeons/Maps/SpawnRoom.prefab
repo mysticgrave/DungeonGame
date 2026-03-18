@@ -26,7 +26,7 @@ Transform:
   m_GameObject: {fileID: 10508830409632755}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 1.934, y: 1.478, z: 1.56}
+  m_LocalPosition: {x: 1.934, y: 0.28999996, z: 1.56}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -45,7 +45,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DungeonGame.Core.PlayerSpawnPoint
   spawnIndex: 2
-  debugRadius: 0.8
+  capsuleRadius: 0.35
+  capsuleHeight: 1.8
 --- !u!1 &33561991045212936
 GameObject:
   m_ObjectHideFlags: 0
@@ -72,7 +73,7 @@ Transform:
   m_GameObject: {fileID: 33561991045212936}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -1.7, y: 1.478, z: 1.56}
+  m_LocalPosition: {x: -1.7, y: 0.28999996, z: 1.56}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -91,7 +92,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DungeonGame.Core.PlayerSpawnPoint
   spawnIndex: 1
-  debugRadius: 0.8
+  capsuleRadius: 0.35
+  capsuleHeight: 1.8
 --- !u!1 &242388355078972145
 GameObject:
   m_ObjectHideFlags: 0
@@ -563,7 +565,7 @@ Transform:
   m_GameObject: {fileID: 3118899630503012493}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -1.7, y: 1.478, z: -0.03}
+  m_LocalPosition: {x: -3.43, y: 0.28999996, z: -0.03}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -582,7 +584,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DungeonGame.Core.PlayerSpawnPoint
   spawnIndex: 1
-  debugRadius: 0.8
+  capsuleRadius: 0.35
+  capsuleHeight: 1.8
 --- !u!1 &3836086749431456543
 GameObject:
   m_ObjectHideFlags: 0
@@ -896,7 +899,7 @@ Transform:
   m_GameObject: {fileID: 5952262635661918272}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 1.478, z: -0.06}
+  m_LocalPosition: {x: 0, y: 0.28999996, z: -0.06}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -915,7 +918,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DungeonGame.Core.PlayerSpawnPoint
   spawnIndex: 3
-  debugRadius: 0.8
+  capsuleRadius: 0.35
+  capsuleHeight: 1.8
 --- !u!1 &6582074990094615598
 GameObject:
   m_ObjectHideFlags: 0
@@ -1196,7 +1200,7 @@ Transform:
   m_GameObject: {fileID: 6628708706618110964}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 1.478, z: -1.624}
+  m_LocalPosition: {x: 0, y: 0.28999996, z: -3.18}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1215,7 +1219,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DungeonGame.Core.PlayerSpawnPoint
   spawnIndex: 4
-  debugRadius: 0.8
+  capsuleRadius: 0.35
+  capsuleHeight: 1.8
 --- !u!1 &7651347349120895635
 GameObject:
   m_ObjectHideFlags: 0
@@ -1285,7 +1290,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
-  GlobalObjectIdHash: 3876523021
+  GlobalObjectIdHash: 114035996
   InScenePlacedSourceGlobalObjectIdHash: 0
   DeferredDespawnTick: 0
   Ownership: 1
@@ -1583,7 +1588,7 @@ Transform:
   m_GameObject: {fileID: 7889771554922435564}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 1.934, y: 1.478, z: -0.03}
+  m_LocalPosition: {x: 3.55, y: 0.28999996, z: -0.03}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1602,7 +1607,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DungeonGame.Core.PlayerSpawnPoint
   spawnIndex: 2
-  debugRadius: 0.8
+  capsuleRadius: 0.35
+  capsuleHeight: 1.8
 --- !u!1 &8185310414399687088
 GameObject:
   m_ObjectHideFlags: 0
@@ -1629,7 +1635,7 @@ Transform:
   m_GameObject: {fileID: 8185310414399687088}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 1.478, z: 1.55}
+  m_LocalPosition: {x: 0, y: 0.28999996, z: 3.24}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1648,7 +1654,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DungeonGame.Core.PlayerSpawnPoint
   spawnIndex: 0
-  debugRadius: 0.8
+  capsuleRadius: 0.35
+  capsuleHeight: 1.8
 --- !u!1 &9065214973847323928
 GameObject:
   m_ObjectHideFlags: 0
@@ -1675,7 +1682,7 @@ Transform:
   m_GameObject: {fileID: 9065214973847323928}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -1.72, y: 1.478, z: -1.624}
+  m_LocalPosition: {x: -1.72, y: 0.29, z: -1.624}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1694,7 +1701,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DungeonGame.Core.PlayerSpawnPoint
   spawnIndex: 4
-  debugRadius: 0.8
+  capsuleRadius: 0.35
+  capsuleHeight: 1.8
 --- !u!1 &9194753797816625807
 GameObject:
   m_ObjectHideFlags: 0
@@ -1721,7 +1729,7 @@ Transform:
   m_GameObject: {fileID: 9194753797816625807}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 1.85, y: 1.478, z: -1.624}
+  m_LocalPosition: {x: 1.85, y: 0.28999996, z: -1.624}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1740,7 +1748,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DungeonGame.Core.PlayerSpawnPoint
   spawnIndex: 4
-  debugRadius: 0.8
+  capsuleRadius: 0.35
+  capsuleHeight: 1.8
 --- !u!1001 &354096875684572856
 PrefabInstance:
   m_ObjectHideFlags: 0

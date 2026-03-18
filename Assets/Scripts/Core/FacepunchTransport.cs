@@ -40,15 +40,33 @@ namespace DungeonGame.Core
 
         public override void Initialize(NetworkManager networkManager = null)
         {
+            // Clean up any stale state from a previous session
+            CleanupServer();
+            CleanupClient();
+            _eventQueue.Clear();
+
             SteamNetworkingUtils.InitRelayNetworkAccess();
         }
 
         public override bool StartServer()
         {
-            Server.Transport = this;
-            _server = SteamNetworkingSockets.CreateRelaySocket<Server>();
-            Debug.Log("[FacepunchTransport] Server started via Steam Relay.");
-            return true;
+            // Clean up any existing server socket first (prevents "Invalid Socket" error
+            // when a previous session wasn't fully cleaned up, e.g. domain reload in editor)
+            CleanupServer();
+
+            try
+            {
+                Server.Transport = this;
+                _server = SteamNetworkingSockets.CreateRelaySocket<Server>();
+                Debug.Log("[FacepunchTransport] Server started via Steam Relay.");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"[FacepunchTransport] StartServer failed: {ex.Message}");
+                _server = null;
+                return false;
+            }
         }
 
         public override bool StartClient()
@@ -59,24 +77,55 @@ namespace DungeonGame.Core
                 return false;
             }
 
-            Client.Transport = this;
-            _client = SteamNetworkingSockets.ConnectRelay<Client>(targetSteamId);
-            Debug.Log($"[FacepunchTransport] Client connecting to Steam ID {targetSteamId}");
-            return true;
+            CleanupClient();
+
+            try
+            {
+                Client.Transport = this;
+                _client = SteamNetworkingSockets.ConnectRelay<Client>(targetSteamId);
+                Debug.Log($"[FacepunchTransport] Client connecting to Steam ID {targetSteamId}");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"[FacepunchTransport] StartClient failed: {ex.Message}");
+                _client = null;
+                return false;
+            }
         }
 
         public override void Shutdown()
         {
-            _server?.Stop();
-            _server = null;
-            _client?.Disconnect();
-            _client = null;
+            CleanupServer();
+            CleanupClient();
             _eventQueue.Clear();
 #if UNITY_EDITOR
             Debug.Log($"[FacepunchTransport] Shutdown.\nCall stack:\n{Environment.StackTrace}");
 #else
             Debug.Log("[FacepunchTransport] Shutdown.");
 #endif
+        }
+
+        private void CleanupServer()
+        {
+            if (_server != null)
+            {
+                try { _server.Stop(); }
+                catch (Exception ex) { Debug.LogWarning($"[FacepunchTransport] Server cleanup: {ex.Message}"); }
+                _server = null;
+            }
+            Server.Transport = null;
+        }
+
+        private void CleanupClient()
+        {
+            if (_client != null)
+            {
+                try { _client.Disconnect(); }
+                catch (Exception ex) { Debug.LogWarning($"[FacepunchTransport] Client cleanup: {ex.Message}"); }
+                _client = null;
+            }
+            Client.Transport = null;
         }
 
         public override void Send(ulong clientId, ArraySegment<byte> payload, NetworkDelivery delivery)
@@ -186,7 +235,7 @@ namespace DungeonGame.Core
             {
                 try
                 {
-                    Receive(256);
+                    Receive(1024);
                 }
                 catch (Exception ex)
                 {
@@ -213,6 +262,11 @@ namespace DungeonGame.Core
 
             public override void OnConnecting(Connection connection, ConnectionInfo info)
             {
+                // Explicitly accept every incoming connection.
+                // Some versions of Facepunch.Steamworks accept in base.OnConnecting(),
+                // others do not — calling Accept() ourselves guarantees it works.
+                // Without this, the 2nd+ joiner can stall in "connecting" state forever.
+                connection.Accept();
                 base.OnConnecting(connection, info);
             }
 
@@ -246,7 +300,6 @@ namespace DungeonGame.Core
                     Debug.LogWarning($"[FacepunchTransport] SERVER: OnMessage from unknown connection {connection.Id}, size={size} — dropped.");
                     return;
                 }
-                Debug.Log($"[FacepunchTransport] SERVER: Received message from client {clientId}, size={size}.");
                 byte[] managed = new byte[size];
                 Marshal.Copy(data, managed, 0, size);
                 Transport?.EnqueueEvent(NetworkEvent.Data, clientId, managed);
@@ -263,6 +316,8 @@ namespace DungeonGame.Core
             {
                 try
                 {
+                    // ConnectionManager.Receive() has a hard cap of 256 in Facepunch.Steamworks.
+                    // Passing anything higher throws ArgumentOutOfRangeException.
                     Receive(256);
                 }
                 catch (Exception ex)

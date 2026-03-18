@@ -24,11 +24,59 @@ namespace DungeonGame.Enemies
         private StatusEffectController _statusFx;
         private NetworkHealth _health;
 
+        [Header("Performance")]
+        [Tooltip("Enemies farther than this from all players go to sleep (skip Update). 0 = never sleep.")]
+        [SerializeField] private float sleepDistance = 60f;
+        [Tooltip("How often to check sleep distance (seconds).")]
+        [SerializeField] private float sleepCheckInterval = 1f;
+
         private Transform _target;
         private float _lastStaggerTime = -100f;
         private float _circleDirection = 1f; // 1 = clockwise, -1 = counter-clockwise
+        private bool _isSleeping;
+        private float _nextSleepCheck;
 
         public EnemyConfig Config => config;
+
+        // ─────────────── Attack VFX (synced to all clients) ───────────────
+
+        /// <summary>
+        /// Called by EnemyAttackExecutor on the server to spawn attack VFX on all clients.
+        /// Must live on EnemyAI (a properly spawned NetworkBehaviour) rather than
+        /// EnemyAttackExecutor (which can be AddComponent'd after Spawn).
+        /// </summary>
+        [Rpc(SendTo.Everyone)]
+        public void SpawnAttackVfxRpc(int attackIndex, Vector3 attackerPos, Vector3 forward)
+        {
+            // Resolve config — EnemyAI carries the serialized EnemyConfig even on clients
+            EnemyAttackConfig atk = null;
+            if (config != null && config.attacks != null
+                && attackIndex >= 0 && attackIndex < config.attacks.Length)
+            {
+                atk = config.attacks[attackIndex];
+            }
+
+            Vector3 spawnPos = attackerPos + Vector3.up * 1.0f;
+            float lifetime = 1.5f;
+
+            if (atk != null)
+            {
+                spawnPos = attackerPos + (atk.vfxLocalOffset == Vector3.zero ? Vector3.up * 1.0f : atk.vfxLocalOffset);
+                lifetime = atk.vfxLifetime > 0.05f ? atk.vfxLifetime : 1.5f;
+
+                if (atk.vfxPrefab != null)
+                {
+                    var custom = Object.Instantiate(atk.vfxPrefab, spawnPos, Quaternion.LookRotation(forward));
+                    var ps = custom.GetComponent<ParticleSystem>();
+                    float psLifetime = ps != null ? ps.main.duration + ps.main.startLifetime.constantMax : lifetime;
+                    Object.Destroy(custom, Mathf.Clamp(psLifetime, 0.2f, 10f));
+                    return;
+                }
+            }
+
+            // Default procedural swipe (visible even for capsule enemies with no animations).
+            EnemyVfxFactory.SpawnMeleeSwipe(spawnPos, forward, radius: 2.5f, lifetime: lifetime);
+        }
 
         public override void OnNetworkSpawn()
         {
@@ -90,6 +138,26 @@ namespace DungeonGame.Enemies
             if (!IsServer) return;
             if (config == null) return;
             if (_sm.IsDead) return;
+
+            // Distance-based sleep — skip all AI logic when no player is nearby
+            if (sleepDistance > 0f && Time.time >= _nextSleepCheck)
+            {
+                _nextSleepCheck = Time.time + sleepCheckInterval;
+                bool shouldSleep = !IsAnyPlayerWithinRange(sleepDistance);
+
+                if (shouldSleep && !_isSleeping)
+                {
+                    _isSleeping = true;
+                    if (_agent.enabled && _agent.isOnNavMesh)
+                        _agent.isStopped = true;
+                }
+                else if (!shouldSleep && _isSleeping)
+                {
+                    _isSleeping = false;
+                }
+            }
+
+            if (_isSleeping) return;
 
             // Retreat and circle states manage their own movement
             if (_sm.Current == EnemyState.Retreat)
@@ -286,6 +354,22 @@ namespace DungeonGame.Enemies
         private void HandleDeath()
         {
             _sm.TransitionTo(EnemyState.Dead);
+        }
+
+        private bool IsAnyPlayerWithinRange(float range)
+        {
+            var nm = NetworkManager.Singleton;
+            if (nm == null) return false;
+
+            float rangeSq = range * range;
+            foreach (var kvp in nm.ConnectedClients)
+            {
+                var player = kvp.Value?.PlayerObject;
+                if (player == null) continue;
+                if ((transform.position - player.transform.position).sqrMagnitude <= rangeSq)
+                    return true;
+            }
+            return false;
         }
 
         private Transform FindNearestPlayer()

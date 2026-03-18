@@ -72,7 +72,13 @@ namespace DungeonGame.UI
             RefreshClassList();
             ShowDetail(_selectedIndex);
 
-            if ((!showOnStart || !IsAllowedInCurrentScene()) && panel != null)
+            if (showOnStart && IsAllowedInCurrentScene())
+            {
+                // Ensure cursor is visible when showing on start
+                Cursor.lockState = CursorLockMode.None;
+                Cursor.visible = true;
+            }
+            else if (panel != null)
             {
                 panel.SetActive(false);
                 if (_dimBg != null) _dimBg.SetActive(false);

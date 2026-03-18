@@ -200,5 +200,70 @@ namespace DungeonGame.Player
             if (v.sqrMagnitude > 1f) v.Normalize();
             return v;
         }
+
+        // ────────────── Server→Client Teleport ──────────────
+        // Owner-authoritative NetworkTransform ignores server-side position changes.
+        // When the server needs to reposition a player (spawn, dungeon entry, etc.),
+        // it must tell the owning client to move itself via this RPC.
+
+        /// <summary>
+        /// Call from the server to teleport this player to a position/rotation.
+        /// Moves on server AND sends RPC to the owning client.
+        /// </summary>
+        public void ServerTeleport(Vector3 position, Quaternion rotation)
+        {
+            if (!NetworkManager.Singleton.IsServer) return;
+
+            // Move on server side first
+            TeleportInternal(position, rotation);
+
+            // Tell the owning client to move too
+            TeleportClientRpc(position, rotation);
+        }
+
+        [Rpc(SendTo.Owner)]
+        private void TeleportClientRpc(Vector3 position, Quaternion rotation)
+        {
+            // Host already moved server-side
+            if (IsHost && IsOwner) return;
+
+            TeleportInternal(position, rotation);
+            Debug.Log($"[Motor] Client teleported to {position}");
+        }
+
+        private void TeleportInternal(Vector3 position, Quaternion rotation)
+        {
+            if (cc == null) cc = GetComponent<CharacterController>();
+            bool wasEnabled = cc != null && cc.enabled;
+            if (cc != null) cc.enabled = false;
+
+            transform.SetPositionAndRotation(position, rotation);
+
+            // Ground snap — account for CharacterController center offset.
+            // The CC bottom is at: transform.y + center.y - height/2
+            // We want CC bottom = ground + skinWidth, so:
+            // transform.y = ground + skinWidth - (center.y - height/2)
+            float ccBottomOffset = cc != null ? (cc.center.y - cc.height * 0.5f) : 0f;
+            float skinWidth = cc != null ? cc.skinWidth : 0.08f;
+
+            // Raycast from well above the spawn point to find ground
+            if (Physics.Raycast(position + Vector3.up * 5f, Vector3.down, out var hit, 20f,
+                    Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
+            {
+                float targetY = hit.point.y + skinWidth - ccBottomOffset;
+                transform.position = new Vector3(position.x, targetY, position.z);
+            }
+            else
+            {
+                // No ground found — offset from spawn point assuming feet-level placement
+                float targetY = position.y + skinWidth - ccBottomOffset;
+                transform.position = new Vector3(position.x, targetY, position.z);
+            }
+
+            // Reset vertical velocity so player doesn't keep falling
+            verticalVel = 0f;
+
+            if (cc != null) cc.enabled = wasEnabled;
+        }
     }
 }

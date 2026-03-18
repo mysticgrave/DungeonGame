@@ -705,6 +705,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DungeonGame.UI.PauseMenuController
   panel: {fileID: 0}
   resumeButton: {fileID: 0}
+  changeClassButton: {fileID: 0}
   enterDungeonButton: {fileID: 0}
   backToTownButton: {fileID: 0}
   settingsButton: {fileID: 0}
@@ -1829,6 +1830,53 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 1694354507671012799, guid: 2f15d54fda80e734dade8d86873a3d02, type: 3}
   m_PrefabInstance: {fileID: 795990958}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &828606876
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 828606878}
+  - component: {fileID: 828606877}
+  m_Layer: 0
+  m_Name: PlayerSpawn (4)
+  m_TagString: PlayerSpawn
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &828606877
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 828606876}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f567714330478044482e36fc764c83f6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DungeonGame.Core.PlayerSpawnPoint
+  spawnIndex: 1
+  capsuleRadius: 0.35
+  capsuleHeight: 1.8
+--- !u!4 &828606878
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 828606876}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: 1, z: -0, w: 0.00000058114523}
+  m_LocalPosition: {x: -27.079998, y: -0.5899999, z: 8.99}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 180, z: 0}
 --- !u!1 &830254580
 GameObject:
   m_ObjectHideFlags: 0
@@ -1859,7 +1907,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DungeonGame.Core.PlayerSpawnPoint
   spawnIndex: 1
-  debugRadius: 0.8
+  capsuleRadius: 0.35
+  capsuleHeight: 1.8
 --- !u!4 &830254582
 Transform:
   m_ObjectHideFlags: 0
@@ -1869,7 +1918,7 @@ Transform:
   m_GameObject: {fileID: 830254580}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: 1, z: -0, w: 0.00000058114523}
-  m_LocalPosition: {x: -32.19, y: 0.45, z: -2.76}
+  m_LocalPosition: {x: -27.079998, y: -0.5899999, z: 7.8099995}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1905,7 +1954,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DungeonGame.Core.PlayerSpawnPoint
   spawnIndex: 2
-  debugRadius: 0.8
+  capsuleRadius: 0.35
+  capsuleHeight: 1.8
 --- !u!4 &834285243
 Transform:
   m_ObjectHideFlags: 0
@@ -1915,7 +1965,7 @@ Transform:
   m_GameObject: {fileID: 834285241}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: 1, z: -0, w: 0.00000058114523}
-  m_LocalPosition: {x: -35.99, y: 0.45, z: -2.76}
+  m_LocalPosition: {x: -30.880001, y: -0.5899999, z: 7.8099995}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -3025,6 +3075,53 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1564536823
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1564536825}
+  - component: {fileID: 1564536824}
+  m_Layer: 0
+  m_Name: PlayerSpawn (5)
+  m_TagString: PlayerSpawn
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1564536824
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1564536823}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f567714330478044482e36fc764c83f6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DungeonGame.Core.PlayerSpawnPoint
+  spawnIndex: 2
+  capsuleRadius: 0.35
+  capsuleHeight: 1.8
+--- !u!4 &1564536825
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1564536823}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: 1, z: -0, w: 0.00000058114523}
+  m_LocalPosition: {x: -30.880001, y: -0.5899999, z: 8.99}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 180, z: 0}
 --- !u!1001 &1586356095
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -3800,6 +3897,53 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 1860782264578448141, guid: 28fa52d6f54d054429dc332e89605100, type: 3}
   m_PrefabInstance: {fileID: 1912415531}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1914490901
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1914490903}
+  - component: {fileID: 1914490902}
+  m_Layer: 0
+  m_Name: PlayerSpawn (3)
+  m_TagString: PlayerSpawn
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1914490902
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1914490901}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f567714330478044482e36fc764c83f6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DungeonGame.Core.PlayerSpawnPoint
+  spawnIndex: 0
+  capsuleRadius: 0.35
+  capsuleHeight: 1.8
+--- !u!4 &1914490903
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1914490901}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: 1, z: -0, w: 0.00000058114523}
+  m_LocalPosition: {x: -29.07, y: -0.59, z: 8.99}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 180, z: 0}
 --- !u!1 &1972789223
 GameObject:
   m_ObjectHideFlags: 0
@@ -3826,7 +3970,7 @@ Transform:
   m_GameObject: {fileID: 1972789223}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: 1, z: -0, w: 0.00000058114523}
-  m_LocalPosition: {x: -34.18, y: 0.45, z: -2.76}
+  m_LocalPosition: {x: -29.07, y: -0.59, z: 7.81}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -3845,7 +3989,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DungeonGame.Core.PlayerSpawnPoint
   spawnIndex: 0
-  debugRadius: 0.8
+  capsuleRadius: 0.35
+  capsuleHeight: 1.8
 --- !u!1001 &2035239875
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -4051,8 +4196,11 @@ SceneRoots:
   - {fileID: 1838940489}
   - {fileID: 277208426}
   - {fileID: 1972789224}
+  - {fileID: 1914490903}
   - {fileID: 830254582}
+  - {fileID: 828606878}
   - {fileID: 834285243}
+  - {fileID: 1564536825}
   - {fileID: 90186453}
   - {fileID: 1093514062}
   - {fileID: 566484935}

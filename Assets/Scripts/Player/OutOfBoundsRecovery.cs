@@ -42,12 +42,20 @@ namespace DungeonGame.Player
         {
             Vector3 safePos = FindSafePosition();
 
-            if (_cc != null) _cc.enabled = false;
-            transform.position = safePos;
-            GroundSnap.SnapTransform(transform, _cc);
-            if (_cc != null) _cc.enabled = true;
-
-            RecoverClientRpc(transform.position);
+            // Use ThirdPersonMotor.ServerTeleport for owner-authoritative NetworkTransform
+            var motor = GetComponent<ThirdPersonMotor>();
+            if (motor != null)
+            {
+                motor.ServerTeleport(safePos, transform.rotation);
+            }
+            else
+            {
+                if (_cc != null) _cc.enabled = false;
+                transform.position = safePos;
+                GroundSnap.SnapTransform(transform, _cc);
+                if (_cc != null) _cc.enabled = true;
+                RecoverClientRpc(transform.position);
+            }
         }
 
         [ClientRpc]

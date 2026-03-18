@@ -233,6 +233,20 @@ namespace DungeonGame.SpireGen
 
         private void ClearExistingGeneratedRooms()
         {
+            // Destroy tracked root-level room objects
+            for (int i = _spawnedRoomObjects.Count - 1; i >= 0; i--)
+            {
+                var go = _spawnedRoomObjects[i];
+                if (go == null) continue;
+                var no = go.GetComponent<NetworkObject>();
+                if (no != null && no.IsSpawned)
+                    no.Despawn(true);
+                else
+                    Destroy(go);
+            }
+            _spawnedRoomObjects.Clear();
+
+            // Also clean up any legacy children (safety net for rooms parented before this fix)
             for (int i = transform.childCount - 1; i >= 0; i--)
             {
                 var child = transform.GetChild(i);
@@ -1058,11 +1072,22 @@ namespace DungeonGame.SpireGen
             return false;
         }
 
+        /// <summary>
+        /// Track all spawned room GameObjects so we can destroy them on clear/regeneration.
+        /// Rooms are spawned as root objects (not children of the generator) so Netcode
+        /// replicates them to clients without requiring AutoObjectParentSync or a
+        /// NetworkObject on the generator itself.
+        /// </summary>
+        private readonly List<GameObject> _spawnedRoomObjects = new();
+
         private PlacedRoom PlaceRoom(RoomPrefab prefabAsset, Vector3 pos, Quaternion rot)
         {
             _placementAttempts++;
 
-            var go = Instantiate(prefabAsset.gameObject, pos, rot, transform);
+            // Instantiate as root object — NOT as a child of the generator.
+            // Parenting NetworkObjects to a non-NetworkObject parent prevents Netcode
+            // from replicating them to clients, which is why clients see an empty dungeon.
+            var go = Instantiate(prefabAsset.gameObject, pos, rot);
 
             var bounds = ComputeWorldBounds(go);
             bounds.Expand(overlapPadding);
@@ -1081,6 +1106,8 @@ namespace DungeonGame.SpireGen
             {
                 no.Spawn(true);
             }
+
+            _spawnedRoomObjects.Add(go);
 
             var rpInstance = go.GetComponentInChildren<RoomPrefab>(true);
             if (rpInstance == null)

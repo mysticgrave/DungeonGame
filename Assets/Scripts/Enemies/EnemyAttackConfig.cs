@@ -55,5 +55,13 @@ namespace DungeonGame.Enemies
         [Header("Animation")]
         [Tooltip("Animator trigger name for this attack.")]
         public string animTrigger = "Attack";
+
+        [Header("VFX (optional)")]
+        [Tooltip("If assigned, spawned on attack start on all clients. If empty, a procedural swipe VFX is spawned for melee attacks.")]
+        public GameObject vfxPrefab;
+        [Tooltip("Local offset from the enemy root for VFX spawn.")]
+        public Vector3 vfxLocalOffset = new Vector3(0f, 1.0f, 0f);
+        [Tooltip("Lifetime for the spawned VFX (seconds). If the prefab has a ParticleSystem, its duration is used instead.")]
+        [Min(0.1f)] public float vfxLifetime = 1.5f;
     }
 }

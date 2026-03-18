@@ -39,6 +39,8 @@ namespace DungeonGame.Core
         [SerializeField] private string gameSceneName = "Town";
 
         private bool _pendingHostAfterLobbyCreated;
+        private int _pendingHostFramesRemaining;
+        private const int HostDeferFrames = 30; // Wait for Steam relay to initialize before StartHost
         private ulong _pendingClientConnectHostId;
         private int _pendingClientConnectFramesRemaining = 15; // Frames to wait before StartClient (Steam relay + host scene stability)
         private bool _checkedLaunchCommandLine;
@@ -94,10 +96,23 @@ namespace DungeonGame.Core
                 TryJoinLobbyFromCommandLine();
             }
 
-            if (nm == null || nm.IsListening) return;
+            if (nm == null) return;
+
+            // Don't attempt to start host/client while networking is still active.
+            // This prevents race conditions when leaving a session and immediately rehosting.
+            if (nm.IsListening || nm.ShutdownInProgress) return;
 
             if (_pendingHostAfterLobbyCreated && CurrentLobby.Id != 0)
             {
+                // Defer StartHost by several frames to let Steam relay fully initialize.
+                // CreateRelaySocket throws "Invalid Socket" if called too soon after
+                // InitRelayNetworkAccess / lobby creation.
+                if (_pendingHostFramesRemaining > 0)
+                {
+                    _pendingHostFramesRemaining--;
+                    return;
+                }
+
                 _pendingHostAfterLobbyCreated = false;
                 try
                 {
@@ -219,9 +234,11 @@ namespace DungeonGame.Core
             CurrentLobby.SetGameServer(SteamClient.SteamId);
             InLobby = true;
 
-            // Defer StartHost to next frame so it runs on main thread (async continuation may be on a worker thread).
-            // SteamNetworkingSockets.CreateRelaySocket throws "Invalid Socket" when called off the main thread.
+            // Defer StartHost to allow Steam relay to fully initialize.
+            // SteamNetworkingSockets.CreateRelaySocket throws "Invalid Socket" when called
+            // too soon after InitRelayNetworkAccess or from a worker thread.
             _pendingHostAfterLobbyCreated = true;
+            _pendingHostFramesRemaining = HostDeferFrames;
 
             Debug.Log($"[SteamLobby] Created lobby {CurrentLobby.Id} — hosting as {SteamClient.Name}" + (publicLobby ? " (public)" : " (friends only)"));
             OnLobbyCreated?.Invoke();
@@ -239,21 +256,28 @@ namespace DungeonGame.Core
         /// <summary>Leave the current lobby and shut down networking.</summary>
         public void LeaveLobby()
         {
-            if (InLobby)
-            {
-                CurrentLobby.Leave();
-                InLobby = false;
-            }
+            Debug.Log("[SteamLobby] LeaveLobby called.");
+
+            // Reset ALL pending state first — prevents Update() from trying to StartHost/StartClient
             _pendingHostAfterLobbyCreated = false;
+            _pendingHostFramesRemaining = 0;
             _pendingClientConnectHostId = 0;
             _pendingClientConnectFramesRemaining = 0;
+
+            if (InLobby)
+            {
+                try { CurrentLobby.Leave(); }
+                catch (System.Exception ex) { Debug.LogWarning($"[SteamLobby] Lobby.Leave error: {ex.Message}"); }
+                InLobby = false;
+            }
+            CurrentLobby = default; // Reset so stale lobby ID doesn't persist
 
             var nm = NetworkManager.Singleton;
             if (nm != null && nm.IsListening)
                 nm.Shutdown();
 
             OnLobbyLeft?.Invoke();
-            Debug.Log("[SteamLobby] Left lobby.");
+            Debug.Log("[SteamLobby] Left lobby — all state reset.");
         }
 
         /// <summary>Open the Steam overlay invite dialog for the current lobby.</summary>
@@ -324,9 +348,10 @@ namespace DungeonGame.Core
         {
             CurrentLobby = lobby;
             InLobby = true;
-            Debug.Log($"[SteamLobby] HandleLobbyEntered: lobby={lobby.Id}, owner={lobby.Owner.Id}, members={lobby.MemberCount}, nm.IsListening={NetworkManager.Singleton?.IsListening}");
+            var nm = NetworkManager.Singleton;
+            Debug.Log($"[SteamLobby] HandleLobbyEntered: lobby={lobby.Id}, owner={lobby.Owner.Id}, members={lobby.MemberCount}, nm.IsListening={nm?.IsListening}, ShutdownInProgress={nm?.ShutdownInProgress}");
 
-            if (NetworkManager.Singleton != null && !NetworkManager.Singleton.IsListening)
+            if (nm != null && !nm.IsListening && !nm.ShutdownInProgress)
             {
                 // Prefer lobby owner (creator) — authoritative. Lobby data can be stale/wrong.
                 ulong hostId = lobby.Owner.Id > 0 ? lobby.Owner.Id : 0;
@@ -354,7 +379,6 @@ namespace DungeonGame.Core
                 }
                 else
                 {
-                    var nm = NetworkManager.Singleton;
                     var fp = nm.gameObject.GetComponent<FacepunchTransport>();
                     if (fp == null)
                     {

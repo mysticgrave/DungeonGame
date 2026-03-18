@@ -116,6 +116,14 @@ namespace DungeonGame.Enemies
                 && _animator.isActiveAndEnabled && !string.IsNullOrEmpty(atk.animTrigger))
                 _animator.SetTrigger(atk.animTrigger);
 
+            // Visual cue for attacks (works even with no animations yet).
+            // Route through EnemyAI (a NetworkBehaviour) so the RPC reaches all clients.
+            Vector3 forward = target != null ? (target.position - transform.position) : transform.forward;
+            forward.y = 0f;
+            if (forward.sqrMagnitude < 0.001f) forward = transform.forward;
+            if (_ai != null)
+                _ai.SpawnAttackVfxRpc(index, transform.position, forward.normalized);
+
             switch (atk.type)
             {
                 case EnemyAttackType.Melee:
