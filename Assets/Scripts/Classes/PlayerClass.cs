@@ -1,3 +1,4 @@
+using System;
 using DungeonGame.Meta;
 using Unity.Netcode;
 using UnityEngine;
@@ -19,6 +20,12 @@ namespace DungeonGame.Classes
 
         private bool _requestedClassFromSelection;
 
+        /// <summary>Fired when the class index changes (previousIndex, newIndex).</summary>
+        public event Action<int, int> OnClassIndexChanged;
+
+        /// <summary>Current class index in ClassRegistry.</summary>
+        public int ClassIndex => classIndexNet.Value;
+
         /// <summary>
         /// Class id for this run (for meta progression EXP). Empty if not set.
         /// </summary>
@@ -29,11 +36,24 @@ namespace DungeonGame.Classes
         public override void OnNetworkSpawn()
         {
             base.OnNetworkSpawn();
+            classIndexNet.OnValueChanged += HandleClassIndexChanged;
+
             if (IsServer && classIndexNet.Value < 0)
             {
                 if (defaultClass != null)
                     SetClass(defaultClass);
             }
+        }
+
+        public override void OnNetworkDespawn()
+        {
+            classIndexNet.OnValueChanged -= HandleClassIndexChanged;
+            base.OnNetworkDespawn();
+        }
+
+        private void HandleClassIndexChanged(int previousValue, int newValue)
+        {
+            OnClassIndexChanged?.Invoke(previousValue, newValue);
         }
 
         private void Update()
@@ -48,6 +68,17 @@ namespace DungeonGame.Classes
             if (ClassRegistry.GetByIndex(selected) == null) return;
             _requestedClassFromSelection = true;
             RequestSetClassFromSelectionServerRpc(selected);
+        }
+
+        /// <summary>
+        /// Public method for UI to request a class change at any time (e.g. from ClassSelectUI in Town).
+        /// Resets the guard flag and sends the ServerRpc.
+        /// </summary>
+        public void RequestClassChange(int classIndex)
+        {
+            if (!IsOwner) return;
+            _requestedClassFromSelection = true;
+            RequestSetClassFromSelectionServerRpc(classIndex);
         }
 
         [ServerRpc]

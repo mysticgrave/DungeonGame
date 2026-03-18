@@ -30,6 +30,26 @@ namespace DungeonGame.Enemies
         [Tooltip("Attack definitions this enemy can use. Evaluated in priority order.")]
         public EnemyAttackConfig[] attacks;
 
+        [Header("Combat Spacing")]
+        [Tooltip("NavMesh stopping distance when engaging. Enemies hold this distance instead of walking into the player.")]
+        public float preferredDistance = 3f;
+        [Tooltip("How far to back away after attacking.")]
+        public float retreatDistance = 4f;
+        [Tooltip("How long to retreat before re-engaging.")]
+        public float retreatDuration = 1.5f;
+        [Tooltip("Strafe speed when circling the player.")]
+        public float circleSpeed = 2.5f;
+        [Tooltip("Chance to circle vs retreat after an attack.")]
+        [Range(0f, 1f)] public float circleChance = 0.4f;
+
+        [Header("Stagger")]
+        [Tooltip("Can this enemy be staggered (briefly interrupted) by player hits?")]
+        public bool canBeStaggered = true;
+        [Tooltip("How long a stagger lasts.")]
+        public float staggerDuration = 0.4f;
+        [Tooltip("Minimum time between staggers to prevent stun-lock.")]
+        public float staggerCooldown = 1.0f;
+
         [Header("Ragdoll")]
         [Tooltip("Can this enemy be ragdolled by player knockback?")]
         public bool canBeRagdolled = true;

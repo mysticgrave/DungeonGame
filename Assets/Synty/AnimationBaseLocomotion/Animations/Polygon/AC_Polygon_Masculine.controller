@@ -5437,7 +5437,7 @@ AnimatorState:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: A_Attack_LightCombo01A_Sword
-  m_Speed: 1
+  m_Speed: 2.5
   m_CycleOffset: 0
   m_Transitions:
   - {fileID: 1667168770557229864}
@@ -6276,6 +6276,20 @@ AnimatorStateMachine:
   - {fileID: -1533553588945575270}
   m_EntryTransitions: []
   m_StateMachineTransitions:
+  - first: {fileID: 3652802291553319676}
+    second:
+    - {fileID: -8534850880604765477}
+    - {fileID: -4178063635055931915}
+    - {fileID: 2311406917196602788}
+  - first: {fileID: -5154619669261682928}
+    second:
+    - {fileID: 3300079922274740214}
+    - {fileID: -7189439974797700697}
+    - {fileID: 2287159477214047374}
+    - {fileID: 2932082331911690083}
+    - {fileID: -8281619679422675082}
+    - {fileID: 4165883047342736306}
+    - {fileID: -5804311381509069067}
   - first: {fileID: 6604365710422616744}
     second:
     - {fileID: -3517661301517864862}
@@ -6305,15 +6319,6 @@ AnimatorStateMachine:
     - {fileID: -8454007508122442119}
     - {fileID: -494253774927471600}
     - {fileID: 8472940214874483482}
-  - first: {fileID: -5154619669261682928}
-    second:
-    - {fileID: 3300079922274740214}
-    - {fileID: -7189439974797700697}
-    - {fileID: 2287159477214047374}
-    - {fileID: 2932082331911690083}
-    - {fileID: -8281619679422675082}
-    - {fileID: 4165883047342736306}
-    - {fileID: -5804311381509069067}
   - first: {fileID: 5175383130503594698}
     second:
     - {fileID: 2939765361409422258}
@@ -6321,11 +6326,6 @@ AnimatorStateMachine:
     - {fileID: 3656533616568830837}
     - {fileID: 7185925154260828547}
     - {fileID: 8665763668979056577}
-  - first: {fileID: 3652802291553319676}
-    second:
-    - {fileID: -8534850880604765477}
-    - {fileID: -4178063635055931915}
-    - {fileID: 2311406917196602788}
   m_StateMachineBehaviours: []
   m_AnyStatePosition: {x: 220, y: -120, z: 0}
   m_EntryPosition: {x: -210, y: -190, z: 0}

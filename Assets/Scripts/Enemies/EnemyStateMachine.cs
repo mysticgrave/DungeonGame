@@ -10,7 +10,10 @@ namespace DungeonGame.Enemies
         Idle,
         Patrol,
         Chase,
+        WindUp,
         Attack,
+        Retreat,
+        Staggered,
         Ragdoll,
         Stunned,
         Frozen,
@@ -31,7 +34,8 @@ namespace DungeonGame.Enemies
         public event Action<EnemyState, EnemyState> OnStateChanged;
 
         public bool IsMovementDisabled =>
-            Current is EnemyState.Attack or EnemyState.Ragdoll or EnemyState.Stunned or EnemyState.Frozen or EnemyState.Dead;
+            Current is EnemyState.WindUp or EnemyState.Attack or EnemyState.Staggered
+                or EnemyState.Ragdoll or EnemyState.Stunned or EnemyState.Frozen or EnemyState.Dead;
 
         public bool IsDead => Current == EnemyState.Dead;
 
@@ -39,14 +43,17 @@ namespace DungeonGame.Enemies
         private Animator _animator;
         private float _stateTimer;
         private bool _hasSpeedParam;
+        private bool _hasGroundedParam;
 
         private static readonly int AnimSpeed = Animator.StringToHash("Speed");
+        private static readonly int AnimIsGrounded = Animator.StringToHash("IsGrounded");
 
         private void Awake()
         {
             _agent = GetComponent<NavMeshAgent>();
             _animator = GetComponentInChildren<Animator>(true);
             _hasSpeedParam = _animator != null && HasParameter(_animator, AnimSpeed);
+            _hasGroundedParam = _animator != null && HasParameter(_animator, AnimIsGrounded);
         }
 
         private static bool HasParameter(Animator anim, int hash)
@@ -81,10 +88,20 @@ namespace DungeonGame.Enemies
                 }
             }
 
-            if (_hasSpeedParam && _animator != null && _agent != null)
+            if (_hasSpeedParam && _animator != null && _animator.runtimeAnimatorController != null
+                && _animator.isActiveAndEnabled && _agent != null)
             {
                 float speed = _agent.enabled && _agent.hasPath ? _agent.velocity.magnitude : 0f;
                 _animator.SetFloat(AnimSpeed, speed);
+            }
+
+            // Many locomotion controllers (including Synty) require IsGrounded.
+            // If this is never set, enemies can get stuck in falling.
+            if (_hasGroundedParam && _animator != null && _animator.runtimeAnimatorController != null
+                && _animator.isActiveAndEnabled)
+            {
+                bool grounded = Current is not EnemyState.Ragdoll and not EnemyState.Dead;
+                _animator.SetBool(AnimIsGrounded, grounded);
             }
         }
 
@@ -94,10 +111,13 @@ namespace DungeonGame.Enemies
 
             switch (Current)
             {
+                case EnemyState.WindUp:
                 case EnemyState.Ragdoll:
                 case EnemyState.Stunned:
                 case EnemyState.Frozen:
                 case EnemyState.Attack:
+                case EnemyState.Retreat:
+                case EnemyState.Staggered:
                     TransitionTo(EnemyState.Idle);
                     break;
             }
@@ -116,8 +136,14 @@ namespace DungeonGame.Enemies
                     EnableNavAgent(true);
                     break;
 
+                case EnemyState.WindUp:
                 case EnemyState.Attack:
+                case EnemyState.Staggered:
                     EnableNavAgent(false);
+                    break;
+
+                case EnemyState.Retreat:
+                    EnableNavAgent(true);
                     break;
 
                 case EnemyState.Ragdoll:

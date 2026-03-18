@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 614359e464e596b47930d03937d2228d, type: 3}
+  m_Name: GoldChest
+  m_EditorClassIdentifier: Assembly-CSharp::DungeonGame.Loot.ChestConfig
+  chestName: Gold Chest
+  prefab: {fileID: 133660, guid: 93dff2ee83d357248a9b0be5b4c085be, type: 3}
+  spawnWeight: 1
+  minItemRolls: 1
+  maxItemRolls: 1
+  lootTable:
+  - item: {fileID: 11400000, guid: 11b0876faf2c630498cf77cd3ba9afb8, type: 2}
+    dropWeight: 1
+    minCount: 1
+    maxCount: 1
+  - item: {fileID: 11400000, guid: b97dd9faba8213045ab064177ab27f1c, type: 2}
+    dropWeight: 1
+    minCount: 1
+    maxCount: 1
+  - item: {fileID: 11400000, guid: ad48f4dd78655d4499ba6594a8934201, type: 2}
+    dropWeight: 1
+    minCount: 1
+    maxCount: 1
+  - item: {fileID: 11400000, guid: 1d110a8fe39ec594ba74b2ca961bd7ff, type: 2}
+    dropWeight: 1
+    minCount: 1
+    maxCount: 1

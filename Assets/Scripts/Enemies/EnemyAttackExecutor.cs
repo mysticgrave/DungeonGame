@@ -9,6 +9,7 @@ namespace DungeonGame.Enemies
     /// <summary>
     /// Executes attacks defined in EnemyAttackConfig[]. Server-only.
     /// Call TryAttack() from EnemyAI when a target is in range.
+    /// Supports a wind-up telegraph phase before the actual attack.
     /// </summary>
     public class EnemyAttackExecutor : MonoBehaviour
     {
@@ -17,12 +18,18 @@ namespace DungeonGame.Enemies
         private NavMeshAgent _agent;
         private Animator _animator;
         private EnemyStateMachine _sm;
+        private EnemyAI _ai;
 
         private int _activeAttackIndex = -1;
         private float _lungeUntil;
         private Transform _lungeTarget;
         private bool _lungeDamageApplied;
         private float _baseMoveSpeed;
+
+        // Wind-up state
+        private int _pendingAttackIndex = -1;
+        private Transform _pendingTarget;
+        private float _windUpUntil;
 
         public void Init(EnemyAttackConfig[] attacks, float baseMoveSpeed)
         {
@@ -32,11 +39,12 @@ namespace DungeonGame.Enemies
             _agent = GetComponent<NavMeshAgent>();
             _animator = GetComponentInChildren<Animator>(true);
             _sm = GetComponent<EnemyStateMachine>();
+            _ai = GetComponent<EnemyAI>();
         }
 
         /// <summary>
         /// Tries the highest-priority attack that is off cooldown and in range.
-        /// Returns true if an attack was started.
+        /// Returns true if an attack wind-up was started.
         /// </summary>
         public bool TryAttack(Transform target, float distToTarget)
         {
@@ -50,20 +58,62 @@ namespace DungeonGame.Enemies
                 if (Time.time < _nextAttackAt[i]) continue;
                 if (distToTarget > atk.range) continue;
 
-                ExecuteAttack(i, target);
+                StartWindUp(i, target);
                 return true;
             }
 
             return false;
         }
 
-        private void ExecuteAttack(int index, Transform target)
+        /// <summary>Cancel any pending wind-up or active attack. Called when staggered/ragdolled.</summary>
+        public void CancelPendingAttack()
+        {
+            if (_pendingAttackIndex >= 0)
+            {
+                _pendingAttackIndex = -1;
+                _pendingTarget = null;
+            }
+            if (_activeAttackIndex >= 0)
+            {
+                if (_agent != null && _agent.enabled)
+                    _agent.speed = _baseMoveSpeed;
+                _lungeTarget = null;
+                _activeAttackIndex = -1;
+            }
+        }
+
+        private void StartWindUp(int index, Transform target)
         {
             var atk = _attacks[index];
             _nextAttackAt[index] = Time.time + atk.cooldown;
-            _activeAttackIndex = index;
 
-            if (_animator != null && !string.IsNullOrEmpty(atk.animTrigger))
+            if (atk.windUpDuration > 0f)
+            {
+                _pendingAttackIndex = index;
+                _pendingTarget = target;
+                _windUpUntil = Time.time + atk.windUpDuration;
+
+                if (_animator != null && _animator.runtimeAnimatorController != null
+                        && _animator.isActiveAndEnabled && !string.IsNullOrEmpty(atk.windUpAnimTrigger))
+                    _animator.SetTrigger(atk.windUpAnimTrigger);
+
+                _sm?.TransitionTo(EnemyState.WindUp, atk.windUpDuration);
+            }
+            else
+            {
+                ExecuteAttack(index, target);
+            }
+        }
+
+        private void ExecuteAttack(int index, Transform target)
+        {
+            var atk = _attacks[index];
+            _activeAttackIndex = index;
+            _pendingAttackIndex = -1;
+            _pendingTarget = null;
+
+            if (_animator != null && _animator.runtimeAnimatorController != null
+                && _animator.isActiveAndEnabled && !string.IsNullOrEmpty(atk.animTrigger))
                 _animator.SetTrigger(atk.animTrigger);
 
             switch (atk.type)
@@ -79,7 +129,8 @@ namespace DungeonGame.Enemies
                     break;
             }
 
-            _sm?.TransitionTo(EnemyState.Attack, atk.type == EnemyAttackType.Melee ? atk.lungeDuration : 0.5f);
+            float attackDur = atk.type == EnemyAttackType.Melee ? atk.lungeDuration : 0.5f;
+            _sm?.TransitionTo(EnemyState.Attack, attackDur);
         }
 
         private void StartMelee(EnemyAttackConfig atk, Transform target)
@@ -131,6 +182,18 @@ namespace DungeonGame.Enemies
 
         private void Update()
         {
+            // Wind-up phase — wait then execute
+            if (_pendingAttackIndex >= 0)
+            {
+                if (Time.time >= _windUpUntil)
+                {
+                    int idx = _pendingAttackIndex;
+                    Transform tgt = _pendingTarget;
+                    ExecuteAttack(idx, tgt);
+                }
+                return;
+            }
+
             if (_activeAttackIndex < 0) return;
 
             var atk = _attacks[_activeAttackIndex];
@@ -146,6 +209,7 @@ namespace DungeonGame.Enemies
                     _agent.speed = _baseMoveSpeed;
                 _lungeTarget = null;
                 _activeAttackIndex = -1;
+                _ai?.OnAttackFinished();
                 return;
             }
 

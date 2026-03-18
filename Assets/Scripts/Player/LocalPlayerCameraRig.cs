@@ -24,6 +24,11 @@ namespace DungeonGame.Player
         [SerializeField] private float farClipPlane = 2000f;
         [Tooltip("Field of view when creating camera from code.")]
         [SerializeField] private float fov = 70f;
+        [Header("Spire Performance")]
+        [Tooltip("When in Spire_Slice, use this far clip for better performance when viewing large areas.")]
+        [SerializeField] private float spireFarClipPlane = 350f;
+        [Tooltip("When in Spire_Slice, enable/disable post-processing for performance.")]
+        [SerializeField] private bool spirePostProcessing = false;
 
         [Header("Rig")]
         [SerializeField] private Transform followTarget;
@@ -149,6 +154,7 @@ namespace DungeonGame.Player
             if (!IsOwner) return;
             if (cam == null) return;
             if (PauseMenuController.IsPaused) return;
+            if (Cursor.lockState != CursorLockMode.Locked) return;
 
             if (Mouse.current != null)
             {
@@ -220,12 +226,17 @@ namespace DungeonGame.Player
 
             cam.clearFlags = black ? CameraClearFlags.SolidColor : CameraClearFlags.Skybox;
             cam.backgroundColor = Color.black;
+            cam.farClipPlane = black ? spireFarClipPlane : farClipPlane;
 
             // Only nuke the skybox in the spire.
             if (black)
             {
                 RenderSettings.skybox = null;
             }
+
+            var data = cam.GetUniversalAdditionalCameraData();
+            if (data != null)
+                data.renderPostProcessing = black ? spirePostProcessing : true;
         }
 
         public override void OnNetworkDespawn()

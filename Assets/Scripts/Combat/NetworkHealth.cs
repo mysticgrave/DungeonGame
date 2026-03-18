@@ -104,6 +104,15 @@ namespace DungeonGame.Combat
             TakeDamage(new DamageInfo(amount));
         }
 
+        /// <summary>Server-only. Heal this entity by the given amount. Cannot exceed MaxHp.</summary>
+        public void Heal(int amount)
+        {
+            if (!IsServer) return;
+            if (amount <= 0) return;
+            if (hpNet.Value <= 0) return; // Can't heal the dead
+            hpNet.Value = Mathf.Min(maxHp, hpNet.Value + amount);
+        }
+
         private void DespawnSelf()
         {
             var no = GetComponent<NetworkObject>();

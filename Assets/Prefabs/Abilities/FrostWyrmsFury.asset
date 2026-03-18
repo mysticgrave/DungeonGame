@@ -1,0 +1,46 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 599ded77712486b42843db4954ec23d7, type: 3}
+  m_Name: FrostWyrmsFury
+  m_EditorClassIdentifier: Assembly-CSharp::DungeonGame.Abilities.AbilityConfig
+  abilityId: frost_wyrms_fury
+  displayName: Frost Wyrm's Fury
+  description: Summon an ancient frost wyrm that unleashes a devastating breath of
+    ice in a line, freezing and shattering all enemies caught in the blast.
+  icon: {fileID: 0}
+  abilityType: 4
+  castMode: 1
+  reticleShape: 0
+  damage: 15
+  cooldown: 18
+  range: 12
+  radius: 4
+  damageType: 2
+  statusEffect: 3
+  statusDuration: 3
+  statusImpulseForce: 6
+  projectilePrefab: {fileID: 0}
+  projectileSpeed: 15
+  projectileCount: 1
+  projectileSpreadAngle: 15
+  healAmount: 0
+  speedBoostMultiplier: 0
+  buffDuration: 5
+  dashDistance: 6
+  dashDuration: 0.3
+  zonePrefab: {fileID: 0}
+  zoneDuration: 6
+  zoneDamagePerTick: 5
+  zoneTickInterval: 0.5
+  vfxPrefab: {fileID: 0}
+  animationTrigger:
+  castSound: {fileID: 0}

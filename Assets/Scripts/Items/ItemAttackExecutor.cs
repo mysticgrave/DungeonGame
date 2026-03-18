@@ -1,4 +1,5 @@
 using System;
+using DungeonGame.Classes;
 using DungeonGame.Combat;
 using DungeonGame.Enemies;
 using DungeonGame.Player;
@@ -27,15 +28,23 @@ namespace DungeonGame.Items
     /// </summary>
     public static class ItemAttackExecutor
     {
-        /// <summary>Enable to draw Debug.DrawRay for attack shapes (visible in Scene view).</summary>
+        /// <summary>Enable to draw Debug.DrawRay for attack shapes and log hit details.</summary>
         public static bool DebugDraw;
 
         /// <summary>Fired after any attack is executed. bool = at least one target was hit.</summary>
         public static event Action<bool> OnAttackFired;
 
         public static void PerformMelee(Transform attackOrigin, WeaponConfig config,
-            NetworkObject attacker, KnockSettings knock)
+            NetworkObject attacker, KnockSettings knock, bool isHeavy = false)
         {
+            int damage = isHeavy ? config.heavyDamage : config.damage;
+            KnockSettings effectiveKnock = knock;
+            if (isHeavy)
+            {
+                effectiveKnock.EnemyKnockForward *= config.heavyKnockMultiplier;
+                effectiveKnock.EnemyKnockUp *= config.heavyKnockMultiplier;
+            }
+
             Vector3 pos = attackOrigin.position;
             Vector3 dir = attackOrigin.forward;
             dir.y = 0f;
@@ -46,9 +55,15 @@ namespace DungeonGame.Items
             var hits = Physics.OverlapSphere(center, config.hitRadius,
                 ~0, QueryTriggerInteraction.Ignore);
 
+            // Always log attack info for debugging (remove once combat is verified working)
+            Debug.Log($"[Attack] Melee {(isHeavy ? "HEAVY" : "light")} originPos={pos:F2} dir={dir:F2} " +
+                      $"center={center:F2} radius={config.hitRadius:F2} range={config.range:F1} " +
+                      $"damage={damage} hits={hits.Length}");
+            for (int i = 0; i < hits.Length; i++)
+                Debug.Log($"[Attack]   hit[{i}]: {hits[i].name} (parent: {hits[i].transform.root.name})");
+
             if (DebugDraw)
             {
-                // Draw attack sphere as cross lines
                 DrawDebugSphere(center, config.hitRadius, hits.Length > 0 ? Color.green : Color.red, 0.5f);
                 Debug.DrawRay(pos, dir * config.range, Color.yellow, 0.5f);
             }
@@ -56,14 +71,14 @@ namespace DungeonGame.Items
             bool didHit = false;
             foreach (var col in hits)
             {
-                if (ProcessMeleeHit(col, dir, config.damage, attacker, knock))
+                if (ProcessMeleeHit(col, dir, damage, attacker, effectiveKnock, isHeavy))
                     didHit = true;
             }
             OnAttackFired?.Invoke(didHit);
         }
 
         public static void PerformDefaultMelee(Transform attackOrigin, int damage, float range,
-            float hitRadius, NetworkObject attacker, KnockSettings knock)
+            float hitRadius, NetworkObject attacker, KnockSettings knock, bool isHeavy = false)
         {
             Vector3 pos = attackOrigin.position;
             Vector3 dir = attackOrigin.forward;
@@ -78,12 +93,14 @@ namespace DungeonGame.Items
             {
                 DrawDebugSphere(center, hitRadius, hits.Length > 0 ? Color.green : Color.red, 0.5f);
                 Debug.DrawRay(pos, dir * range, Color.yellow, 0.5f);
+                Debug.Log($"[Attack] DefaultMelee at {center:F1} radius={hitRadius:F2} " +
+                          $"range={range:F1} damage={damage} hits={hits.Length}");
             }
 
             bool didHit = false;
             foreach (var col in hits)
             {
-                if (ProcessMeleeHit(col, dir, damage, attacker, knock))
+                if (ProcessMeleeHit(col, dir, damage, attacker, knock, isHeavy))
                     didHit = true;
             }
             OnAttackFired?.Invoke(didHit);
@@ -113,6 +130,9 @@ namespace DungeonGame.Items
                     damageable.TakeDamage(info);
                     didHit = true;
                 }
+
+                if (DebugDraw)
+                    Debug.Log($"[Attack] Ranged hit {hit.collider.name} hasDamageable={damageable != null}");
             }
 
             if (DebugDraw)
@@ -145,6 +165,9 @@ namespace DungeonGame.Items
                     damageable.TakeDamage(info);
                     didHit = true;
                 }
+
+                if (DebugDraw)
+                    Debug.Log($"[Attack] Magic hit {hit.collider.name} hasDamageable={damageable != null}");
             }
 
             if (DebugDraw)
@@ -154,12 +177,12 @@ namespace DungeonGame.Items
         }
 
         public static void ExecuteAttack(Transform attackOrigin, WeaponConfig config,
-            NetworkObject attacker, KnockSettings knock)
+            NetworkObject attacker, KnockSettings knock, bool isHeavy = false)
         {
             switch (config.attackType)
             {
                 case WeaponAttackType.Melee:
-                    PerformMelee(attackOrigin, config, attacker, knock);
+                    PerformMelee(attackOrigin, config, attacker, knock, isHeavy);
                     break;
                 case WeaponAttackType.Ranged:
                     PerformRanged(attackOrigin, config, attacker);
@@ -168,14 +191,14 @@ namespace DungeonGame.Items
                     PerformMagic(attackOrigin, config, attacker);
                     break;
                 default:
-                    PerformMelee(attackOrigin, config, attacker, knock);
+                    PerformMelee(attackOrigin, config, attacker, knock, isHeavy);
                     break;
             }
         }
 
         /// <summary>Returns true if a valid target was hit (enemy or teammate).</summary>
         public static bool ProcessMeleeHit(Collider col, Vector3 attackDir, int damage,
-            NetworkObject attacker, KnockSettings knock)
+            NetworkObject attacker, KnockSettings knock, bool isHeavy = false)
         {
             var no = col.GetComponentInParent<NetworkObject>();
             if (no != null && no.NetworkObjectId == attacker.NetworkObjectId)
@@ -187,16 +210,28 @@ namespace DungeonGame.Items
             {
                 Vector3 impulse = attackDir * knock.TeammateKnockForward + Vector3.up * knock.TeammateKnockUp;
                 knockable.KnockFromServer(impulse, knock.TeammateKnockDuration);
+                if (DebugDraw)
+                    Debug.Log($"[Attack] Hit teammate {col.name} — knockback only");
                 return true;
             }
 
-            // Enemy: take damage + optional ragdoll
+            // Enemy: take damage + stagger or ragdoll
             var health = col.GetComponentInParent<NetworkHealth>();
-            if (health == null) return false;
+            if (health == null)
+            {
+                if (DebugDraw)
+                    Debug.Log($"[Attack] Hit {col.name} — no NetworkHealth, skipped");
+                return false;
+            }
             if (no != null && no.IsPlayerObject) return false;
 
             Vector3 enemyImpulse = attackDir * knock.EnemyKnockForward + Vector3.up * knock.EnemyKnockUp;
             var enemyAi = col.GetComponentInParent<EnemyAI>();
+
+            // Apply class damage multiplier
+            var attackerStats = attacker.GetComponent<PlayerClassStats>();
+            if (attackerStats != null)
+                damage = Mathf.Max(1, Mathf.RoundToInt(damage * attackerStats.DamageMultiplier));
 
             // Build rich DamageInfo
             Vector3 hitPoint = col.ClosestPoint(attacker.transform.position);
@@ -208,12 +243,26 @@ namespace DungeonGame.Items
             };
             health.TakeDamage(info);
 
-            if (enemyAi != null && (enemyAi.Config == null || enemyAi.Config.canBeRagdolled))
+            if (DebugDraw)
+                Debug.Log($"[Attack] Hit enemy {col.name} for {damage} dmg (heavy={isHeavy}), HP now={health.Hp}");
+
+            if (enemyAi != null)
             {
                 if (health.Hp <= 0)
+                {
+                    // Death — ragdoll with impulse
                     enemyAi.ApplyHitImpulse(enemyImpulse);
-                else
+                }
+                else if (isHeavy && (enemyAi.Config == null || enemyAi.Config.canBeRagdolled))
+                {
+                    // Heavy attack — full ragdoll
                     enemyAi.Ragdoll(enemyImpulse);
+                }
+                else
+                {
+                    // Light attack — stagger (brief interrupt)
+                    enemyAi.Stagger();
+                }
             }
 
             return true;
@@ -221,7 +270,6 @@ namespace DungeonGame.Items
 
         private static void DrawDebugSphere(Vector3 center, float radius, Color color, float duration)
         {
-            // Approximate sphere with 3 circles (XY, XZ, YZ planes)
             int segments = 16;
             for (int i = 0; i < segments; i++)
             {

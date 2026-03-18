@@ -1,3 +1,4 @@
+using System.Collections;
 using DungeonGame.Meta;
 using DungeonGame.Player;
 using DungeonGame.UI;
@@ -66,10 +67,16 @@ namespace DungeonGame.Items
         private SwordCombatLayerBlender _layerBlender;
         private Animator _animator;
         private PlayerBodyStateMachine _bodyState;
-        private float _nextAttackTimeLeft;
-        private float _nextAttackTimeRight;
+        private float _nextAttackTimeLeft;      // Client-side cooldown (for input responsiveness)
+        private float _nextAttackTimeRight;     // Client-side cooldown
+        private float _serverNextAttackLeft;    // Server-side cooldown (authoritative)
+        private float _serverNextAttackRight;   // Server-side cooldown
         private bool _metaWeaponRequested;
         private static bool _itemRegistryWarningLogged;
+
+        // Heavy attack tracking
+        private float _leftPressTime = -1f;
+        private float _rightPressTime = -1f;
 
         // --- Computed properties ---
         public bool LeftHandEmpty => _leftItemIndex.Value < 0;
@@ -147,18 +154,22 @@ namespace DungeonGame.Items
             if (!IsOwner) return;
             if (Keyboard.current == null || Mouse.current == null) return;
             if (PauseMenuController.IsPaused) return;
-            if (_bodyState != null && _bodyState.IsMovementDisabled) return;
+            if (_bodyState != null && _bodyState.IsMovementDisabled)
+                return;
 
             bool gHeld = Keyboard.current.gKey.isPressed;
             bool lmbPressed = Mouse.current.leftButton.wasPressedThisFrame;
             bool rmbPressed = Mouse.current.rightButton.wasPressedThisFrame;
+            bool lmbReleased = Mouse.current.leftButton.wasReleasedThisFrame;
+            bool rmbReleased = Mouse.current.rightButton.wasReleasedThisFrame;
 
             // --- DROP/THROW MODE (Hold G) ---
             if (gHeld)
             {
+                _leftPressTime = -1f;
+                _rightPressTime = -1f;
                 if (HasTwoHandedItem)
                 {
-                    // Any click drops the two-handed item
                     if (lmbPressed || rmbPressed)
                     {
                         var camFwd = GetCameraForward();
@@ -178,36 +189,28 @@ namespace DungeonGame.Items
                         DropServerRpc((int)Hand.Right, camFwd, true);
                     }
                 }
-                return; // Don't process use/pickup while G held
+                return;
             }
 
             // --- TWO-HANDED ITEM USE ---
             if (HasTwoHandedItem)
             {
-                if (lmbPressed)
-                    TryUseItem(Hand.Left, false);
-                else if (rmbPressed)
-                    TryUseItem(Hand.Left, true); // secondary action
+                TrackHeavyInput(Hand.Left, lmbPressed, lmbReleased, false);
+                TrackHeavyInput(Hand.Left, rmbPressed, rmbReleased, true);
                 return;
             }
 
             // --- LEFT HAND (LMB) ---
-            if (lmbPressed)
-            {
-                if (LeftHandEmpty)
-                    TryPickup(Hand.Left);
-                else
-                    TryUseItem(Hand.Left, false);
-            }
+            if (lmbPressed && LeftHandEmpty)
+                TryPickup(Hand.Left);
+            else
+                TrackHeavyInput(Hand.Left, lmbPressed, lmbReleased, false);
 
             // --- RIGHT HAND (RMB) ---
-            if (rmbPressed)
-            {
-                if (RightHandEmpty)
-                    TryPickup(Hand.Right);
-                else
-                    TryUseItem(Hand.Right, false);
-            }
+            if (rmbPressed && RightHandEmpty)
+                TryPickup(Hand.Right);
+            else
+                TrackHeavyInput(Hand.Right, rmbPressed, rmbReleased, false);
 
             // Debug: draw pickup ray/sphere every frame when hand empty (visible in Scene/Game view with Gizmos on)
             if (debugDrawRayEveryFrame && (LeftHandEmpty || RightHandEmpty))
@@ -295,6 +298,7 @@ namespace DungeonGame.Items
             }
 
             WorldItem worldItem = null;
+            RaycastHit? blockingHit = null;
             foreach (var h in hits)
             {
                 var wi = h.collider.GetComponentInParent<WorldItem>();
@@ -307,14 +311,31 @@ namespace DungeonGame.Items
                 var no = h.collider.GetComponentInParent<NetworkObject>();
                 if (no != null && no.NetworkObjectId == NetworkObject.NetworkObjectId)
                     continue;
-                // Hit something else (wall, etc.) — nothing pickable beyond it
+
+                // If we hit a trigger that isn't a WorldItem, don't treat it as blocking.
+                // This avoids interaction volumes / enemy triggers preventing pickup.
+                if (h.collider.isTrigger)
+                    continue;
+
+                // Hit something solid (wall, etc.) — nothing pickable beyond it
+                blockingHit = h;
                 break;
             }
 
             if (worldItem == null)
             {
                 if (debugPickup && Mouse.current != null && (Mouse.current.leftButton.wasPressedThisFrame || Mouse.current.rightButton.wasPressedThisFrame))
-                    Debug.Log("[HandSystem] TryPickup: No WorldItem in hits. Add WorldItem to the object, or add its config to ItemRegistry.");
+                {
+                    if (blockingHit.HasValue)
+                    {
+                        var b = blockingHit.Value;
+                        Debug.Log($"[HandSystem] TryPickup: No WorldItem found before solid hit '{b.collider.name}' (layer {LayerMask.LayerToName(b.collider.gameObject.layer)}, dist={b.distance:F1}). If this is a trigger volume, set it to isTrigger=true; otherwise the pickup is genuinely blocked.");
+                    }
+                    else
+                    {
+                        Debug.Log("[HandSystem] TryPickup: No WorldItem in hits. Ensure the hit collider is on the WorldItem object (or a child), and the scene object has a WorldItem component.");
+                    }
+                }
                 return;
             }
             if (worldItem.IsHeld)
@@ -326,43 +347,131 @@ namespace DungeonGame.Items
             PickupServerRpc((int)hand, worldItem.NetworkObject.NetworkObjectId);
         }
 
-        private void TryUseItem(Hand hand, bool secondary)
+        /// <summary>
+        /// Tracks press-hold-release for heavy attacks.
+        /// On press: record time. On release: if held long enough → heavy, else → light.
+        /// </summary>
+        private void TrackHeavyInput(Hand hand, bool pressed, bool released, bool secondary)
         {
             int itemIndex = hand == Hand.Left ? _leftItemIndex.Value : _rightItemIndex.Value;
-            if (itemIndex < 0) return;
+            if (itemIndex < 0)
+            {
+                if (pressed || released)
+                    Debug.Log($"[HandSystem] TrackHeavyInput({hand}): itemIndex={itemIndex}, no item — skipping");
+                return;
+            }
+
+            ref float pressTime = ref (hand == Hand.Left ? ref _leftPressTime : ref _rightPressTime);
+
+            if (pressed)
+            {
+                pressTime = Time.time;
+                Debug.Log($"[HandSystem] TrackHeavyInput({hand}): PRESSED, recording pressTime={pressTime:F3}");
+                return;
+            }
+
+            if (released)
+            {
+                if (pressTime < 0f)
+                {
+                    Debug.LogWarning($"[HandSystem] TrackHeavyInput({hand}): RELEASED but pressTime={pressTime:F3} (never recorded press!) — skipping");
+                    return;
+                }
+
+                var config = ItemRegistry.GetByIndex(itemIndex);
+                if (config == null) { pressTime = -1f; Debug.LogWarning($"[HandSystem] TrackHeavyInput({hand}): config is null for itemIndex={itemIndex}"); return; }
+
+                float holdDuration = Time.time - pressTime;
+                bool isHeavy = holdDuration >= config.heavyChargeTime
+                               && config.attackType == WeaponAttackType.Melee;
+                pressTime = -1f;
+
+                Debug.Log($"[HandSystem] TrackHeavyInput({hand}): RELEASED, holdDuration={holdDuration:F3}s, " +
+                          $"chargeTime={config.heavyChargeTime:F2}, attackType={config.attackType}, isHeavy={isHeavy} → calling TryUseItem");
+                TryUseItem(hand, secondary, isHeavy);
+            }
+        }
+
+        private void TryUseItem(Hand hand, bool secondary, bool isHeavy = false)
+        {
+            int itemIndex = hand == Hand.Left ? _leftItemIndex.Value : _rightItemIndex.Value;
+            if (itemIndex < 0) { Debug.Log($"[HandSystem] TryUseItem({hand}): itemIndex={itemIndex}, skipping"); return; }
 
             // Client-side cooldown check
             float nextTime = hand == Hand.Left ? _nextAttackTimeLeft : _nextAttackTimeRight;
-            if (Time.time < nextTime) return;
+            if (Time.time < nextTime) { Debug.Log($"[HandSystem] TryUseItem({hand}): on cooldown ({nextTime - Time.time:F2}s remaining)"); return; }
 
             var config = ItemRegistry.GetByIndex(itemIndex);
             if (config == null) return;
 
             // Set client-side cooldown
+            float cd = isHeavy ? config.heavyCooldown : config.cooldown;
             if (hand == Hand.Left)
-                _nextAttackTimeLeft = Time.time + config.cooldown;
+                _nextAttackTimeLeft = Time.time + cd;
             else
-                _nextAttackTimeRight = Time.time + config.cooldown;
+                _nextAttackTimeRight = Time.time + cd;
 
             // Play animation locally for responsiveness
-            PlayAttackAnimation(config, secondary);
+            PlayAttackAnimation(config, secondary, isHeavy);
 
-            UseItemServerRpc((int)hand, itemIndex, secondary);
+            UseItemServerRpc((int)hand, itemIndex, secondary, isHeavy);
         }
 
-        private void PlayAttackAnimation(WeaponConfig config, bool secondary)
-        {
-            if (_animator == null || _animator.runtimeAnimatorController == null) return;
+        private Coroutine _attackResetCoroutine;
 
-            string triggerName = secondary && !string.IsNullOrEmpty(config.secondaryActionTrigger)
-                ? config.secondaryActionTrigger
-                : config.primaryAttackTrigger;
+        private void PlayAttackAnimation(WeaponConfig config, bool secondary, bool isHeavy = false)
+        {
+            if (_animator == null) return;
+            if (!_animator.enabled) _animator.enabled = true;
+            if (_animator.runtimeAnimatorController == null) return;
+
+            string triggerName;
+            if (isHeavy && !string.IsNullOrEmpty(config.heavyAttackTrigger))
+                triggerName = config.heavyAttackTrigger;
+            else if (secondary && !string.IsNullOrEmpty(config.secondaryActionTrigger))
+                triggerName = config.secondaryActionTrigger;
+            else
+                triggerName = config.primaryAttackTrigger;
 
             if (string.IsNullOrEmpty(triggerName)) return;
 
             int hash = Animator.StringToHash(triggerName);
             if (WeaponController.HasTriggerParameter(_animator, hash))
+            {
                 _animator.SetTrigger(hash);
+
+                // Safety net: if the attack animation state has no exit transition,
+                // force-crossfade back to locomotion after the cooldown expires.
+                float resetDelay = isHeavy ? config.heavyCooldown : config.cooldown;
+                if (_attackResetCoroutine != null) StopCoroutine(_attackResetCoroutine);
+                _attackResetCoroutine = StartCoroutine(ResetAttackAnimCoroutine(hash, resetDelay));
+            }
+        }
+
+        private System.Collections.IEnumerator ResetAttackAnimCoroutine(int triggerHash, float delay)
+        {
+            yield return new WaitForSeconds(delay);
+            if (_animator == null || !_animator.enabled) yield break;
+
+            // Check if the animator is still in the attack state (stuck)
+            var stateInfo = _animator.GetCurrentAnimatorStateInfo(0);
+            if (stateInfo.normalizedTime >= 0.95f && !_animator.IsInTransition(0))
+            {
+                // Animator is stuck at the end of a state with no exit — crossfade back to locomotion
+                _animator.ResetTrigger(triggerHash);
+                // Try common locomotion state names
+                int locomotionHash = Animator.StringToHash("Locomotion");
+                if (_animator.HasState(0, locomotionHash))
+                {
+                    _animator.CrossFadeInFixedTime(locomotionHash, 0.15f, 0);
+                }
+                else
+                {
+                    // Fallback: play default state (index 0)
+                    _animator.Play(0, 0, 0f);
+                }
+            }
+            _attackResetCoroutine = null;
         }
 
         private Vector3 GetCameraForward()
@@ -482,27 +591,34 @@ namespace DungeonGame.Items
         }
 
         [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Owner)]
-        private void UseItemServerRpc(int hand, int expectedItemIndex, bool secondary)
+        private void UseItemServerRpc(int hand, int expectedItemIndex, bool secondary, bool isHeavy = false)
         {
             var handSlot = (Hand)hand;
 
             // Validate item matches server state
             int serverIndex = handSlot == Hand.Left ? _leftItemIndex.Value : _rightItemIndex.Value;
-            if (serverIndex != expectedItemIndex || serverIndex < 0) return;
+            if (serverIndex != expectedItemIndex || serverIndex < 0)
+            {
+                Debug.LogWarning($"[HandSystem] UseItemServerRpc REJECTED — hand={handSlot} " +
+                                 $"serverIndex={serverIndex} expectedIndex={expectedItemIndex} " +
+                                 $"leftIdx={_leftItemIndex.Value} rightIdx={_rightItemIndex.Value}");
+                return;
+            }
 
             var config = ItemRegistry.GetByIndex(serverIndex);
-            if (config == null) return;
+            if (config == null) { Debug.LogWarning($"[HandSystem] UseItemServerRpc REJECTED — config null for index {serverIndex}"); return; }
 
-            // Server-side cooldown
-            float nextTime = handSlot == Hand.Left ? _nextAttackTimeLeft : _nextAttackTimeRight;
-            if (Time.time < nextTime) return;
+            // Server-side cooldown (separate from client-side to avoid host conflict)
+            float nextTime = handSlot == Hand.Left ? _serverNextAttackLeft : _serverNextAttackRight;
+            if (Time.time < nextTime) { Debug.Log($"[HandSystem] UseItemServerRpc REJECTED — server cooldown ({nextTime - Time.time:F2}s remaining)"); return; }
 
+            float cd = isHeavy ? config.heavyCooldown : config.cooldown;
             if (handSlot == Hand.Left)
-                _nextAttackTimeLeft = Time.time + config.cooldown;
+                _serverNextAttackLeft = Time.time + cd;
             else
-                _nextAttackTimeRight = Time.time + config.cooldown;
+                _serverNextAttackRight = Time.time + cd;
 
-            // Execute attack
+            // Execute attack — use camera/player facing for aim direction
             Transform origin = _weaponController != null ? _weaponController.AttackOrigin : transform;
             var knock = _weaponController != null
                 ? _weaponController.GetKnockSettings()
@@ -515,20 +631,28 @@ namespace DungeonGame.Items
                     EnemyKnockUp = 3f,
                 };
 
+            Debug.Log($"[HandSystem] UseItemServerRpc — item='{config.displayName}' hand={handSlot} " +
+                      $"isHeavy={isHeavy} attackType={config.attackType} " +
+                      $"origin={origin.name} pos={origin.position:F2} fwd={origin.forward:F2}");
+
             if (!secondary)
             {
-                ItemAttackExecutor.ExecuteAttack(origin, config, NetworkObject, knock);
+                ItemAttackExecutor.ExecuteAttack(origin, config, NetworkObject, knock, isHeavy);
             }
             else if (!string.IsNullOrEmpty(config.secondaryActionTrigger))
             {
-                // Secondary action: for now, same as primary. Extend per-item later.
-                ItemAttackExecutor.ExecuteAttack(origin, config, NetworkObject, knock);
+                ItemAttackExecutor.ExecuteAttack(origin, config, NetworkObject, knock, isHeavy);
             }
 
             // Trigger animation on remote clients
-            string triggerName = secondary && !string.IsNullOrEmpty(config.secondaryActionTrigger)
-                ? config.secondaryActionTrigger
-                : config.primaryAttackTrigger;
+            string triggerName;
+            if (isHeavy && !string.IsNullOrEmpty(config.heavyAttackTrigger))
+                triggerName = config.heavyAttackTrigger;
+            else if (secondary && !string.IsNullOrEmpty(config.secondaryActionTrigger))
+                triggerName = config.secondaryActionTrigger;
+            else
+                triggerName = config.primaryAttackTrigger;
+
             if (!string.IsNullOrEmpty(triggerName))
                 PlayAnimClientRpc(Animator.StringToHash(triggerName));
         }

@@ -2,6 +2,8 @@ using DungeonGame.Core;
 using Unity.Netcode;
 using Unity.Netcode.Transports.UTP;
 using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.InputSystem.UI;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
@@ -41,9 +43,16 @@ namespace DungeonGame.UI
         private NetworkManager _nm;
         private bool _useSteam;
 
+        [Header("Title (auto-populated if empty)")]
+        [SerializeField] private Text gameTitleText;
+
+        private Canvas _canvas;
+        private Font _font;
+
         private void Awake()
         {
             EnsureCursorVisible();
+            if (titlePanel == null) EnsureUI();
         }
 
         private void Start()
@@ -284,6 +293,189 @@ namespace DungeonGame.UI
             if (field == null) return fallback;
             if (ushort.TryParse(field.text.Trim(), out ushort p)) return p;
             return fallback;
+        }
+
+        // ────────────── Procedural UI ──────────────
+
+        private void EnsureUI()
+        {
+            _font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+
+            // Canvas
+            _canvas = GetComponent<Canvas>();
+            if (_canvas == null) _canvas = GetComponentInParent<Canvas>();
+            if (_canvas == null)
+            {
+                var canvasGo = new GameObject("MainMenuCanvas");
+                canvasGo.transform.SetParent(transform);
+                _canvas = canvasGo.AddComponent<Canvas>();
+                _canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+                _canvas.sortingOrder = 100;
+                var scaler = canvasGo.AddComponent<CanvasScaler>();
+                scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+                scaler.referenceResolution = new Vector2(1920, 1080);
+                canvasGo.AddComponent<GraphicRaycaster>();
+            }
+
+            if (EventSystem.current == null)
+            {
+                var esGo = new GameObject("EventSystem");
+                esGo.AddComponent<EventSystem>();
+                esGo.AddComponent<InputSystemUIInputModule>();
+            }
+
+            // Background
+            var bgGo = new GameObject("Background");
+            bgGo.transform.SetParent(_canvas.transform, false);
+            var bgImg = bgGo.AddComponent<Image>();
+            bgImg.color = new Color(0.05f, 0.05f, 0.1f, 1f);
+            var bgRect = bgGo.GetComponent<RectTransform>();
+            bgRect.anchorMin = Vector2.zero;
+            bgRect.anchorMax = Vector2.one;
+            bgRect.offsetMin = bgRect.offsetMax = Vector2.zero;
+
+            // ── Title Panel ──
+            titlePanel = MakePanel("TitlePanel");
+
+            // Game title
+            var titleGo = MakeText(titlePanel.transform, "GameTitle", "DUNGEON GAME",
+                new Vector2(0.1f, 0.65f), new Vector2(0.9f, 0.9f), 48, FontStyle.Bold, TextAnchor.MiddleCenter);
+            gameTitleText = titleGo.GetComponent<Text>();
+            gameTitleText.color = new Color(1f, 0.85f, 0.2f);
+
+            // Subtitle
+            var subGo = MakeText(titlePanel.transform, "Subtitle", "Cooperative Dungeon Crawler",
+                new Vector2(0.2f, 0.55f), new Vector2(0.8f, 0.65f), 18, FontStyle.Italic, TextAnchor.MiddleCenter);
+            subGo.GetComponent<Text>().color = new Color(0.7f, 0.7f, 0.8f);
+
+            // Title buttons
+            MakeMenuButton(titlePanel.transform, "Host Game", new Vector2(0.35f, 0.38f), new Vector2(0.65f, 0.48f), HostAndPlay);
+            MakeMenuButton(titlePanel.transform, "Join Game", new Vector2(0.35f, 0.25f), new Vector2(0.65f, 0.35f), ShowJoinPanel);
+            MakeMenuButton(titlePanel.transform, "Quit",      new Vector2(0.35f, 0.12f), new Vector2(0.65f, 0.22f), Quit);
+
+            // ── Join Panel ──
+            joinPanel = MakePanel("JoinPanel");
+            joinPanel.SetActive(false);
+
+            MakeText(joinPanel.transform, "JoinTitle", "Join Game",
+                new Vector2(0.1f, 0.8f), new Vector2(0.9f, 0.95f), 32, FontStyle.Bold, TextAnchor.MiddleCenter)
+                .GetComponent<Text>().color = new Color(1f, 0.85f, 0.2f);
+
+            // Address label + field
+            MakeText(joinPanel.transform, "AddrLabel", "IP Address:",
+                new Vector2(0.2f, 0.58f), new Vector2(0.38f, 0.66f), 16, FontStyle.Normal, TextAnchor.MiddleRight);
+            joinAddressField = MakeInputField(joinPanel.transform, "AddressField",
+                new Vector2(0.4f, 0.58f), new Vector2(0.75f, 0.66f), "127.0.0.1");
+
+            // Port label + field
+            MakeText(joinPanel.transform, "PortLabel", "Port:",
+                new Vector2(0.2f, 0.47f), new Vector2(0.38f, 0.55f), 16, FontStyle.Normal, TextAnchor.MiddleRight);
+            joinPortField = MakeInputField(joinPanel.transform, "PortField",
+                new Vector2(0.4f, 0.47f), new Vector2(0.55f, 0.55f), defaultPort.ToString());
+
+            // Join + Back buttons
+            joinDirectButton = MakeMenuButton(joinPanel.transform, "Connect", new Vector2(0.35f, 0.30f), new Vector2(0.65f, 0.40f), OnJoinDirect).GetComponent<Button>();
+            MakeMenuButton(joinPanel.transform, "Back", new Vector2(0.35f, 0.17f), new Vector2(0.65f, 0.27f), BackToTitle);
+
+            // ── Connecting Panel ──
+            connectingPanel = MakePanel("ConnectingPanel");
+            connectingPanel.SetActive(false);
+
+            var statusGo = MakeText(connectingPanel.transform, "Status", "Connecting...",
+                new Vector2(0.1f, 0.5f), new Vector2(0.9f, 0.7f), 20, FontStyle.Normal, TextAnchor.MiddleCenter);
+            connectingStatusText = statusGo.GetComponent<Text>();
+
+            cancelConnectButton = MakeMenuButton(connectingPanel.transform, "Cancel",
+                new Vector2(0.35f, 0.3f), new Vector2(0.65f, 0.4f), OnCancelConnect).GetComponent<Button>();
+
+            // Version text (bottom right)
+            var versionGo = MakeText(_canvas.transform, "Version", "v0.1",
+                new Vector2(0.85f, 0f), new Vector2(1f, 0.04f), 12, FontStyle.Normal, TextAnchor.LowerRight);
+            versionGo.GetComponent<Text>().color = new Color(0.4f, 0.4f, 0.5f);
+        }
+
+        private GameObject MakePanel(string name)
+        {
+            var go = new GameObject(name);
+            go.transform.SetParent(_canvas.transform, false);
+            var rt = go.GetComponent<RectTransform>();
+            if (rt == null) rt = go.AddComponent<RectTransform>();
+            rt.anchorMin = Vector2.zero;
+            rt.anchorMax = Vector2.one;
+            rt.offsetMin = rt.offsetMax = Vector2.zero;
+            return go;
+        }
+
+        private GameObject MakeText(Transform parent, string name, string text,
+            Vector2 anchorMin, Vector2 anchorMax, int fontSize, FontStyle style, TextAnchor alignment)
+        {
+            var go = new GameObject(name);
+            go.transform.SetParent(parent, false);
+            var t = go.AddComponent<Text>();
+            t.text = text;
+            t.font = _font;
+            t.fontSize = fontSize;
+            t.fontStyle = style;
+            t.alignment = alignment;
+            t.color = Color.white;
+            t.horizontalOverflow = HorizontalWrapMode.Wrap;
+            t.verticalOverflow = VerticalWrapMode.Overflow;
+            var rt = go.GetComponent<RectTransform>();
+            rt.anchorMin = anchorMin;
+            rt.anchorMax = anchorMax;
+            rt.offsetMin = new Vector2(4, 2);
+            rt.offsetMax = new Vector2(-4, -2);
+            return go;
+        }
+
+        private GameObject MakeMenuButton(Transform parent, string label,
+            Vector2 anchorMin, Vector2 anchorMax, UnityEngine.Events.UnityAction onClick)
+        {
+            var go = new GameObject(label + "Button");
+            go.transform.SetParent(parent, false);
+            var img = go.AddComponent<Image>();
+            img.color = new Color(0.15f, 0.2f, 0.3f, 0.9f);
+            var btn = go.AddComponent<Button>();
+            var colors = btn.colors;
+            colors.highlightedColor = new Color(0.2f, 0.35f, 0.5f);
+            colors.pressedColor = new Color(0.1f, 0.25f, 0.4f);
+            btn.colors = colors;
+            var rt = go.GetComponent<RectTransform>();
+            rt.anchorMin = anchorMin;
+            rt.anchorMax = anchorMax;
+            rt.offsetMin = rt.offsetMax = Vector2.zero;
+
+            MakeText(go.transform, "Text", label,
+                Vector2.zero, Vector2.one, 20, FontStyle.Bold, TextAnchor.MiddleCenter);
+
+            if (onClick != null) btn.onClick.AddListener(onClick);
+            return go;
+        }
+
+        private InputField MakeInputField(Transform parent, string name,
+            Vector2 anchorMin, Vector2 anchorMax, string defaultText)
+        {
+            var go = new GameObject(name);
+            go.transform.SetParent(parent, false);
+            var img = go.AddComponent<Image>();
+            img.color = new Color(0.12f, 0.12f, 0.18f, 0.95f);
+            var rt = go.GetComponent<RectTransform>();
+            rt.anchorMin = anchorMin;
+            rt.anchorMax = anchorMax;
+            rt.offsetMin = rt.offsetMax = Vector2.zero;
+
+            var textGo = MakeText(go.transform, "Text", "",
+                Vector2.zero, Vector2.one, 16, FontStyle.Normal, TextAnchor.MiddleLeft);
+            var placeholderGo = MakeText(go.transform, "Placeholder", defaultText,
+                Vector2.zero, Vector2.one, 16, FontStyle.Italic, TextAnchor.MiddleLeft);
+            placeholderGo.GetComponent<Text>().color = new Color(0.5f, 0.5f, 0.6f);
+
+            var inputField = go.AddComponent<InputField>();
+            inputField.textComponent = textGo.GetComponent<Text>();
+            inputField.placeholder = placeholderGo.GetComponent<Text>();
+            inputField.text = defaultText;
+
+            return inputField;
         }
 
         private void EnsureCursorVisible()

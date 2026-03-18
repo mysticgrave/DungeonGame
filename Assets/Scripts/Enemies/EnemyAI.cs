@@ -25,6 +25,8 @@ namespace DungeonGame.Enemies
         private NetworkHealth _health;
 
         private Transform _target;
+        private float _lastStaggerTime = -100f;
+        private float _circleDirection = 1f; // 1 = clockwise, -1 = counter-clockwise
 
         public EnemyConfig Config => config;
 
@@ -45,6 +47,9 @@ namespace DungeonGame.Enemies
             _attackExec = GetComponent<EnemyAttackExecutor>();
             if (_attackExec == null)
                 _attackExec = gameObject.AddComponent<EnemyAttackExecutor>();
+
+            // Randomize circle direction so groups of enemies don't all strafe the same way
+            _circleDirection = Random.value > 0.5f ? 1f : -1f;
 
             if (config != null) ApplyConfig();
 
@@ -72,7 +77,7 @@ namespace DungeonGame.Enemies
 
             _agent.speed = config.chaseSpeed;
             _agent.acceleration = config.acceleration;
-            _agent.stoppingDistance = 0.2f;
+            _agent.stoppingDistance = config.preferredDistance;
 
             _attackExec.Init(config.attacks, config.chaseSpeed);
 
@@ -85,6 +90,14 @@ namespace DungeonGame.Enemies
             if (!IsServer) return;
             if (config == null) return;
             if (_sm.IsDead) return;
+
+            // Retreat and circle states manage their own movement
+            if (_sm.Current == EnemyState.Retreat)
+            {
+                UpdateRetreat();
+                return;
+            }
+
             if (_sm.IsMovementDisabled) return;
 
             float speedMult = _statusFx != null ? _statusFx.SpeedMultiplier : 1f;
@@ -120,7 +133,20 @@ namespace DungeonGame.Enemies
             if (_attackExec.TryAttack(_target, dist))
                 return;
 
-            // Chase
+            // Within preferred distance — hold position and face target
+            if (dist <= config.preferredDistance)
+            {
+                if (_sm.Current != EnemyState.Chase)
+                    _sm.TransitionTo(EnemyState.Chase);
+
+                FaceTarget();
+
+                if (_agent.enabled && _agent.isOnNavMesh)
+                    _agent.isStopped = true;
+                return;
+            }
+
+            // Chase to preferred distance
             if (_sm.Current != EnemyState.Chase)
                 _sm.TransitionTo(EnemyState.Chase);
 
@@ -132,12 +158,101 @@ namespace DungeonGame.Enemies
             }
         }
 
+        /// <summary>Called by EnemyAttackExecutor when an attack finishes to trigger post-attack behavior.</summary>
+        public void OnAttackFinished()
+        {
+            if (!IsServer) return;
+            if (_sm.IsDead) return;
+            if (_target == null) { _target = FindNearestPlayer(); }
+            if (_target == null) return;
+
+            bool shouldCircle = Random.value < config.circleChance;
+            if (shouldCircle)
+            {
+                _sm.TransitionTo(EnemyState.Retreat, config.retreatDuration);
+                // Circle movement handled in UpdateRetreat
+            }
+            else
+            {
+                _sm.TransitionTo(EnemyState.Retreat, config.retreatDuration);
+            }
+        }
+
+        private void UpdateRetreat()
+        {
+            if (_target == null) { _target = FindNearestPlayer(); }
+            if (_target == null || !_agent.enabled || !_agent.isOnNavMesh) return;
+
+            float speedMult = _statusFx != null ? _statusFx.SpeedMultiplier : 1f;
+            if (speedMult <= 0f)
+            {
+                _agent.isStopped = true;
+                return;
+            }
+
+            float dist = Vector3.Distance(transform.position, _target.position);
+            Vector3 dirToTarget = (_target.position - transform.position).normalized;
+
+            if (dist < config.retreatDistance)
+            {
+                // Back away from player
+                Vector3 retreatDir = -dirToTarget;
+                // Add perpendicular component for circle-strafe feel
+                Vector3 perpendicular = Vector3.Cross(Vector3.up, dirToTarget) * _circleDirection;
+                Vector3 moveDir = (retreatDir + perpendicular * 0.5f).normalized;
+
+                Vector3 retreatPos = transform.position + moveDir * 3f;
+                _agent.speed = config.circleSpeed * speedMult;
+                _agent.isStopped = false;
+                _agent.SetDestination(retreatPos);
+            }
+            else
+            {
+                // Far enough, circle-strafe at current distance
+                Vector3 perpendicular = Vector3.Cross(Vector3.up, dirToTarget) * _circleDirection;
+                Vector3 circlePos = transform.position + perpendicular * 3f;
+                _agent.speed = config.circleSpeed * speedMult;
+                _agent.isStopped = false;
+                _agent.SetDestination(circlePos);
+            }
+
+            FaceTarget();
+        }
+
+        private void FaceTarget()
+        {
+            if (_target == null) return;
+            Vector3 lookDir = _target.position - transform.position;
+            lookDir.y = 0f;
+            if (lookDir.sqrMagnitude > 0.01f)
+                transform.rotation = Quaternion.RotateTowards(
+                    transform.rotation,
+                    Quaternion.LookRotation(lookDir),
+                    720f * Time.deltaTime);
+        }
+
+        /// <summary>
+        /// Stagger this enemy (brief interrupt). Respects stagger cooldown to prevent stun-lock.
+        /// Call from ItemAttackExecutor when a light attack lands.
+        /// </summary>
+        public void Stagger()
+        {
+            if (!IsServer) return;
+            if (config == null || !config.canBeStaggered) return;
+            if (Time.time < _lastStaggerTime + config.staggerCooldown) return;
+
+            _lastStaggerTime = Time.time;
+            _attackExec.CancelPendingAttack();
+            _sm.TransitionTo(EnemyState.Staggered, config.staggerDuration);
+        }
+
         /// <summary>Call from external systems (traps, player attacks) to ragdoll this enemy.</summary>
         public void Ragdoll(Vector3 impulse)
         {
             if (!IsServer) return;
             if (config != null && !config.canBeRagdolled) return;
 
+            _attackExec.CancelPendingAttack();
             float dur = config != null ? config.ragdollDuration : 2f;
             _sm.TransitionTo(EnemyState.Ragdoll, dur);
             ApplyHitImpulse(impulse);
@@ -157,12 +272,14 @@ namespace DungeonGame.Enemies
         public void Stun(float duration)
         {
             if (!IsServer) return;
+            _attackExec.CancelPendingAttack();
             _sm.TransitionTo(EnemyState.Stunned, duration);
         }
 
         public void Freeze(float duration)
         {
             if (!IsServer) return;
+            _attackExec.CancelPendingAttack();
             _sm.TransitionTo(EnemyState.Frozen, duration);
         }
 
@@ -212,6 +329,11 @@ namespace DungeonGame.Enemies
             if (config == null) return;
             Gizmos.color = new Color(1f, 0.2f, 0.2f, 0.35f);
             Gizmos.DrawWireSphere(transform.position, config.aggroRange);
+
+            // Preferred distance ring
+            Gizmos.color = new Color(0.2f, 0.8f, 1f, 0.35f);
+            Gizmos.DrawWireSphere(transform.position, config.preferredDistance);
+
             if (config.attacks != null && config.attacks.Length > 0)
             {
                 Gizmos.color = new Color(1f, 0.6f, 0.1f, 0.35f);

@@ -1,0 +1,43 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 599ded77712486b42843db4954ec23d7, type: 3}
+  m_Name: Charge
+  m_EditorClassIdentifier: Assembly-CSharp::DungeonGame.Abilities.AbilityConfig
+  abilityId: charge
+  displayName: Charge
+  description: Charges forward, dealing damage and knocking back enemies in the path.
+  icon: {fileID: 0}
+  abilityType: 3
+  damage: 10
+  cooldown: 10
+  range: 8
+  radius: 3
+  damageType: 0
+  statusEffect: 8
+  statusDuration: 1.5
+  statusImpulseForce: 10
+  projectilePrefab: {fileID: 0}
+  projectileSpeed: 15
+  projectileCount: 1
+  projectileSpreadAngle: 15
+  healAmount: 0
+  speedBoostMultiplier: 0
+  buffDuration: 5
+  dashDistance: 8
+  dashDuration: 0.35
+  zonePrefab: {fileID: 0}
+  zoneDuration: 5
+  zoneDamagePerTick: 1
+  zoneTickInterval: 1
+  vfxPrefab: {fileID: 0}
+  animationTrigger:
+  castSound: {fileID: 0}

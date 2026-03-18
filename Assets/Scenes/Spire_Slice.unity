@@ -498,8 +498,9 @@ GameObject:
   - component: {fileID: 718454993}
   - component: {fileID: 718454994}
   - component: {fileID: 718454995}
+  - component: {fileID: 718454996}
   m_Layer: 0
-  m_Name: EnemySpawner
+  m_Name: Spawner
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -562,6 +563,19 @@ MonoBehaviour:
   minDistanceFromPlayers: 40
   maxPositionAttempts: 30
   playerSpawnRadius: 40
+--- !u!114 &718454996
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 718454992}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 28b0642545cfc244290344bbb92cdf14, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DungeonGame.Loot.ChestSpawner
+  ShowTopMostFoldoutHeaderGroup: 1
 --- !u!1 &1163264296
 GameObject:
   m_ObjectHideFlags: 0

@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7bbac7f7faf5fdf47aec2f186d24b62e, type: 3}
+  m_Name: Priest
+  m_EditorClassIdentifier: Assembly-CSharp::DungeonGame.Classes.ClassDefinition
+  classId: priest
+  displayName: Priest
+  description: He heals.
+  baseMaxHp: 12
+  baseMoveSpeed: 5
+  baseSprintSpeed: 7.5
+  baseDamageMultiplier: 1
+  baseDamageReduction: 0.05
+  defaultWeapon: {fileID: 11400000, guid: a830083675cc63e4484467ac6b9a8646, type: 2}
+  abilityQ: {fileID: 11400000, guid: 86a7b8c9d0e1f2a3b4c5d60102030412, type: 2}
+  abilityE: {fileID: 11400000, guid: 96a7b8c9d0e1f2a3b4c5d60102030413, type: 2}
+  abilityR: {fileID: 11400000, guid: a6a7b8c9d0e1f2a3b4c5d60102030414, type: 2}
+  icon: {fileID: 0}
+  preferredWeaponType: ranged

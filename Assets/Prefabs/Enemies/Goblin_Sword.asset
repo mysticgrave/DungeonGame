@@ -1,0 +1,52 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ad97642ed68540e4a83418a7ad50f1d0, type: 3}
+  m_Name: Goblin_Sword
+  m_EditorClassIdentifier: Assembly-CSharp::DungeonGame.Enemies.EnemyConfig
+  enemyName: Goblin_Sword
+  prefab: {fileID: 2147250246483997953, guid: 5d6346b9a3ef9fe4fa31c26f5673b8fa, type: 3}
+  maxHp: 3
+  aggroRange: 18
+  giveUpRange: 28
+  moveSpeed: 4.5
+  chaseSpeed: 6.5
+  acceleration: 40
+  attacks:
+  - attackName: Slash
+    type: 0
+    damage: 3
+    range: 2
+    cooldown: 1
+    lungeSpeedMultiplier: 0
+    lungeDuration: 0
+    projectilePrefab: {fileID: 0}
+    projectileSpeed: 0
+    aoeRadius: 0
+    appliesEffect: 0
+    effectDuration: 0
+    effectImpulseForce: 0
+    windUpDuration: 0
+    windUpAnimTrigger: 
+    animTrigger: Slash
+  preferredDistance: 3
+  retreatDistance: 4
+  retreatDuration: 1.5
+  circleSpeed: 2.5
+  circleChance: 0.4
+  canBeStaggered: 1
+  staggerDuration: 0.4
+  staggerCooldown: 1
+  canBeRagdolled: 1
+  ragdollDuration: 2
+  ragdollResistance: 1
+  immunities: 
+  xpReward: 10

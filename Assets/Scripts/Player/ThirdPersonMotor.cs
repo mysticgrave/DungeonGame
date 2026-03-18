@@ -1,5 +1,6 @@
 using DungeonGame.UI;
 using Unity.Netcode;
+using Unity.Netcode.Components;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -19,9 +20,14 @@ namespace DungeonGame.Player
     {
         [Header("Movement")]
         [SerializeField] private float moveSpeed = 5.5f;
-        [SerializeField] private float sprintSpeed = 8.0f;
         [SerializeField] private float gravity = -20f;
         [SerializeField] private float jumpHeight = 1.2f;
+        [Tooltip("Sub-step CharacterController movement on long frames to reduce FPS-coupled slowdown.")]
+        [SerializeField] private bool useMovementSubsteps = true;
+        [Tooltip("Max dt per CharacterController move step when sub-stepping.")]
+        [SerializeField] private float maxSubstepDelta = 1f / 60f;
+        [Tooltip("Safety cap for number of move substeps each frame.")]
+        [SerializeField] private int maxSubsteps = 8;
 
         [Header("Rotation")]
         [Tooltip("If true, player yaw follows the local camera yaw even while standing still.")]
@@ -50,20 +56,27 @@ namespace DungeonGame.Player
             {
                 // Non-owner: do not read input.
                 enabled = false;
+                return;
             }
+
+            // Local owner should not interpolate its own NetworkTransform; interpolation is for remotes.
+            // Keeping this on can add perceived input/movement latency, especially under low FPS.
+            var nt = GetComponent<NetworkTransform>();
+            if (nt != null)
+                nt.Interpolate = false;
         }
 
         private void Update()
         {
             if (!IsOwner) return;
             if (Keyboard.current == null) return;
+            float dt = Mathf.Max(0f, Time.unscaledDeltaTime);
 
             bool paused = PauseMenuController.IsPaused;
             var move = paused ? Vector2.zero : ReadMove();
-            bool sprint = !paused && Keyboard.current.leftShiftKey.isPressed;
             bool jumpPressed = !paused && Keyboard.current.spaceKey.wasPressedThisFrame;
 
-            float speed = sprint ? sprintSpeed : moveSpeed;
+            float speed = moveSpeed;
 
             // Convert input into world-space relative to the *local* camera.
             // Do not rely on Camera.main in multiplayer; only the owner's camera should drive movement.
@@ -97,7 +110,7 @@ namespace DungeonGame.Player
                 lookYawRoot.rotation = Quaternion.RotateTowards(
                     lookYawRoot.rotation,
                     targetRot,
-                    yawDegreesPerSecond * Time.deltaTime);
+                    yawDegreesPerSecond * dt);
             }
             else if (!paused && planar.sqrMagnitude > 0.0001f)
             {
@@ -105,7 +118,7 @@ namespace DungeonGame.Player
                 lookYawRoot.rotation = Quaternion.RotateTowards(
                     lookYawRoot.rotation,
                     targetRot,
-                    yawDegreesPerSecond * Time.deltaTime);
+                    yawDegreesPerSecond * dt);
             }
 
             // Gravity + jump
@@ -119,13 +132,29 @@ namespace DungeonGame.Player
                 }
             }
 
-            verticalVel += gravity * Time.deltaTime;
+            verticalVel += gravity * dt;
 
             Vector3 velocity = planar * speed;
             velocity.y = verticalVel;
 
             if (cc.enabled)
-                cc.Move(velocity * Time.deltaTime);
+                MoveCharacter(velocity, dt);
+        }
+
+        private void MoveCharacter(Vector3 velocity, float dt)
+        {
+            if (!useMovementSubsteps || dt <= maxSubstepDelta)
+            {
+                cc.Move(velocity * dt);
+                return;
+            }
+
+            // Sub-step to avoid CharacterController missing collisions on long frames.
+            // Total displacement is always velocity * dt regardless of step count.
+            int steps = Mathf.Clamp(Mathf.CeilToInt(dt / Mathf.Max(0.001f, maxSubstepDelta)), 1, Mathf.Max(1, maxSubsteps));
+            Vector3 stepMove = velocity * (dt / steps);
+            for (int i = 0; i < steps; i++)
+                cc.Move(stepMove);
         }
 
         private static Vector2 ReadMove()
@@ -151,10 +180,16 @@ namespace DungeonGame.Player
             return Mathf.Clamp01(move.magnitude);
         }
 
+        /// <summary>Set move speed at runtime (e.g. from class stats).</summary>
+        public void SetMoveSpeed(float value)
+        {
+            moveSpeed = Mathf.Max(0.1f, value);
+        }
+
         public bool IsSprinting()
         {
-            if (PauseMenuController.IsPaused) return false;
-            return Keyboard.current != null && Keyboard.current.leftShiftKey.isPressed;
+            // Sprint removed — Left Shift is now dodge. Kept for animator compatibility.
+            return false;
         }
 
         public Vector2 GetMoveInput()

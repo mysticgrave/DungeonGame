@@ -70,6 +70,8 @@ namespace DungeonGame.Combat
         {
             private Animator _cachedAnimator;
             private Coroutine _hitStopCoroutine;
+            private float _savedSpeed = 1f;
+            private bool _inHitStop;
 
             public void RunHitStop(float duration)
             {
@@ -92,7 +94,11 @@ namespace DungeonGame.Combat
             {
                 if (animator == null) yield break;
 
-                float originalSpeed = animator.speed;
+                // Only save the original speed if we're not already mid-hitstop
+                if (!_inHitStop)
+                    _savedSpeed = animator.speed;
+
+                _inHitStop = true;
                 animator.speed = 0f;
 
                 // Wait in real time (unscaled)
@@ -104,8 +110,9 @@ namespace DungeonGame.Combat
                 }
 
                 if (animator != null)
-                    animator.speed = originalSpeed;
+                    animator.speed = _savedSpeed;
 
+                _inHitStop = false;
                 _hitStopCoroutine = null;
             }
         }

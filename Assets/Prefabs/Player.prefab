@@ -17,7 +17,6 @@ GameObject:
   - component: {fileID: 3845782424027021541}
   - component: {fileID: 5550720868988157255}
   - component: {fileID: 9020522413067527264}
-  - component: {fileID: 6092922667051666020}
   - component: {fileID: 6064904386097273567}
   - component: {fileID: 8660554893556304241}
   - component: {fileID: 8456666483823036045}
@@ -38,6 +37,10 @@ GameObject:
   - component: {fileID: 860656299352711089}
   - component: {fileID: -1209783278631857574}
   - component: {fileID: -7578872999788759389}
+  - component: {fileID: -2817320742184299847}
+  - component: {fileID: -533690092367634745}
+  - component: {fileID: 2871981856440240553}
+  - component: {fileID: -4318666266350542965}
   m_Layer: 0
   m_Name: Player
   m_TagString: PlayerLocalCull
@@ -253,20 +256,6 @@ MonoBehaviour:
   force: 14
   upForce: 5
   seconds: -1
---- !u!114 &6092922667051666020
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 874059578035024636}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9d727bcda612c0d4c898b30f5a80b949, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::DungeonGame.Items.BombSpawnerHotkeys
-  ShowTopMostFoldoutHeaderGroup: 1
-  knockBombPrefab: {fileID: -7904167760224115394, guid: bc916233759893e47b07ea0a48bae988, type: 3}
 --- !u!114 &6064904386097273567
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -281,7 +270,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DungeonGame.Player.ThirdPersonMotor
   ShowTopMostFoldoutHeaderGroup: 1
   moveSpeed: 5.5
-  sprintSpeed: 8
   gravity: -20
   jumpHeight: 1.2
   faceCameraYaw: 1
@@ -305,9 +293,9 @@ MonoBehaviour:
   farClipPlane: 100000
   fov: 70
   followTarget: {fileID: 0}
-  distance: 5
-  height: 1.6
-  shoulderOffset: 0.6
+  distance: 1.66
+  height: 0.65
+  shoulderOffset: 1
   lookSensitivity: 0.12
   minPitch: -80
   maxPitch: 70
@@ -413,7 +401,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DungeonGame.Player.PlayerLocomotionAnimator
   ShowTopMostFoldoutHeaderGroup: 1
   animator: {fileID: 8387528372331087142}
-  walkSpeed: 5.5
+  walkSpeed: 7
   sprintSpeed: 8
   speedParamName: MoveSpeed
   useInputForSpeed: 1
@@ -457,6 +445,11 @@ MonoBehaviour:
   groundCheckDistance: 0.25
   defaultStunnedSeconds: 2
   defaultFrozenSeconds: 3
+  dodgeDuration: 0.4
+  dodgeSpeed: 12
+  dodgeCooldown: 0.8
+  iFrameStart: 0.05
+  iFrameEnd: 0.3
 --- !u!114 &7777777700000000002
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -692,6 +685,61 @@ MonoBehaviour:
   mask:
     serializedVersion: 2
     m_Bits: 4294967295
+--- !u!114 &-2817320742184299847
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 874059578035024636}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3725f5780b2e40847b5444b59b864088, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DungeonGame.Player.PlayerDodge
+  ShowTopMostFoldoutHeaderGroup: 1
+--- !u!114 &-533690092367634745
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 874059578035024636}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2e0808b44f0d7cf4291febf5e570be3e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DungeonGame.Classes.PlayerClassStats
+  ShowTopMostFoldoutHeaderGroup: 1
+--- !u!114 &2871981856440240553
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 874059578035024636}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3d0ac573836415744996860cdf317c5e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DungeonGame.Abilities.PlayerAbilityController
+  ShowTopMostFoldoutHeaderGroup: 1
+--- !u!114 &-4318666266350542965
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 874059578035024636}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8eade5ae861b09a4baf31bc89a5855d6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DungeonGame.UI.AbilityCooldownUI
+  ShowTopMostFoldoutHeaderGroup: 1
+  slotSize: 48
+  slotSpacing: 6
+  bottomMargin: 120
 --- !u!1 &6908770738247452993
 GameObject:
   m_ObjectHideFlags: 0

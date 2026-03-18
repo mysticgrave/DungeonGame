@@ -91,8 +91,12 @@ namespace DungeonGame.UI
 
             EnsureStyles();
 
-            float totalWidth = slotSize * 2f + slotSpacing;
-            float startX = (Screen.width - totalWidth) * 0.5f;
+            // Ability slots (Q/E/R) sit between the two hand slots, so leave a gap
+            // AbilityCooldownUI: 3 slots * 48 + 2 * 6 spacing = 156px center block
+            float abilityBlockWidth = 48f * 3f + 6f * 2f; // matches AbilityCooldownUI defaults
+            float gapFromAbilities = 10f;
+            float halfWidth = abilityBlockWidth * 0.5f + gapFromAbilities + slotSize;
+            float centerX = Screen.width * 0.5f;
             float startY = Screen.height - slotSize - bottomMargin;
 
             bool twoHanded = _handSystem.HasTwoHandedItem;
@@ -101,14 +105,14 @@ namespace DungeonGame.UI
 
             if (twoHanded)
             {
-                // Draw one wide slot spanning both
-                var wideRect = new Rect(startX, startY, totalWidth, slotSize);
+                float twoHandWidth = slotSize * 2f + slotSpacing;
+                var wideRect = new Rect(centerX - twoHandWidth * 0.5f, startY, twoHandWidth, slotSize);
                 DrawSlot(wideRect, leftItem, "LMB / RMB", true);
             }
             else
             {
-                var leftRect = new Rect(startX, startY, slotSize, slotSize);
-                var rightRect = new Rect(startX + slotSize + slotSpacing, startY, slotSize, slotSize);
+                var leftRect = new Rect(centerX - halfWidth, startY, slotSize, slotSize);
+                var rightRect = new Rect(centerX + halfWidth - slotSize, startY, slotSize, slotSize);
 
                 DrawSlot(leftRect, leftItem, "LMB", false);
                 DrawSlot(rightRect, rightItem, "RMB", false);

@@ -1,0 +1,38 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ad97642ed68540e4a83418a7ad50f1d0, type: 3}
+  m_Name: Lich
+  m_EditorClassIdentifier: Assembly-CSharp::DungeonGame.Enemies.EnemyConfig
+  enemyName: Malachar the Undying
+  prefab: {fileID: 0}
+  maxHp: 200
+  aggroRange: 30
+  giveUpRange: 50
+  moveSpeed: 3
+  chaseSpeed: 3.5
+  acceleration: 20
+  attacks: []
+  preferredDistance: 10
+  retreatDistance: 8
+  retreatDuration: 2
+  circleSpeed: 2
+  circleChance: 0.3
+  canBeStaggered: 0
+  staggerDuration: 0.3
+  staggerCooldown: 5
+  canBeRagdolled: 0
+  ragdollDuration: 1
+  ragdollResistance: 10
+  immunities:
+  - 8
+  - 5
+  xpReward: 500

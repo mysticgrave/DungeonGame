@@ -90,6 +90,10 @@ namespace DungeonGame.SpireGen
         private void Awake()
         {
             spireSeed = GetComponent<SpireSeed>();
+
+            // Auto-add room culling manager for performance
+            if (GetComponent<RoomCullingManager>() == null)
+                gameObject.AddComponent<RoomCullingManager>();
         }
 
         public override void OnNetworkSpawn()
@@ -165,6 +169,11 @@ namespace DungeonGame.SpireGen
                 ApplyConfig(runState.ActiveDungeonConfig);
 
             rng = spireSeed.CreateRandom("layout");
+
+            // Clear culling manager before rebuilding
+            var culling = GetComponent<RoomCullingManager>();
+            if (culling != null) culling.ClearRooms();
+
             ClearExistingGeneratedRooms();
 
             var data = new SpireLayoutData { seed = seed };
@@ -1091,6 +1100,11 @@ namespace DungeonGame.SpireGen
             };
 
             placed.Add(pr);
+
+            // Register with room culling manager for distance-based visibility
+            var culling = GetComponent<RoomCullingManager>();
+            if (culling != null) culling.RegisterRoom(go);
+
             return pr;
         }
 

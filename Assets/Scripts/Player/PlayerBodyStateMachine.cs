@@ -18,7 +18,7 @@ namespace DungeonGame.Player
             Ragdoll,
             Stunned,
             Frozen,
-            // Extend with more states as needed (e.g. GettingUp, Invulnerable)
+            Dodging,
         }
 
         [Header("Ragdoll config (used when entering Ragdoll)")]
@@ -27,10 +27,19 @@ namespace DungeonGame.Player
         [SerializeField] private float maxRagdollSeconds = 8f;
         [SerializeField] private float groundCheckDistance = 0.25f;
 
-        [Header("Stunned / Frozen (placeholder)")]
+        [Header("Stunned / Frozen")]
         [Tooltip("Auto-return to Standing after this many seconds. 0 = no auto-exit.")]
         [SerializeField] private float defaultStunnedSeconds = 2f;
         [SerializeField] private float defaultFrozenSeconds = 3f;
+
+        [Header("Dodge")]
+        [SerializeField] private float dodgeDuration = 0.4f;
+        [SerializeField] private float dodgeSpeed = 12f;
+        [SerializeField] private float dodgeCooldown = 0.8f;
+        [Tooltip("Seconds into dodge when invulnerability starts.")]
+        [SerializeField] private float iFrameStart = 0.05f;
+        [Tooltip("Seconds into dodge when invulnerability ends.")]
+        [SerializeField] private float iFrameEnd = 0.3f;
 
         private BodyState _currentState = BodyState.Standing;
         private BodyState _previousState = BodyState.Standing;
@@ -46,6 +55,13 @@ namespace DungeonGame.Player
         // Stunned/Frozen timers
         private float _statusUntil;
 
+        // Dodge state
+        private Vector3 _dodgeDirection;
+        private float _dodgeStartTime;
+        private float _lastDodgeTime = -100f;
+        private float _activeDodgeDuration;
+        private float _activeDodgeSpeed;
+
         private CharacterController _cc;
         private RagdollColliderSwitch _ragdollSwitch;
         private KnockableCapsule _knockable;
@@ -56,10 +72,25 @@ namespace DungeonGame.Player
         /// <summary>Fired when state changes. (newState, previousState) </summary>
         public event Action<BodyState, BodyState> OnStateChanged;
 
-        /// <summary>True when the player cannot move (Ragdoll, Stunned, Frozen, etc.). </summary>
+        /// <summary>True when the player cannot move normally (Ragdoll, Stunned, Frozen, Dodging). </summary>
         public bool IsMovementDisabled => _currentState != BodyState.Standing;
 
         public bool IsRagdoll => _currentState == BodyState.Ragdoll;
+        public bool IsDodging => _currentState == BodyState.Dodging;
+
+        /// <summary>True during the i-frame window of a dodge. Check this before applying damage.</summary>
+        public bool IsInvulnerable
+        {
+            get
+            {
+                if (_currentState != BodyState.Dodging) return false;
+                float elapsed = Time.time - _dodgeStartTime;
+                return elapsed >= iFrameStart && elapsed <= iFrameEnd;
+            }
+        }
+
+        public float DodgeCooldown => dodgeCooldown;
+        public float LastDodgeTime => _lastDodgeTime;
 
         private void Awake()
         {
@@ -84,6 +115,9 @@ namespace DungeonGame.Player
                 case BodyState.Stunned:
                 case BodyState.Frozen:
                     UpdateStatusTimer();
+                    break;
+                case BodyState.Dodging:
+                    UpdateDodge();
                     break;
             }
         }
@@ -125,6 +159,55 @@ namespace DungeonGame.Player
         {
             _statusUntil = durationSeconds > 0 ? (Time.time + durationSeconds) : (defaultFrozenSeconds > 0 ? Time.time + defaultFrozenSeconds : float.PositiveInfinity);
             TransitionTo(BodyState.Frozen);
+        }
+
+        /// <summary>
+        /// Enter dodge state. Direction should be world-space normalized.
+        /// Returns false if on cooldown or not standing.
+        /// </summary>
+        public bool EnterDodge(Vector3 direction)
+        {
+            return EnterDodge(direction, dodgeDuration, dodgeSpeed);
+        }
+
+        /// <summary>
+        /// Enter dodge/dash with custom speed and duration (used by DashStrike abilities).
+        /// Bypasses cooldown check for ability-triggered dashes.
+        /// </summary>
+        public bool EnterDodge(Vector3 direction, float duration, float speed)
+        {
+            if (_currentState != BodyState.Standing) return false;
+            // Only enforce cooldown for regular dodges (default speed/duration)
+            if (Mathf.Approximately(duration, dodgeDuration) && Mathf.Approximately(speed, dodgeSpeed))
+            {
+                if (Time.time < _lastDodgeTime + dodgeCooldown) return false;
+            }
+
+            _dodgeDirection = direction.normalized;
+            _dodgeStartTime = Time.time;
+            _lastDodgeTime = Time.time;
+            _activeDodgeDuration = duration;
+            _activeDodgeSpeed = speed;
+            TransitionTo(BodyState.Dodging);
+            return true;
+        }
+
+        private void UpdateDodge()
+        {
+            float elapsed = Time.time - _dodgeStartTime;
+            if (elapsed >= _activeDodgeDuration)
+            {
+                EnterStanding();
+                return;
+            }
+
+            // Move the character controller in dodge direction
+            if (_cc != null && _cc.enabled)
+            {
+                Vector3 move = _dodgeDirection * _activeDodgeSpeed * Time.deltaTime;
+                move.y = -9.81f * Time.deltaTime; // gravity
+                _cc.Move(move);
+            }
         }
 
         /// <summary>Force transition to Standing (e.g. from gameplay or when timers expire). </summary>
@@ -170,6 +253,10 @@ namespace DungeonGame.Player
                     if (_knockable != null)
                         _knockable.SetMovementDisabled(true);
                     break;
+                case BodyState.Dodging:
+                    if (_knockable != null)
+                        _knockable.SetMovementDisabled(true);
+                    break;
             }
         }
 
@@ -182,6 +269,7 @@ namespace DungeonGame.Player
                     break;
                 case BodyState.Stunned:
                 case BodyState.Frozen:
+                case BodyState.Dodging:
                     if (_knockable != null)
                         _knockable.SetMovementDisabled(false);
                     break;

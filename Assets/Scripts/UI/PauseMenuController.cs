@@ -20,6 +20,7 @@ namespace DungeonGame.UI
         [Header("UI")]
         [SerializeField] private GameObject panel;
         [SerializeField] private Button resumeButton;
+        [SerializeField] private Button changeClassButton;
         [SerializeField] private Button enterDungeonButton;
         [SerializeField] private Button backToTownButton;
         [SerializeField] private Button settingsButton;
@@ -49,6 +50,7 @@ namespace DungeonGame.UI
             if (panel == null) EnsureUI();
             if (panel != null) panel.SetActive(false);
             if (resumeButton != null) { resumeButton.onClick.RemoveAllListeners(); resumeButton.onClick.AddListener(Resume); }
+            if (changeClassButton != null) { changeClassButton.onClick.RemoveAllListeners(); changeClassButton.onClick.AddListener(OnChangeClassClicked); }
             if (enterDungeonButton != null) { enterDungeonButton.onClick.RemoveAllListeners(); enterDungeonButton.onClick.AddListener(OnEnterDungeonClicked); }
             if (backToTownButton != null) { backToTownButton.onClick.RemoveAllListeners(); backToTownButton.onClick.AddListener(BackToTown); }
             if (quitButton != null) { quitButton.onClick.RemoveAllListeners(); quitButton.onClick.AddListener(QuitToMainMenu); }
@@ -109,6 +111,10 @@ namespace DungeonGame.UI
                 backToTownButton.gameObject.SetActive(canShowBack);
             }
 
+            // "Change Class" — only in Town
+            if (changeClassButton != null)
+                changeClassButton.gameObject.SetActive(scene == townSceneName);
+
             // "Enter Dungeon" — only in Town, host only
             if (enterDungeonButton != null)
             {
@@ -163,6 +169,17 @@ namespace DungeonGame.UI
                 Debug.LogWarning("[PauseMenu] No TownPlayController found in scene.");
         }
 
+        private void OnChangeClassClicked()
+        {
+            Resume();
+            if (ClassSelectUI.Instance == null)
+            {
+                var go = new GameObject("ClassSelectUI");
+                go.AddComponent<ClassSelectUI>();
+            }
+            ClassSelectUI.Instance.Show();
+        }
+
         private void OnSettingsClicked()
         {
             // Placeholder: could open a Settings panel. For now, just log.
@@ -202,13 +219,15 @@ namespace DungeonGame.UI
             rt.offsetMin = rt.offsetMax = Vector2.zero;
             panel = panelGo;
 
-            // 5 buttons stacked vertically (top to bottom): Resume, Enter Dungeon, Back to Town, Settings, Quit
-            resumeButton       = CreateButton(panel.transform, "Resume",            new Vector2(0.35f, 0.78f), new Vector2(0.65f, 0.90f), Resume);
-            enterDungeonButton = CreateButton(panel.transform, "Enter Dungeon",     new Vector2(0.35f, 0.63f), new Vector2(0.65f, 0.75f), OnEnterDungeonClicked);
-            backToTownButton   = CreateButton(panel.transform, "Back to Town",      new Vector2(0.35f, 0.48f), new Vector2(0.65f, 0.60f), BackToTown);
-            settingsButton     = CreateButton(panel.transform, "Settings",          new Vector2(0.35f, 0.33f), new Vector2(0.65f, 0.45f), OnSettingsClicked);
-            quitButton         = CreateButton(panel.transform, "Quit to Main Menu", new Vector2(0.35f, 0.08f), new Vector2(0.65f, 0.20f), QuitToMainMenu);
+            // 6 buttons stacked vertically (top to bottom): Resume, Change Class, Enter Dungeon, Back to Town, Settings, Quit
+            resumeButton       = CreateButton(panel.transform, "Resume",            new Vector2(0.35f, 0.84f), new Vector2(0.65f, 0.94f), Resume);
+            changeClassButton  = CreateButton(panel.transform, "Change Class",      new Vector2(0.35f, 0.70f), new Vector2(0.65f, 0.80f), OnChangeClassClicked);
+            enterDungeonButton = CreateButton(panel.transform, "Enter Dungeon",     new Vector2(0.35f, 0.56f), new Vector2(0.65f, 0.66f), OnEnterDungeonClicked);
+            backToTownButton   = CreateButton(panel.transform, "Back to Town",      new Vector2(0.35f, 0.42f), new Vector2(0.65f, 0.52f), BackToTown);
+            settingsButton     = CreateButton(panel.transform, "Settings",          new Vector2(0.35f, 0.28f), new Vector2(0.65f, 0.38f), OnSettingsClicked);
+            quitButton         = CreateButton(panel.transform, "Quit to Main Menu", new Vector2(0.35f, 0.06f), new Vector2(0.65f, 0.16f), QuitToMainMenu);
             // Hide contextual buttons by default
+            if (changeClassButton != null) changeClassButton.gameObject.SetActive(false);
             if (enterDungeonButton != null) enterDungeonButton.gameObject.SetActive(false);
             if (backToTownButton != null) backToTownButton.gameObject.SetActive(false);
         }

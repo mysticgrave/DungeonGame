@@ -62,6 +62,18 @@ namespace DungeonGame.Weapons
         [Min(0.1f)] public float range = 2.5f;
         [Min(0.01f)] public float cooldown = 0.6f;
 
+        [Header("Heavy Attack")]
+        [Tooltip("Damage for charged/heavy attack.")]
+        [Min(1)] public int heavyDamage = 5;
+        [Tooltip("How long to hold the attack button to trigger a heavy attack.")]
+        [Min(0.1f)] public float heavyChargeTime = 0.6f;
+        [Tooltip("Cooldown after a heavy attack.")]
+        [Min(0.1f)] public float heavyCooldown = 1.2f;
+        [Tooltip("Multiplier applied to enemy knockback on heavy hits.")]
+        [Min(1f)] public float heavyKnockMultiplier = 2f;
+        [Tooltip("Animator trigger for heavy attack.")]
+        public string heavyAttackTrigger = "attack_heavy_01";
+
         [Header("Melee (overlap sphere)")]
         [Tooltip("Radius of sphere in front of player for melee hit.")]
         [Min(0.1f)] public float hitRadius = 0.5f;

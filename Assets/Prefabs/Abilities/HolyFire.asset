@@ -1,0 +1,45 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 599ded77712486b42843db4954ec23d7, type: 3}
+  m_Name: HolyFire
+  m_EditorClassIdentifier: Assembly-CSharp::DungeonGame.Abilities.AbilityConfig
+  abilityId: holy_fire
+  displayName: Holy Fire
+  description: Ignites an area with sacred flames, burning enemies caught within.
+  icon: {fileID: 0}
+  abilityType: 4
+  castMode: 1
+  reticleShape: 0
+  damage: 0
+  cooldown: 14
+  range: 5
+  radius: 3
+  damageType: 1
+  statusEffect: 2
+  statusDuration: 3
+  statusImpulseForce: 0
+  projectilePrefab: {fileID: 0}
+  projectileSpeed: 15
+  projectileCount: 1
+  projectileSpreadAngle: 15
+  healAmount: 0
+  speedBoostMultiplier: 0
+  buffDuration: 5
+  dashDistance: 6
+  dashDuration: 0.3
+  zonePrefab: {fileID: 0}
+  zoneDuration: 5
+  zoneDamagePerTick: 3
+  zoneTickInterval: 1
+  vfxPrefab: {fileID: 0}
+  animationTrigger:
+  castSound: {fileID: 0}

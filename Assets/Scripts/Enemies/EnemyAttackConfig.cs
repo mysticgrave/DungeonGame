@@ -46,6 +46,12 @@ namespace DungeonGame.Enemies
         [Tooltip("Force applied when the effect is Ragdoll. Direction is computed from attacker to target.")]
         public float effectImpulseForce = 8f;
 
+        [Header("Telegraph")]
+        [Tooltip("Pause before attack — gives the player a reaction window.")]
+        public float windUpDuration = 0.4f;
+        [Tooltip("Optional animator trigger for the wind-up telegraph animation.")]
+        public string windUpAnimTrigger;
+
         [Header("Animation")]
         [Tooltip("Animator trigger name for this attack.")]
         public string animTrigger = "Attack";

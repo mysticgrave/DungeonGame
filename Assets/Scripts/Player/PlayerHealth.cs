@@ -46,6 +46,15 @@ namespace DungeonGame.Player
             if (info.Amount <= 0) return;
             if (hpNet.Value <= 0) return;
 
+            // Dodge i-frames — player is invulnerable during dodge window
+            var bodyState = GetComponent<PlayerBodyStateMachine>();
+            if (bodyState != null && bodyState.IsInvulnerable) return;
+
+            // Class damage reduction
+            var classStats = GetComponent<DungeonGame.Classes.PlayerClassStats>();
+            if (classStats != null && classStats.DamageReduction > 0f)
+                info.Amount = Mathf.Max(1, Mathf.RoundToInt(info.Amount * (1f - classStats.DamageReduction)));
+
             hpNet.Value = Mathf.Max(0, hpNet.Value - info.Amount);
             OnDamaged?.Invoke(info);
 
@@ -79,6 +88,15 @@ namespace DungeonGame.Player
             if (hpNet.Value <= 0) return;
 
             hpNet.Value = Mathf.Min(maxHp, hpNet.Value + amount);
+        }
+
+        /// <summary>Server-only. Set max HP at runtime (e.g. from class stats).</summary>
+        public void SetMaxHp(int value)
+        {
+            if (!IsServer) return;
+            maxHp = Mathf.Max(1, value);
+            // Heal to new max
+            hpNet.Value = maxHp;
         }
 
         [Rpc(SendTo.Everyone)]

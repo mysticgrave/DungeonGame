@@ -1,0 +1,45 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 599ded77712486b42843db4954ec23d7, type: 3}
+  m_Name: GroundSlam
+  m_EditorClassIdentifier: Assembly-CSharp::DungeonGame.Abilities.AbilityConfig
+  abilityId: ground_slam
+  displayName: Ground Slam
+  description: Slams the ground, sending a shockwave that damages and stuns nearby enemies.
+  icon: {fileID: 0}
+  abilityType: 0
+  castMode: 1
+  reticleShape: 0
+  damage: 8
+  cooldown: 6
+  range: 4
+  radius: 3.5
+  damageType: 0
+  statusEffect: 5
+  statusDuration: 2
+  statusImpulseForce: 6
+  projectilePrefab: {fileID: 0}
+  projectileSpeed: 15
+  projectileCount: 1
+  projectileSpreadAngle: 15
+  healAmount: 0
+  speedBoostMultiplier: 0
+  buffDuration: 5
+  dashDistance: 6
+  dashDuration: 0.3
+  zonePrefab: {fileID: 0}
+  zoneDuration: 5
+  zoneDamagePerTick: 1
+  zoneTickInterval: 1
+  vfxPrefab: {fileID: 0}
+  animationTrigger:
+  castSound: {fileID: 0}
